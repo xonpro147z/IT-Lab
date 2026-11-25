@@ -9,7 +9,7 @@ const fmt = (n) => n.toLocaleString('vi-VN') + 'đ';
 
 // ================= Trạng thái =================
 const S = {
-  parts: { case: partById('case-mid') }, // slot -> part
+  parts: { case: partById('case-h5') }, // slot -> part
   objs: {},                              // slot -> Object3D
   cat: 'case',
   selected: null,
@@ -25,15 +25,14 @@ const BOARD_SLOTS = ['cpu', 'ram', 'm2', 'gpu'];
 
 // ================= Cảnh 3D =================
 const canvas = $('#c3d');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1f27);
-scene.fog = new THREE.Fog(0x1a1f27, 160, 320);
+scene.background = null; // nền sáng lấy từ CSS
 const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 1000);
 const HOME_CAM = { pos: new THREE.Vector3(38, 52, 82), target: new THREE.Vector3(-2, 22, 0) };
 camera.position.copy(HOME_CAM.pos);
@@ -55,10 +54,9 @@ const inside = new THREE.PointLight(0xffffff, 380, 70, 1.5); inside.position.set
 const inside2 = new THREE.PointLight(0xcfe0ff, 220, 60, 1.5); inside2.position.set(6, 12, 16); scene.add(inside2);
 
 // mặt bàn
-const desk = new THREE.Mesh(new THREE.BoxGeometry(160, 2, 90), new THREE.MeshStandardMaterial({ color: 0x4a3a2c, roughness: 0.8 }));
-desk.position.set(0, -3, 10); desk.receiveShadow = true; scene.add(desk);
-const mat2 = new THREE.Mesh(new THREE.PlaneGeometry(70, 50), new THREE.MeshStandardMaterial({ color: 0x1b2430, roughness: 0.95 }));
-mat2.rotation.x = -Math.PI / 2; mat2.position.set(0, -1.98, 8); mat2.receiveShadow = true; scene.add(mat2);
+// mặt sàn trong suốt chỉ nhận bóng đổ (kiểu ảnh sản phẩm)
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.16 }));
+ground.rotation.x = -Math.PI / 2; ground.position.set(0, -1.95, 0); ground.receiveShadow = true; scene.add(ground);
 
 const world = new THREE.Group(); scene.add(world);
 const markerGroup = new THREE.Group(); scene.add(markerGroup);
@@ -81,7 +79,7 @@ function buildModel(slot, part) {
     case 'ram': return M.ramModel(part);
     case 'gpu': return M.gpuModel(part);
     case 'psu': return M.psuModel(part);
-    case 'storage': return part.kind === 'm2' ? M.m2Model(part) : M.hddModel(part);
+    case 'storage': return part.kind === 'm2' ? M.m2Model(part) : part.kind === 'ssd25' ? M.ssd25Model(part) : M.hddModel(part);
   }
 }
 // Vị trí và đối tượng cha của từng khe
@@ -112,7 +110,7 @@ function slotMarkerBox(slot, part) {
     case 'm2': size = [8.4, 2.6, 0.6]; break;
     case 'gpu': { const L = part.length / 10; size = [L, part.thick, 12]; c.add(new THREE.Vector3(-4.4 + L / 2, -part.thick / 2, 6.3)); break; }
     case 'psu': size = [15.2, 8.8, 15.2]; break;
-    case 'hdd': size = [14.9, 2.8, 10.4]; break;
+    case 'hdd': if (part.kind === 'ssd25') { size = [10.2, 0.9, 7.2]; c.x += 1.5; c.y -= 0.8; } else size = [14.9, 2.8, 10.4]; break;
   }
   return { parent: pl.parent, center: c, size };
 }
@@ -123,7 +121,7 @@ function cableTargetBox(slot) {
     case 'c-cpu8': return { parent: b, center: M.BOARD_ANCHORS['c-cpu8'], size: [2.8, 1.8, 1.6] };
     case 'c-fp': return { parent: b, center: M.BOARD_ANCHORS['c-fp'](S.parts.mb.form), size: [2.4, 1.4, 1.4] };
     case 'c-pcie': return { parent: S.objs.gpu, center: S.objs.gpu.userData.powerAnchor, size: [S.parts.gpu.pcie * 2 + 0.8, 1.6, 1.4] };
-    case 'c-sata': return { parent: S.objs.hdd, center: M.HDD_PORT, size: [1, 1.8, 3.8] };
+    case 'c-sata': return { parent: S.objs.hdd, center: S.objs.hdd.userData.port || M.HDD_PORT, size: [1, 1.8, 3.8] };
   }
 }
 
@@ -185,7 +183,7 @@ function rebuildCables() {
     cableGroup.add(M.cableMesh([P0, V(T.x + 3, 13, 8), V(T.x + 1, T.y - 1, T.z + 2.5), V(T.x, T.y, T.z + 0.4)], 0.4, 0x15161a));
   }
   if (S.parts['c-sata'] && S.objs.hdd && board) {
-    const T = W(S.objs.hdd, M.HDD_PORT);
+    const T = W(S.objs.hdd, S.objs.hdd.userData.port || M.HDD_PORT);
     const B = W(board, M.BOARD_ANCHORS['c-sata-mb']);
     cableGroup.add(M.cableMesh([P0, V(1, 7, 6), V(T.x - 1.5, T.y + 0.5, T.z + 1.5), V(T.x - 0.2, T.y + 0.4, T.z + 0.6)], 0.25, 0x222222));
     cableGroup.add(M.cableMesh([V(T.x - 0.2, T.y - 0.4, T.z - 0.6), V(T.x - 2, T.y, T.z - 2), V(4.5, 14, -4), V(B.x + 1.2, B.y, B.z + 0.5), V(B.x + 0.3, B.y, B.z)], 0.18, 0xc62828));
@@ -215,6 +213,8 @@ function validate(p) {
     if (psu.watt < need) add('err', `Nguồn ${psu.watt} W không đủ cho hệ thống cần ~${need} W.`, ['psu', 'gpu', 'cpu']);
     else if (psu.watt < need * 1.3) add('warn', `Nguồn ${psu.watt} W hơi sát với mức tiêu thụ ~${need} W. Nên dùng nguồn từ ${Math.ceil(need * 1.3 / 50) * 50} W.`, ['psu']);
   }
+  if (c && cooler && cooler.type === 'aio' && cooler.rad > (c.maxRad || 0)) add('err', `Két nước ${cooler.rad} mm không vừa nóc vỏ "${c.name}" (tối đa ${c.maxRad} mm).`, ['cooler', 'case']);
+  if (gpu && psu && gpu.h16 && !psu.h16) add('warn', `${gpu.name} dùng đầu nguồn 16-pin nhưng nguồn ${psu.name} không có dây 16-pin: phải dùng dây chuyển từ nhiều đầu 8-pin.`, ['gpu', 'psu']);
   if (cpu && !gpu && !cpu.igpu) add('warn', `${cpu.name} không có đồ hoạ tích hợp và chưa lắp card đồ hoạ: màn hình sẽ không có tín hiệu.`, ['cpu', 'gpu']);
   return out;
 }
@@ -399,8 +399,21 @@ function renderCats() {
   const cat = CATEGORIES.find((c) => c.id === S.cat);
   $('#catInfo').innerHTML = `<b>${cat.icon} ${cat.name}</b>${cat.info}`;
 }
+let partQuery = '', partBrand = '';
+const normVi = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+function renderFilter() {
+  const all = PARTS.filter((p) => p.cat === S.cat);
+  const brands = [...new Set(all.map((p) => p.maker || p.brand).filter(Boolean))];
+  const box = $('#partFilter');
+  if (S.cat === 'cable') { box.hidden = true; return; }
+  box.hidden = false;
+  const sel = $('#partBrand');
+  sel.innerHTML = '<option value="">Tất cả hãng</option>' + brands.map((b) => `<option ${b === partBrand ? 'selected' : ''}>${escapeHtml(b)}</option>`).join('');
+}
 function renderParts() {
-  const list = PARTS.filter((p) => p.cat === S.cat);
+  const q = normVi(partQuery);
+  const list = PARTS.filter((p) => p.cat === S.cat && (!partBrand || (p.maker || p.brand) === partBrand) && (!q || normVi(p.name + ' ' + p.specs.join(' ')).includes(q)));
+  $('#partCount').textContent = list.length + ' sản phẩm';
   $('#parts').innerHTML = list.map((p) => {
     const inst = S.parts[p.slot] && S.parts[p.slot].id === p.id;
     const chk = inst ? true : canInstall(p);
@@ -412,7 +425,7 @@ function renderParts() {
   }).join('');
   $('#parts').querySelectorAll('.part').forEach((el) => el.onclick = () => selectPart(partById(el.dataset.id)));
 }
-function selectCat(cat) { S.cat = cat; renderCats(); renderParts(); }
+function selectCat(cat) { if (cat !== S.cat) { partBrand = ''; } S.cat = cat; renderCats(); renderFilter(); renderParts(); }
 function selectPart(part) {
   S.selected = part;
   renderParts();
@@ -444,7 +457,7 @@ function showDetail(part, err) {
 
 // ================= Cột phải: cấu hình =================
 const BUILD_ROWS = [['case', '🗄️'], ['mb', '🟩'], ['cpu', '🔲'], ['cooler', '❄️'], ['ram', '📏'], ['m2', '💾'], ['hdd', '💽'], ['gpu', '🎮'], ['psu', '🔌']];
-const ROW_LABEL = { case: 'Vỏ máy', mb: 'Mainboard', cpu: 'CPU', cooler: 'Tản nhiệt', ram: 'RAM', m2: 'SSD M.2', hdd: 'HDD', gpu: 'Card đồ hoạ', psu: 'Nguồn' };
+const ROW_LABEL = { case: 'Vỏ máy', mb: 'Mainboard', cpu: 'CPU', cooler: 'Tản nhiệt', ram: 'RAM', m2: 'SSD M.2', hdd: 'Ổ SATA (HDD/SSD)', gpu: 'Card đồ hoạ', psu: 'Nguồn' };
 function total() { return Object.values(S.parts).reduce((s, p) => s + (p.price || 0), 0); }
 function renderBuild() {
   const rows = BUILD_ROWS.map(([slot, ic]) => {
@@ -483,7 +496,7 @@ function renderGuide() {
   const cur = currentStep();
   const bars = GUIDE_STEPS.map((st) => `<span class="${stepSkipped(st) ? 's' : stepDone(st) ? 'd' : st === cur ? 'c' : ''}" title="${st.title}"></span>`).join('');
   if (!cur) {
-    g.innerHTML = `<div class="steps">${bars}</div><h4>🎉 Hoàn thành!</h4>Bạn đã lắp ráp và khởi động thành công một bộ máy tính. Hãy thử chế độ "Thử thách" để rèn luyện thêm.`;
+    g.innerHTML = `<div class="steps">${bars}</div><h4>Hoàn thành.</h4>Bạn đã lắp ráp và khởi động thành công một bộ máy tính. Hãy thử chế độ "Thử thách" để rèn luyện thêm.`;
     return;
   }
   const idx = GUIDE_STEPS.indexOf(cur) + 1;
@@ -542,7 +555,7 @@ function powerOn() {
   bootTimer.forEach(clearTimeout); bootTimer = [];
   const d = diagnose();
   const mon = $('#monitor'), scr = $('#screen');
-  if (d.stage === 'dead') { powerOff(); toast('⚡ ' + d.msg, 'err', 4000); showResult(false, d); return; }
+  if (d.stage === 'dead') { powerOff(); toast(d.msg, 'err', 4000); showResult(false, d); return; }
   S.powered = true; setGlow(true);
   scr.className = 'screen'; scr.innerHTML = '';
   mon.hidden = false;
@@ -554,13 +567,13 @@ function powerOn() {
     bootTimer.push(setTimeout(() => showResult(false, d), 1800));
     return;
   }
-  say('TinHoc BIOS v2.26  (C) TinHocLab Megatrends', 100);
+  say('TinHocLab UEFI BIOS  v2.26', 100);
   say(`Mainboard : ${p.mb.name}`, 400);
   say(`CPU       : ${p.cpu.name}  @ ${p.cpu.ghz} GHz  (${p.cpu.cores} nhân / ${p.cpu.threads} luồng)`, 700);
   say(`Bộ nhớ    : ${p.ram.size * 1024} MB ${p.ram.type}-${p.ram.mhz}  ............ OK`, 1100);
   say(`Đồ hoạ    : ${p.gpu ? p.gpu.name : 'Đồ hoạ tích hợp của CPU'}`, 1400);
-  if (p.m2) say(`NVMe      : SSD M.2 ${p.m2.size >= 1000 ? '1TB' : '500GB'} ................. OK`, 1700);
-  if (p.hdd) say(`SATA 1    : ${p['c-sata'] ? 'HDD 1TB 7200rpm .............. OK' : 'Không phát hiện thiết bị'}`, 1900);
+  if (p.m2) say(`NVMe      : ${p.m2.name} ... OK`, 1700);
+  if (p.hdd) say(`SATA 1    : ${p['c-sata'] ? p.hdd.name + ' ... OK' : 'Không phát hiện thiết bị'}`, 1900);
   say(`Nguồn     : ${p.psu.watt} W  –  tiêu thụ ước tính ${estPower(p)} W`, 2100);
   if (d.stage === 'overheat') {
     say('', 2500); say('CẢNH BÁO: Nhiệt độ CPU 105°C!  CPU Over Temperature Error!', 2700, 'err'); say('Hệ thống tự tắt để bảo vệ...', 3300, 'err');
@@ -576,7 +589,7 @@ function powerOn() {
   say('', 2600); say('Nhấn DEL để vào BIOS Setup ...   Đang khởi động hệ điều hành', 2800, 'ok');
   bootTimer.push(setTimeout(() => {
     scr.className = 'screen win';
-    scr.innerHTML = '<div style="font-size:64px">⊞</div><div style="margin-top:18px">Chào mừng bạn!</div><div style="font-size:15px;opacity:.85;margin-top:8px">Hệ điều hành đã khởi động thành công</div>';
+    scr.innerHTML = '<div style="font-size:54px;font-weight:700;letter-spacing:-0.04em">Xin chào.</div><div style="font-size:15px;opacity:.85;margin-top:10px;font-weight:500">Máy tính của em đã khởi động thành công.</div>';
     S.bootOk = true;
     renderGuide();
     showResult(true, d);
@@ -648,7 +661,7 @@ document.querySelectorAll('#modeSeg button').forEach((b) => b.onclick = () => {
 function resetBuild() {
   Object.keys(S.objs).forEach((s) => s !== 'case' && s !== 'mb' && detach(s));
   detach('mb');
-  S.parts = { case: S.parts.case || partById('case-mid') };
+  S.parts = { case: S.parts.case || partById('case-h5') };
   S.manualDone.clear(); S.gpuSkipped = false; S.selected = null; S.bootOk = false;
   powerOff(); rebuildCables(); clearMarkers();
   $('#detail').hidden = true; $('#monitor').hidden = true;
@@ -686,3 +699,7 @@ resize();
 afterChange();
 loop();
 window.__pc = { S, install, remove, powerOn, partById }; // hỗ trợ kiểm thử
+
+$('#partSearch').addEventListener('input', (e) => { partQuery = e.target.value; renderParts(); });
+$('#partBrand').addEventListener('change', (e) => { partBrand = e.target.value; renderParts(); });
+renderFilter();

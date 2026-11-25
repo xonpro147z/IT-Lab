@@ -3,91 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
-<title>TinHocLab – Thực hành Tin học</title>
+<title>TinHocLab</title>
 <link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="ui/apple.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three/three.module.js" } }</script>
 <style>
-  body { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
-  header { padding: 28px 48px 8px; display: flex; align-items: center; gap: 16px; }
-  header .logo { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg,#00c6ff,#0072ff); display: grid; place-items: center; font-weight: 800; font-size: 22px; box-shadow: 0 6px 20px rgba(0,114,255,.5); }
-  header h1 { margin: 0; font-size: 26px; }
-  header p { margin: 2px 0 0; opacity: .75; }
-  .student { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .student input { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); color: #fff; padding: 8px 12px; border-radius: 8px; width: 220px; font-size: 14px; }
-  .student input::placeholder { color: rgba(255,255,255,.6); }
-  main { flex: 1; padding: 24px 48px 40px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; }
-  .card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; padding: 26px; backdrop-filter: blur(6px); cursor: pointer; transition: transform .15s, background .15s; position: relative; overflow: hidden; }
-  .card:hover { transform: translateY(-3px); background: rgba(255,255,255,.13); }
-  .card h2 { margin: 0 0 6px; font-size: 22px; }
-  .card p { margin: 0; opacity: .8; line-height: 1.5; }
-  .card .big { font-size: 64px; position: absolute; right: 22px; top: 12px; opacity: .9; }
-  .pc { grid-row: span 3; display: flex; flex-direction: column; background: linear-gradient(160deg, rgba(0,198,255,.25), rgba(0,114,255,.12)); }
-  .pc .feat { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .pc .feat div { background: rgba(0,0,0,.2); padding: 10px 12px; border-radius: 10px; font-size: 14px; }
-  .pc .preview { flex: 1; margin-top: 18px; border-radius: 14px; background: radial-gradient(circle at 50% 60%, rgba(0,198,255,.35), transparent 60%); display: grid; place-items: center; font-size: 120px; min-height: 180px; }
-  .app { display: flex; gap: 18px; align-items: center; }
-  .app .icon { width: 72px; height: 72px; border-radius: 14px; display: grid; place-items: center; font-size: 34px; font-weight: 800; flex: none; }
-  .word .icon { background: #185abd; } .excel .icon { background: #107c41; } .ppt .icon { background: #c43e1c; }
-  .progress { font-size: 13px; margin-top: 8px; opacity: .9; }
-  .bar { height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; margin-top: 6px; overflow: hidden; }
-  .bar span { display: block; height: 100%; background: #4ade80; }
-  footer { padding: 12px 48px 20px; opacity: .6; font-size: 13px; display: flex; justify-content: space-between; }
-  footer a { color: #9cd; cursor: pointer; }
+  .wrap { max-width: 1024px; margin: 0 auto; padding: 0 22px; }
+  section { position: relative; }
+  /* Hero */
+  .hero { padding: 120px 0 90px; text-align: center; overflow: hidden; }
+  .hero .display { margin: 10px 0 22px; }
+  .hero .lead { margin: 0 auto 34px; }
+  .hero .ctas { display: flex; gap: 18px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .hero .glow { position: absolute; inset: auto 0 -30% 0; height: 70%; background: radial-gradient(50% 60% at 50% 100%, rgba(0,113,227,.16), rgba(168,85,247,.08) 45%, transparent 70%); pointer-events: none; }
+  .hero .ticker { margin-top: 70px; display: flex; justify-content: center; gap: 56px; flex-wrap: wrap; }
+  .hero .ticker div { text-align: center; }
+  .hero .ticker .num { font-size: 56px; }
+  .hero .ticker p { margin: 6px 0 0; color: var(--ink2); font-size: 14px; }
+  /* Story (sticky 3D) */
+  #story { height: 420vh; background: #000; color: #f5f5f7; }
+  #story .stick { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+  #storyCanvas { width: 100%; height: 100%; display: block; }
+  #story .cap { position: absolute; left: 0; right: 0; top: 9vh; text-align: center; opacity: 0; pointer-events: none; will-change: opacity, transform; }
+  #story .cap h2 { font-family: var(--font-display); font-size: clamp(34px, 4.6vw, 60px); font-weight: 700; letter-spacing: -0.03em; margin: 0; line-height: 1.08; }
+  #story .cap p { color: #a1a1a6; font-size: clamp(17px, 1.6vw, 21px); margin: 12px 0 0; font-weight: 500; }
+  
+  #story .cap.final { pointer-events: auto; }
+  #story .cap .pill { margin-top: 26px; }
+  /* Editorial sections */
+  .sec { padding: 140px 0; }
+  .sec.gray { background: var(--bg2); }
+  .sec .head { max-width: 760px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: end; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 80px; border-top: 1px solid var(--line2); }
+  .stats > div { padding: 28px 28px 0 0; }
+  .stats > div + div { padding-left: 28px; border-left: 1px solid var(--line2); }
+  .stats .num { background: linear-gradient(180deg, var(--ink) 30%, #6e6e73); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stats p { color: var(--ink2); margin: 10px 0 0; font-size: 17px; }
+  .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; }
+  .feature { padding: 40px; min-height: 230px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+  .feature .k { font-size: 13px; font-weight: 600; color: var(--ink2); text-transform: uppercase; letter-spacing: .06em; }
+  .feature h3 { font-family: var(--font-display); font-size: 28px; letter-spacing: -0.024em; line-height: 1.14; margin: 14px 0 0; }
+  .feature .bar { height: 4px; background: rgba(0,0,0,.07); border-radius: 2px; margin-top: 26px; overflow: hidden; }
+  .feature .bar span { display: block; height: 100%; width: 0; border-radius: 2px; transition: width 1.6s var(--ease-out) .3s; }
+  .feature.in .bar span { width: var(--w); }
+  .feature .meta { font-size: 14px; color: var(--ink2); margin-top: 10px; display: flex; justify-content: space-between; }
+  .appmark { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 26px; font-family: var(--font-display); }
+  /* Marquee */
+  .marquee { overflow: hidden; margin-top: 64px; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+  .marquee .row { display: flex; gap: 12px; width: max-content; animation: marquee 60s linear infinite; padding: 6px 0; }
+  .marquee .row.rev { animation-direction: reverse; animation-duration: 75s; }
+  .marquee .chip { font-size: 17px; padding: 12px 22px; background: #fff; }
+  .marquee:hover .row { animation-play-state: paused; }
+  footer { padding: 40px 0 60px; font-size: 12px; color: var(--ink3); border-top: 1px solid var(--line); }
+  footer .wrap { display: flex; justify-content: space-between; }
+  footer a { color: var(--ink2); cursor: pointer; }
+  @media (max-width: 860px) { .split, .feature-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } .stats > div + div { border-left: 0; padding-left: 0; } }
 </style>
 </head>
-<body>
-<header>
-  <div class="logo">TH</div>
-  <div>
-    <h1>TinHocLab</h1>
-    <p>Phần mềm thực hành Tin học: lắp ráp máy tính 3D và tin học văn phòng</p>
-  </div>
-  <div class="student">
-    <span>👤</span><input id="studentName" placeholder="Nhập họ tên học sinh...">
-  </div>
-</header>
-<main>
-  <div class="card pc" onclick="location.href='pcbuild/pcbuild.html'">
-    <h2>🖥️ Lắp ráp máy tính 3D</h2>
-    <p>Chọn linh kiện, kiểm tra tương thích và lắp ráp một bộ máy tính hoàn chỉnh trong không gian 3D. Xoay, phóng to và quan sát từng chi tiết.</p>
-    <div class="feat">
-      <div>🧩 29 linh kiện: CPU, RAM, VGA, SSD, nguồn...</div>
-      <div>✅ Kiểm tra socket, DDR4/DDR5, công suất nguồn</div>
-      <div>🎓 Chế độ hướng dẫn từng bước</div>
-      <div>⚡ Khởi động máy, màn hình POST/BIOS</div>
+<body class="apple">
+<nav class="gnav">
+  <a class="brand" onclick="scrollTo({top:0,behavior:'smooth'})"><i>TH</i>TinHocLab</a>
+  <a data-nav="pcbuild/pcbuild.html">Lắp ráp</a>
+  <a data-nav="explore/explore.html">Khám phá</a>
+  <a data-nav="office/word.html">Word</a>
+  <a data-nav="office/excel.html">Excel</a>
+  <a data-nav="office/powerpoint.html">PowerPoint</a>
+  <span class="sp"></span>
+  <input class="field" id="studentName" placeholder="Họ tên học sinh" style="width:190px">
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow reveal">TinHocLab 1.1</p>
+    <h1 class="display reveal" style="--d:.08s">Hiểu máy tính.<br><span class="grad-text">Từ bên trong.</span></h1>
+    <p class="lead reveal" style="--d:.16s">Lắp ráp một chiếc máy tính thật trong không gian 3D. Khám phá mọi cổng kết nối. Luyện Word, Excel, PowerPoint như trong phòng thi.</p>
+    <div class="ctas reveal" style="--d:.24s"><a class="pill" data-nav="pcbuild/pcbuild.html">Bắt đầu lắp ráp</a><a class="link" data-nav="explore/explore.html">Khám phá phần cứng</a></div>
+    <div class="ticker">
+      <div class="reveal" style="--d:.3s"><div class="num" data-count="82">0</div><p>linh kiện thật</p></div>
+      <div class="reveal" style="--d:.38s"><div class="num" data-count="154">0</div><p>phần cứng 3D</p></div>
+      <div class="reveal" style="--d:.46s"><div class="num" data-count="18">0</div><p>dự án luyện thi MOS</p></div>
     </div>
-    <div class="preview">🛠️</div>
-    <div class="progress" id="prog-pc"></div>
   </div>
-  <div class="card app word" onclick="location.href='office/word.html'">
-    <div class="icon">W</div>
-    <div><h2>Word – Soạn thảo văn bản</h2><p>Định dạng ký tự, đoạn văn, danh sách, bảng, hình ảnh, bố cục trang.</p><div class="progress" id="prog-word"></div></div>
+  <div class="glow"></div>
+</section>
+
+<section id="story">
+  <div class="stick">
+    <canvas id="storyCanvas"></canvas>
+    <div class="cap" data-range="-0.3,0.14"><h2>Mọi thứ bắt đầu<br>từ bo mạch chủ.</h2><p>Cuộn xuống để lắp ráp.</p></div>
+    <div class="cap" data-range="0.14,0.31"><h2>CPU.</h2><p>Bộ não thực hiện hàng tỷ phép tính mỗi giây.</p></div>
+    <div class="cap" data-range="0.31,0.49"><h2>Tản nhiệt.</h2><p>Giữ cho bộ não luôn mát.</p></div>
+    <div class="cap" data-range="0.49,0.69"><h2>RAM và SSD.</h2><p>Nhớ thật nhanh. Lưu thật bền.</p></div>
+    <div class="cap" data-range="0.69,0.87"><h2>Card đồ hoạ.</h2><p>Sức mạnh cho từng khung hình.</p></div>
+    <div class="cap final" data-range="0.87,1.3"><h2>Giờ đến lượt em.</h2><p>Chọn linh kiện, kiểm tra tương thích, bật nguồn.</p><a class="pill" data-nav="pcbuild/pcbuild.html">Mở phòng lắp ráp</a></div>
   </div>
-  <div class="card app excel" onclick="location.href='office/excel.html'">
-    <div class="icon">X</div>
-    <div><h2>Excel – Bảng tính</h2><p>Nhập liệu, công thức, hàm SUM, IF, VLOOKUP, COUNTIF..., định dạng, sắp xếp, biểu đồ.</p><div class="progress" id="prog-excel"></div></div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="split">
+      <div><p class="eyebrow reveal">Lắp ráp máy tính 3D</p><h2 class="headline reveal" style="--d:.08s">Như thật.<br>Từng con ốc.</h2></div>
+      <p class="lead reveal" style="--d:.16s">Socket, DDR4 hay DDR5, công suất nguồn, độ dài card đồ hoạ — phần mềm kiểm tra tất cả. Quên một sợi cáp, máy sẽ không lên nguồn. Giống hệt ngoài đời.</p>
+    </div>
+    <div class="stats">
+      <div class="reveal"><div class="num" data-count="82">0</div><p>linh kiện từ ASUS, MSI, Intel, AMD, NVIDIA, Samsung…</p></div>
+      <div class="reveal" style="--d:.1s"><div class="num" data-count="14">0</div><p>bước hướng dẫn, kèm cách lắp ngoài thực tế</p></div>
+      <div class="reveal" style="--d:.2s"><div class="num" id="pcDone">0/4</div><p>thử thách cấu hình đã hoàn thành</p></div>
+    </div>
+    <p class="reveal" style="margin-top:40px"><a class="link" data-nav="pcbuild/pcbuild.html">Vào phòng lắp ráp</a></p>
   </div>
-  <div class="card app ppt" onclick="location.href='office/powerpoint.html'">
-    <div class="icon">P</div>
-    <div><h2>PowerPoint – Trình chiếu</h2><p>Tạo trang chiếu, bố cục, hộp văn bản, hình khối, ảnh, chủ đề, hiệu ứng chuyển trang.</p><div class="progress" id="prog-ppt"></div></div>
+</section>
+
+<section class="sec gray">
+  <div class="wrap">
+    <div class="head"><p class="eyebrow reveal">Khám phá phần cứng</p><h2 class="headline reveal" style="--d:.08s">Mọi cổng kết nối.<br>Mọi thế hệ.</h2>
+    <p class="lead reveal" style="--d:.16s;margin-top:22px">Từ đĩa mềm 1,44 MB đến Thunderbolt 5. Tìm, xoay mô hình 3D, đọc câu chuyện phía sau — rồi thử tài nhận biết.</p></div>
   </div>
-</main>
-<footer>
-  <span id="ver">TinHocLab</span>
-  <a id="reset">Xoá kết quả đã lưu trên máy này</a>
-</footer>
+  <div class="marquee reveal" style="--d:.2s">
+    <div class="row" id="mq1"></div>
+    <div class="row rev" id="mq2"></div>
+  </div>
+  <div class="wrap"><p class="reveal" style="margin-top:44px"><a class="pill dark" data-nav="explore/explore.html">Mở thư viện phần cứng</a></p></div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="split">
+      <div><p class="eyebrow reveal">Tin học văn phòng</p><h2 class="headline reveal" style="--d:.08s">Word. Excel.<br>PowerPoint.</h2></div>
+      <p class="lead reveal" style="--d:.16s">Giao diện như Microsoft 365, hoàn toàn bằng tiếng Anh. Chấm điểm tự động như bài thi MOS — từng nhiệm vụ, từng giây.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="card-a feature reveal" data-nav="office/word.html"><div><div class="appmark" style="background:#185abd">W</div><h3>Word</h3><p class="muted" style="margin:6px 0 0">Định dạng, bảng, hình ảnh, mục lục, chú thích cuối trang.</p></div><div><div class="bar"><span id="barW" style="background:#185abd"></span></div><div class="meta"><span id="mW"></span><span>Mở ›</span></div></div></div>
+      <div class="card-a feature reveal" style="--d:.1s" data-nav="office/excel.html"><div><div class="appmark" style="background:#107c41">X</div><h3>Excel</h3><p class="muted" style="margin:6px 0 0">Hơn 50 hàm, VLOOKUP, định dạng có điều kiện, biểu đồ.</p></div><div><div class="bar"><span id="barX" style="background:#107c41"></span></div><div class="meta"><span id="mX"></span><span>Mở ›</span></div></div></div>
+      <div class="card-a feature reveal" data-nav="office/powerpoint.html"><div><div class="appmark" style="background:#c43e1c">P</div><h3>PowerPoint</h3><p class="muted" style="margin:6px 0 0">Bố cục, chủ đề, hiệu ứng chuyển trang, trình chiếu.</p></div><div><div class="bar"><span id="barP" style="background:#c43e1c"></span></div><div class="meta"><span id="mP"></span><span>Mở ›</span></div></div></div>
+      <div class="card-a feature reveal" style="--d:.1s;background:#1d1d1f;color:#f5f5f7" data-nav="explore/explore.html"><div><div class="appmark" style="background:linear-gradient(135deg,#ff9f0a,#ff375f)">?</div><h3>Đố vui nhận biết</h3><p style="margin:6px 0 0;color:#a1a1a6">Nhìn mô hình 3D, gọi đúng tên. Mười câu, mỗi lần một khác.</p></div><div><div class="meta" style="color:#a1a1a6"><span id="mQ"></span><span>Chơi ›</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span id="ver">TinHocLab</span><a id="reset">Xoá kết quả đã lưu trên máy này</a></div></footer>
+
 <script src="common.js"></script>
+<script src="ui/motion.js"></script>
 <script>
   const nameInput = document.getElementById('studentName');
   nameInput.value = Progress.student();
   nameInput.addEventListener('input', () => Progress.setStudent(nameInput.value));
-  const show = (id, key, total) => {
-    const done = Progress.doneCount(key);
-    const el = document.getElementById(id);
-    if (total) el.innerHTML = `Đã hoàn thành ${done}/${total} ${key === 'pc' ? 'thử thách' : 'bài tập'}<div class="bar"><span style="width:${Math.round(done / total * 100)}%"></span></div>`;
-  };
-  show('prog-word', 'word', 7); show('prog-excel', 'excel', 6); show('prog-ppt', 'ppt', 5); show('prog-pc', 'pc', 4);
-  if (window.desktop) window.desktop.version().then(v => document.getElementById('ver').textContent = 'TinHocLab phiên bản ' + v);
+  const set = (k, total, bar, meta) => { const d = Progress.doneCount(k); document.getElementById(meta).textContent = `${d}/${total} dự án hoàn thành`; document.getElementById(bar).parentElement.parentElement.parentElement.style.setProperty('--w', Math.round(d / total * 100) + '%'); };
+  set('word', 7, 'barW', 'mW'); set('excel', 6, 'barX', 'mX'); set('ppt', 5, 'barP', 'mP');
+  document.getElementById('pcDone').textContent = Progress.doneCount('pc') + '/4';
+  const qz = Progress.get('explore', 'quiz'); document.getElementById('mQ').textContent = qz ? `Điểm cao nhất: ${qz.score}/${qz.max}` : 'Chưa chơi lần nào';
+  const words = ['USB-C', 'Lightning', 'FireWire', 'Thunderbolt 5', 'HDMI 2.1', 'DisplayPort', 'VGA', 'DVI', 'RJ45', 'PS/2', 'Đĩa mềm 3½"', 'CD · DVD · Blu-ray', 'SSD NVMe', 'Ổ cứng HDD', 'microSD', 'Micro-USB', 'Mini-USB', 'MagSafe', '12V-2x6', 'SATA', 'Molex', 'Sạc dự phòng', 'Router Wi-Fi 7', 'UPS', 'RS-232', 'Jack 3,5 mm'];
+  const fill = (id, arr) => { const h = arr.map((w) => `<span class="chip">${w}</span>`).join(''); document.getElementById(id).innerHTML = h + h; };
+  fill('mq1', words.slice(0, 13)); fill('mq2', words.slice(13));
+  if (window.desktop) window.desktop.version().then((v) => (document.getElementById('ver').textContent = 'TinHocLab ' + v));
   document.getElementById('reset').onclick = () => { if (confirm('Xoá toàn bộ kết quả bài tập đã lưu?')) { Progress.reset(); location.reload(); } };
 </script>
+<script type="module" src="ui/story3d.js"></script>
 </body>
 </html>

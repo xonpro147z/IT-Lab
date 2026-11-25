@@ -2,7 +2,8 @@
 
 Ứng dụng máy tính (Windows `.exe`, macOS `.dmg`, Linux `.deb`) giúp học sinh thực hành:
 
-1. **Lắp ráp máy tính 3D**: chọn linh kiện, kiểm tra tương thích, lắp vào vỏ máy trong không gian 3D, cắm cáp và bật nguồn.
+1. **Lắp ráp máy tính 3D**: chọn trong 82 linh kiện thật của các hãng (ASUS, MSI, Gigabyte, Intel, AMD, NVIDIA, Corsair, Samsung, NZXT, Noctua…), kiểm tra tương thích, lắp vào vỏ máy trong không gian 3D, cắm cáp và bật nguồn.
+3. **Khám phá phần cứng**: tìm kiếm (gõ có dấu hoặc không dấu) và xem mô hình 3D của hơn 150 phần cứng: cổng và cáp (USB-A/C, Micro/Mini USB, Lightning, FireWire, Thunderbolt, HDMI, DisplayPort, VGA, DVI, RJ45, PS/2, COM, LPT, SATA, Molex, 16-pin…), thiết bị lưu trữ (HDD, SSD, NVMe, đĩa mềm, CD/DVD, USB, thẻ nhớ), linh kiện, thiết bị ngoại vi, thiết bị mạng, sạc dự phòng, UPS… kèm năm ra đời, thông số, công dụng, "Bạn có biết?" và trò đố vui nhận biết. Không tìm thấy thì có nút tìm ảnh trên Google/Wikipedia.
 2. **Tin học văn phòng**: giả lập Word, Excel, PowerPoint **hoàn toàn bằng tiếng Anh**, giao diện sát Microsoft 365 (ribbon, biểu tượng Fluent tự vẽ, thanh tiêu đề có AutoSave/Search, thước kẻ, thanh trạng thái), với các dự án luyện tập chấm điểm tự động theo dạng bài thi MOS 365 (Task 1…n, Mark for review, Submit project, đồng hồ).
 
 Phần mềm chạy hoàn toàn offline, không cần Internet.
@@ -62,9 +63,11 @@ Workflow `.github/workflows/build.yml` sẽ tự đóng gói cả 3 nền tảng
 main.js, preload.js        Tiến trình chính Electron (cửa sổ, lưu/mở tệp)
 src/index.html             Màn hình chính
 src/pcbuild/               Lắp ráp máy tính 3D
-  catalog.js               Danh mục linh kiện, thử thách, các bước hướng dẫn  ← thêm linh kiện ở đây
+  parts.js                 Linh kiện thật các hãng  ← thêm linh kiện ở đây
+  catalog.js               Nhóm linh kiện, thử thách, các bước hướng dẫn
   models.js                Mô hình 3D dựng bằng code
   pcbuild.js               Logic lắp ráp, tương thích, khởi động
+src/explore/                Khám phá phần cứng (hw-data.js: dữ liệu, hw-models.js: mô hình 3D)
 src/office/
   office-common.js         Ribbon, menu, khung bài tập dùng chung
   formula.js               Bộ tính công thức Excel

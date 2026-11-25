@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Khám phá phần cứng – TinHocLab</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="../ui/apple.css">
+<link rel="stylesheet" href="explore.css">
+<script type="importmap">{ "imports": { "three": "../vendor/three/three.module.js" } }</script>
+</head>
+<body class="apple">
+<div id="top">
+  <button class="tb" data-nav="../index.html">‹ TinHocLab</button>
+  <div class="title">Khám phá phần cứng</div>
+  <div class="searchbox"><span>⌕</span><input id="q" placeholder="Tìm phần cứng — USB-C, đĩa mềm, RTX 5090, sạc dự phòng…" autocomplete="off" spellcheck="false"><button id="qClear" title="Xoá">✕</button></div>
+  <button class="tb accent" id="btnQuiz">Đố vui</button>
+</div>
+<div id="layout">
+  <aside id="left">
+    <div id="cats"></div>
+    <div id="count"></div>
+    <div id="list"></div>
+  </aside>
+  <div id="view">
+    <canvas id="c3d"></canvas>
+    <div id="vcap"></div>
+    <div id="vctl"><button class="tb" id="btnRotate">Tự xoay: Bật</button><button class="tb" id="btnReset">Góc nhìn ban đầu</button></div>
+    <div id="hint">Kéo để xoay · Cuộn để phóng to</div>
+  </div>
+  <aside id="right"><div id="info"></div></aside>
+</div>
+<script src="../common.js"></script>
+<script src="../ui/motion.js"></script>
+<script type="module" src="explore.js"></script>
+</body>
+</html>

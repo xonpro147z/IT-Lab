@@ -1,6 +1,6 @@
 {
   "name": "tinhoclab",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
   "main": "main.js",
   "scripts": {
@@ -16,6 +16,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
     "three": "^0.170.0"
