@@ -5,6 +5,9 @@ const path = require('path');
 const fs = require('fs');
 
 let win;
+let kbCapture = false, lastAltF4 = 0, lastCloseTry = 0;
+function setCapture(on) { kbCapture = !!on; if (win && !win.isDestroyed()) win.webContents.setIgnoreMenuShortcuts(kbCapture); }
+ipcMain.on('kb:capture', (_e, on) => setCapture(on));
 
 function createWindow() {
   win = new BrowserWindow({
@@ -22,6 +25,19 @@ function createWindow() {
     },
   });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
+  // Phòng luyện phím tắt: tạm bỏ phím tắt của menu, chặn Alt+F4 đóng ứng dụng
+  win.webContents.on('before-input-event', (e, input) => {
+    if (!kbCapture || input.type !== 'keyDown') return;
+    if (input.alt && input.key === 'F4') { lastAltF4 = Date.now(); e.preventDefault(); win.webContents.send('kb:combo', 'Alt+F4'); }
+  });
+  win.on('close', (e) => {
+    if (!kbCapture) return;
+    const now = Date.now();
+    if (now - lastAltF4 < 1500) { e.preventDefault(); return; }
+    // Trên Linux/macOS, Alt+F4 có thể bị hệ điều hành bắt trước: chặn lần đầu, lần thứ hai mới thoát
+    if (now - lastCloseTry > 4000) { lastCloseTry = now; e.preventDefault(); win.webContents.send('kb:combo', 'Alt+F4'); win.webContents.send('kb:closeWarn'); }
+  });
+  win.webContents.on('did-start-navigation', (_e, _url, _inPlace, isMain) => { if (isMain) setCapture(false); });
   // Mở liên kết ngoài bằng trình duyệt hệ thống
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:/.test(url)) shell.openExternal(url);

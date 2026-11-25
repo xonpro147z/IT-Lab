@@ -17,6 +17,12 @@ Phần mềm chạy hoàn toàn offline, không cần Internet.
 - **Bật nguồn**: chẩn đoán lỗi như ngoài đời thật (quên cáp 24-pin, quên RAM, CPU quá nhiệt, không có ổ khởi động, VGA thiếu nguồn…), có màn hình POST/BIOS.
 - 4 thử thách: máy văn phòng ≤ 15 triệu, máy chơi game ≤ 30 triệu, máy AMD AM5, máy đồ hoạ cao cấp.
 
+### Phím tắt (src/keys)
+- Máy tính ảo "TinHoc OS": cửa sổ kéo thả, thanh tác vụ, menu Start, Alt+Tab, Task View, màn hình khoá, chụp màn hình…
+- Ứng dụng trong máy ảo: Ghi chú, Word, Excel, PowerPoint (có trình chiếu), File Explorer (có Thùng rác), trình duyệt nhiều thẻ, Task Manager, Cài đặt, Run.
+- Bàn phím ảo sáng đèn theo phím thật; có thể nhấp chuột để bấm tổ hợp (dùng cho phím mà hệ điều hành thật giành trước như Win, Alt+Tab, Ctrl+Alt+Delete).
+- 119 phím tắt chia 7 nhóm (shortcuts.js), kèm cách bấm trên macOS. Ba chế độ: Tra cứu, Luyện tập (từng bước, tự chuẩn bị tình huống), Kiểm tra (10 câu, lưu điểm).
+
 ### Word
 Phông chữ, cỡ chữ, màu chữ, tô sáng, B/I/U, chỉ số trên/dưới, đổi chữ hoa/thường, sao chép định dạng, dấu đầu dòng, đánh số, căn lề, giãn dòng, tô nền đoạn, Kiểu tiêu đề, Tìm/Thay thế, bảng (thêm/xoá hàng cột, tô màu ô), ảnh (kích thước, bao quanh chữ), hình khối, liên kết, đầu trang/chân trang, ký hiệu, phương trình, hình mờ, màu trang, viền trang, lề, hướng giấy, khổ giấy, chia cột, mục lục tự động (Table of Contents), chú thích cuối trang (Footnote), số trang, đếm từ, bình luận. Xuất ra tệp `.doc` mở được bằng Microsoft Word.
 
@@ -67,6 +73,8 @@ src/pcbuild/               Lắp ráp máy tính 3D
   catalog.js               Nhóm linh kiện, thử thách, các bước hướng dẫn
   models.js                Mô hình 3D dựng bằng code
   pcbuild.js               Logic lắp ráp, tương thích, khởi động
+src/keys/                  Phím tắt: shortcuts.js (danh sách) · keyboard.js (bàn phím ảo) · os.js + apps.js (máy tính ảo) · keys.js (chế độ học)
+src/ui/                    Giao diện chung kiểu Apple (apple.css, motion.js, story3d.js) · src/fonts: phông Inter
 src/explore/                Khám phá phần cứng (hw-data.js: dữ liệu, hw-models.js: mô hình 3D)
 src/office/
   office-common.js         Ribbon, menu, khung bài tập dùng chung

@@ -1,0 +1,34 @@
+// Kiểm thử phím thật: gửi sự kiện bàn phím qua sendInputEvent
+const { app, BrowserWindow } = require('electron'); const path = require('path'); const fs = require('fs');
+const log = (...a) => fs.appendFileSync('/tmp/realkeys.log', a.map(String).join(' ') + '\n');
+app.commandLine.appendSwitch('use-angle', 'swiftshader'); app.commandLine.appendSwitch('enable-unsafe-swiftshader'); log('START');
+app.whenReady().then(async () => {
+  const win = new BrowserWindow({ width: 1366, height: 800, show: true, webPreferences: { preload: path.join(__dirname, '..', 'preload.js') } });
+  win.webContents.on('console-message', (e, l, m) => { if (l >= 2) log('CONSOLE', m); });
+  await win.loadFile(path.join(__dirname, '..', 'src', 'keys/keys.html'));
+  const s = (ms) => new Promise((r) => setTimeout(r, ms)); await s(1500);
+  const ex = (c) => win.webContents.executeJavaScript(c);
+  const key = async (k, mods = []) => { log('KEY', k, mods.join('+')); win.webContents.sendInputEvent({ type: 'keyDown', keyCode: k, modifiers: mods }); if (k.length === 1 && !mods.some((m) => m === 'control' || m === 'alt' || m === 'meta')) win.webContents.sendInputEvent({ type: 'char', keyCode: mods.includes('shift') ? k.toUpperCase() : k.toLowerCase(), modifiers: mods }); win.webContents.sendInputEvent({ type: 'keyUp', keyCode: k, modifiers: mods }); await s(120); const st = await Promise.race([ex(`[document.activeElement.tagName+'.'+document.activeElement.className, __keys.os.activeApp(), !!document.querySelector('.dlg')].join(' ')`), s(3000).then(() => 'TIMEOUT')]); log('  ->', st); };
+  const out = {};
+  await ex(`(()=>{const w=__keys.os.ensure('notepad'); const t=w.state.ta; t.focus(); t.setSelectionRange(t.value.length,t.value.length);})()`);
+  await key('X'); await key('Y'); await key('Z', ['shift']);
+  out.typed = await ex(`__keys.os.active.state.ta.value.slice(-3)`);
+  await key('A', ['control']); out.selAll = await ex(`(()=>{const t=__keys.os.active.state.ta; return t.selectionEnd - t.selectionStart === t.value.length})()`);
+  await key('Home', ['control']); await key('Right', ['control','shift']); await key('C', ['control']);
+  out.clip = await ex(`__keys.os.clip[0]`);
+  await key('F', ['control']); await s(100); out.findbar = await ex(`!!document.querySelector('.findbar')`);
+  await key('Escape');
+  await key('S', ['control']); out.saveDlg = await ex(`!!document.querySelector('.dlg')`); await key('Return'); await s(100);
+  log('T1'); out.title = await ex(`__keys.os.active.title`); log('T2');
+  await ex(`__keys.os.ensure('word'); 1`); log('T3'); await s(200);
+  await ex(`(()=>{const p=__keys.os.active.state.paper; p.focus(); const r=document.createRange(); r.selectNodeContents(p.querySelector('h2')); getSelection().removeAllRanges(); getSelection().addRange(r);})()`);
+  await key('B', ['control']); await key('E', ['control']);
+  out.word = await ex(`(()=>{const p=__keys.os.active.state.paper; return [!!p.querySelector('h2 b, h2 strong'), getComputedStyle(p.querySelector('h2')).textAlign]})()`);
+  await ex(`__keys.os.ensure('excel'); 1`); await s(200);
+  await key('Down'); await key('5'); await key('Return');
+  out.excel = await ex(`JSON.stringify(__keys.os.active.state.sheets[0].C3)`);
+  await key('Tab', ['alt']); await s(300); win.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Alt' }); await s(300);
+  out.afterAltTab = await ex(`__keys.os.activeApp()`);
+  out.strip = await ex(`document.querySelector('#strip').textContent`);
+  log('RESULT', JSON.stringify(out)); app.quit();
+});

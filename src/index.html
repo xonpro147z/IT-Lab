@@ -55,6 +55,10 @@
   .marquee .row.rev { animation-direction: reverse; animation-duration: 75s; }
   .marquee .chip { font-size: 17px; padding: 12px 22px; background: #fff; }
   .marquee:hover .row { animation-play-state: paused; }
+  .keyrow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 70px; }
+  .keyrow kbd { font: 600 26px/1 var(--font-display); padding: 18px 22px 20px; min-width: 70px; text-align: center; background: #fff; border-radius: 14px; box-shadow: 0 0 0 1px var(--line2), 0 5px 0 #c7c7cc, 0 18px 30px -12px rgba(0,0,0,.25); }
+  .keyrow span { color: var(--ink3); font-size: 22px; }
+  .keyrow em { font-style: normal; color: var(--ink2); font-size: 15px; margin: 0 26px 0 8px; }
   footer { padding: 40px 0 60px; font-size: 12px; color: var(--ink3); border-top: 1px solid var(--line); }
   footer .wrap { display: flex; justify-content: space-between; }
   footer a { color: var(--ink2); cursor: pointer; }
@@ -66,6 +70,7 @@
   <a class="brand" onclick="scrollTo({top:0,behavior:'smooth'})"><i>TH</i>TinHocLab</a>
   <a data-nav="pcbuild/pcbuild.html">Lắp ráp</a>
   <a data-nav="explore/explore.html">Khám phá</a>
+  <a data-nav="keys/keys.html">Phím tắt</a>
   <a data-nav="office/word.html">Word</a>
   <a data-nav="office/excel.html">Excel</a>
   <a data-nav="office/powerpoint.html">PowerPoint</a>
@@ -125,6 +130,22 @@
     <div class="row rev" id="mq2"></div>
   </div>
   <div class="wrap"><p class="reveal" style="margin-top:44px"><a class="pill dark" data-nav="explore/explore.html">Mở thư viện phần cứng</a></p></div>
+</section>
+
+<section class="sec gray">
+  <div class="wrap">
+    <div class="split">
+      <div><p class="eyebrow reveal">Phím tắt</p><h2 class="headline reveal" style="--d:.08s">Ít chuột hơn.<br>Nhanh hơn.</h2></div>
+      <p class="lead reveal" style="--d:.16s">Một chiếc máy tính ảo có cửa sổ, thanh tác vụ, Word, Excel, trình duyệt — và một bàn phím sáng đèn theo từng phím em bấm.</p>
+    </div>
+    <div class="keyrow reveal-scale" style="--d:.2s"><kbd>Ctrl</kbd><span>+</span><kbd>C</kbd><em>Sao chép</em><kbd>Alt</kbd><span>+</span><kbd>Tab</kbd><em>Đổi cửa sổ</em><kbd>Win</kbd><span>+</span><kbd>D</kbd><em>Màn hình nền</em></div>
+    <div class="stats">
+      <div class="reveal"><div class="num" data-count="119">0</div><p>phím tắt, kèm cách bấm trên macOS</p></div>
+      <div class="reveal" style="--d:.1s"><div class="num" data-count="7">0</div><p>nhóm: hệ điều hành, soạn thảo, tệp, web, Word, Excel, PowerPoint</p></div>
+      <div class="reveal" style="--d:.2s"><div class="num" data-count="3">0</div><p>chế độ: tra cứu, luyện tập, kiểm tra</p></div>
+    </div>
+    <p class="reveal" style="margin-top:44px"><a class="pill dark" data-nav="keys/keys.html">Mở phòng luyện phím tắt</a></p>
+  </div>
 </section>
 
 <section class="sec">

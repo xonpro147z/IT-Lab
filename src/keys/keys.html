@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Phím tắt – TinHocLab</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="../ui/apple.css">
+<link rel="stylesheet" href="keys.css">
+<link rel="stylesheet" href="os.css">
+</head>
+<body class="apple">
+<header id="top">
+  <button class="tb" data-nav="../index.html">‹ TinHocLab</button>
+  <div class="title">Phím tắt</div>
+  <div class="segmented" id="modes"><button data-m="ref" class="on">Tra cứu</button><button data-m="learn">Luyện tập</button><button data-m="quiz">Kiểm tra</button></div>
+  <span class="spacer"></span>
+  <span id="osNote" class="note"></span>
+  <button class="tb" id="btnReset">Làm mới máy</button>
+</header>
+<div id="layout">
+  <aside id="side"></aside>
+  <main id="stage">
+    <div id="monWrap"><div id="monitor"><div id="screen" class="tos"></div></div><div id="stand"></div></div>
+    <div id="strip"><div class="sd muted">Bấm một phím tắt bất kỳ — trên bàn phím thật hoặc nhấp vào bàn phím ảo.</div></div>
+    <div id="kbWrap"><div id="kb"></div></div>
+  </main>
+</div>
+<script src="../common.js"></script>
+<script src="../ui/motion.js"></script>
+<script type="module" src="keys.js"></script>
+</body>
+</html>
