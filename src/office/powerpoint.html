@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Presentation1 - PowerPoint</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="office.css">
+<link rel="stylesheet" href="powerpoint.css">
+</head>
+<body class="ppt">
+<div id="titlebar"></div>
+<div id="tabs">
+  <button class="file">File</button>
+  <button data-tab="home" class="on">Home</button>
+  <button data-tab="insert">Insert</button>
+  <button data-tab="design">Design</button>
+  <button data-tab="trans">Transitions</button>
+  <button data-tab="anim">Animations</button>
+  <button data-tab="show">Slide Show</button>
+</div>
+<div id="ribbon">
+  <div class="rpanel on" id="rp-home">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnNewSlide" title="New Slide (Ctrl+M)"><span data-i="newslide"></span>New<br>Slide ▾</button>
+      <div class="col"><button class="rb" id="btnLayout" title="Layout"><span data-i="layout"></span> Layout ▾</button><button class="rb" id="btnDup" title="Duplicate Slide"><span data-i="duplicate"></span> Duplicate</button><button class="rb" id="btnDelSlide" title="Delete Slide"><span data-i="deleteslide"></span> Delete</button></div>
+    </div><div class="glabel">Slides</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <div class="row">
+        <select class="rs" id="fontName" style="width:128px" title="Font"><option>Calibri</option><option>Calibri Light</option><option>Aptos</option><option>Arial</option><option>Times New Roman</option><option>Tahoma</option><option>Verdana</option><option>Georgia</option><option>Segoe UI</option><option>Comic Sans MS</option></select>
+        <select class="rs" id="fontSize" style="width:54px" title="Font Size"></select>
+        <button class="rb" data-fs="+2" title="Increase Font Size (Ctrl+])"><span data-i="grow"></span></button><button class="rb" data-fs="-2" title="Decrease Font Size (Ctrl+[)"><span data-i="shrink"></span></button>
+      </div>
+      <div class="row">
+        <button class="rb" data-tx="bold" title="Bold (Ctrl+B)"><span data-i="bold"></span></button><button class="rb" data-tx="italic" title="Italic (Ctrl+I)"><span data-i="italic"></span></button><button class="rb" data-tx="underline" title="Underline (Ctrl+U)"><span data-i="underline"></span></button><button class="rb" data-tx="strikeThrough" title="Strikethrough"><span data-i="strike"></span></button>
+        <button class="rb" id="btnShadow" title="Text Shadow" style="font-weight:700;text-shadow:1px 1px 1px #999">S</button>
+        <button class="rb split" id="btnColor" title="Font Color"><span class="cbtn"><span data-i="color"></span><span class="colorbar" id="colorBar" style="background:#c00000"></span></span><span class="caret">▾</span></button>
+      </div>
+    </div></div><div class="glabel">Font</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <div class="row"><button class="rb" data-tx="insertUnorderedList" title="Bullets"><span data-i="bullets"></span></button><button class="rb" data-tx="insertOrderedList" title="Numbering"><span data-i="numbering"></span></button><button class="rb" data-tx="outdent" title="Decrease List Level"><span data-i="outdent"></span></button><button class="rb" data-tx="indent" title="Increase List Level"><span data-i="indent"></span></button></div>
+      <div class="row"><button class="rb" data-al="left" title="Align Left"><span data-i="alignL"></span></button><button class="rb" data-al="center" title="Center"><span data-i="alignC"></span></button><button class="rb" data-al="right" title="Align Right"><span data-i="alignR"></span></button><button class="rb" data-al="justify" title="Justify"><span data-i="justify"></span></button><button class="rb" id="btnLine" title="Line Spacing"><span data-i="spacing"></span><span class="caret">▾</span></button></div>
+    </div></div><div class="glabel">Paragraph</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnShapes2" title="Shapes"><span data-i="shapes"></span>Shapes<span class="caret">▾</span></button><button class="rb big" id="btnArrange" title="Arrange"><span data-i="arrange"></span>Arrange<span class="caret">▾</span></button><div class="col"><button class="rb" id="btnFill" title="Shape Fill"><span data-i="fill"></span> Shape Fill ▾</button><button class="rb" id="btnOutline" title="Shape Outline"><span data-i="outline"></span> Shape Outline ▾</button></div></div><div class="glabel">Drawing</div></div>
+  </div>
+  <div class="rpanel" id="rp-insert">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnNewSlide2" title="New Slide"><span data-i="newslide"></span>New<br>Slide ▾</button></div><div class="glabel">Slides</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnPicture" title="Pictures"><span data-i="picture"></span>Pictures<span class="caret">▾</span></button><button class="rb big" id="btnShapes" title="Shapes"><span data-i="shapes"></span>Shapes<span class="caret">▾</span></button></div><div class="glabel">Illustrations</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnTextbox" title="Text Box"><span data-i="textbox"></span>Text<br>Box</button><button class="rb big" id="btnWordArt" title="WordArt"><span data-i="wordart"></span>WordArt</button><button class="rb big" id="btnSlideNum" title="Slide Number"><span data-i="pagenum"></span>Slide<br>Number</button></div><div class="glabel">Text</div></div>
+  </div>
+  <div class="rpanel" id="rp-design">
+    <div class="grp"><div class="gbody" id="themeGallery"></div><div class="glabel">Themes</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnBg" title="Format Background"><span data-i="background"></span>Format<br>Background ▾</button><button class="rb big" id="btnBgAll" title="Apply to All"><span data-i="applyall"></span>Apply<br>to All</button></div><div class="glabel">Customize</div></div>
+  </div>
+  <div class="rpanel" id="rp-trans">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnTransPreview" title="Preview"><span data-i="preview"></span>Preview</button></div><div class="glabel">Preview</div></div>
+    <div class="grp"><div class="gbody" id="transGallery"></div><div class="glabel">Transition to This Slide</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnTransAll" title="Apply To All"><span data-i="applyall"></span>Apply<br>To All</button></div><div class="glabel">Timing</div></div>
+  </div>
+  <div class="rpanel" id="rp-anim">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnAnimPreview" title="Preview"><span data-i="preview"></span>Preview</button></div><div class="glabel">Preview</div></div>
+    <div class="grp"><div class="gbody" id="animGallery"></div><div class="glabel">Animation</div></div>
+  </div>
+  <div class="rpanel" id="rp-show">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnShowStart" title="From Beginning (F5)"><span data-i="fromstart"></span>From<br>Beginning</button><button class="rb big" id="btnShowCur" title="From Current Slide (Shift+F5)"><span data-i="fromcur"></span>From<br>Current Slide</button></div><div class="glabel">Start Slide Show</div></div>
+  </div>
+</div>
+<div id="work">
+  <div id="thumbs"></div>
+  <div id="editArea">
+    <div id="stage"><div id="slideHost"></div></div>
+    <div id="notesWrap"><textarea id="notes" placeholder="Click to add notes"></textarea></div>
+  </div>
+</div>
+<div id="taskpane" hidden></div>
+<div id="status"><span id="stSlide">Slide 1 of 1</span><span>English (United States)</span><span>♿ Accessibility: Good to go</span><span class="sp"></span><span id="stHint"></span><span>≡ Notes</span><span class="views"><span class="on" title="Normal">▭</span><span title="Slide Sorter">▦</span><span title="Reading View">📖</span><span title="Slide Show">▶</span></span><span>−</span><input type="range" id="zoom" min="50" max="100" value="100" disabled><span>+</span><span>Fit</span></div>
+<div id="show" hidden><div id="showSlide"></div><div id="showHint">Click or press → to continue · Esc to end</div></div>
+<script src="../common.js"></script>
+<script src="icons.js"></script>
+<script src="office-common.js"></script>
+<script src="sample-images.js"></script>
+<script src="exercises-ppt.js"></script>
+<script src="powerpoint.js"></script>
+</body>
+</html>

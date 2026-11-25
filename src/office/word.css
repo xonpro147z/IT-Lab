@@ -1,0 +1,44 @@
+#canvas { flex: 1; overflow: auto; background: #e6e6e6; padding: 24px 0 60px; }
+.page { position: relative; background: #fff; margin: 0 auto; width: 794px; min-height: 1123px; padding: 96px; box-shadow: 0 1px 4px rgba(0,0,0,.25); transform-origin: top center; font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; font-size: 11pt; line-height: 1.15; color: #000; }
+.page.landscape { width: 1123px; min-height: 794px; }
+.page .body { outline: none; min-height: 600px; position: relative; z-index: 1; }
+.page .body p { margin: 0 0 8pt; }
+.page .body h1 { font-size: 16pt; color: #2f5496; font-weight: 400; margin: 12pt 0 4pt; font-family: "Calibri Light", Calibri, Carlito, sans-serif; }
+.page .body h2 { font-size: 13pt; color: #2f5496; font-weight: 400; margin: 10pt 0 4pt; }
+.page .body h3 { font-size: 12pt; color: #1f3763; font-weight: 400; margin: 8pt 0 4pt; }
+.page .body blockquote { font-style: italic; color: #404040; margin: 8pt 40px; padding: 0; }
+.page .body ul, .page .body ol { margin: 0 0 8pt; padding-left: 36px; }
+.page .body table { border-collapse: collapse; width: 100%; margin: 4pt 0 8pt; }
+.page .body td, .page .body th { border: 1px solid #000; padding: 3px 6px; min-width: 30px; vertical-align: top; }
+.page .body table.noborder td, .page .body table.noborder th { border: 1px dashed #c8c8c8; }
+.page .body img { max-width: 100%; cursor: pointer; }
+.page .body img.sel { outline: 2px solid #185abd; outline-offset: 2px; }
+.page .body a { color: #0563c1; }
+.page .body .pagebreak { border-top: 1px dashed #999; margin: 14px 0; position: relative; height: 0; }
+.page .body .pagebreak::after { content: 'Page Break'; position: absolute; left: 50%; top: -9px; transform: translateX(-50%); background: #fff; font-size: 10px; color: #999; padding: 0 8px; }
+.page .body .textbox { border: 1px solid #000; padding: 6px 10px; margin: 6px 0; display: inline-block; min-width: 160px; }
+.page .body .shape { display: inline-block; margin: 4px; vertical-align: middle; }
+.page .body .comment { background: #fde9a9; border-bottom: 2px solid #f2c200; }
+.hdr, .ftr { outline: none; font-size: 10pt; color: #444; min-height: 20px; border: 1px dashed transparent; position: relative; z-index: 1; }
+.hdr { position: absolute; top: 36px; left: 96px; right: 96px; }
+.ftr { position: absolute; bottom: 36px; left: 96px; right: 96px; }
+.hdr:focus, .ftr:focus { border-color: #185abd; }
+.hdr:empty::before, .ftr:empty::before { content: attr(data-ph); color: #999; }
+.watermark { position: absolute; inset: 0; display: grid; place-items: center; font-size: 110px; font-weight: 700; color: rgba(150,150,150,.22); transform: rotate(-35deg); pointer-events: none; z-index: 0; white-space: nowrap; }
+.page.cols2 .body { column-count: 2; column-gap: 36px; }
+.page.cols3 .body { column-count: 3; column-gap: 28px; }
+@media print { #titlebar, #tabs, #ribbon, #status, #taskpane { display: none !important; } #canvas { padding: 0; background: #fff; } .page { box-shadow: none; } }
+#ruler { height: 22px; background: var(--bg); flex: none; overflow: hidden; position: relative; }
+#ruler.off { display: none; }
+#rulerInner { position: absolute; top: 3px; height: 16px; background: #fff; border: 1px solid #d1d1d1; }
+#rulerInner .mg { position: absolute; top: 0; bottom: 0; background: #e5e5e5; }
+#rulerInner .tk { position: absolute; bottom: 0; width: 1px; background: #8a8886; }
+#rulerInner .nb { position: absolute; top: 1px; font-size: 9px; color: #605e5c; transform: translateX(-50%); }
+.page .body p.title { font-size: 28pt; font-family: "Calibri Light", Calibri, Carlito, sans-serif; letter-spacing: -0.5px; margin-bottom: 6pt; }
+.page .body .toc { border: 1px dashed #b4c6e7; padding: 6px 10px; margin: 6px 0 12px; }
+.page .body .toc .toch { font-size: 16pt; color: #2f5496; margin-bottom: 4px; }
+.page .body .toc .tl { display: flex; } .page .body .toc .tl span:nth-child(2) { flex: 1; border-bottom: 1px dotted #888; margin: 0 4px 4px; }
+.page .body .toc .l2 { padding-left: 18px; } .page .body .toc .l3 { padding-left: 36px; }
+.page .body .footnotes { border-top: 1px solid #000; width: 35%; margin-top: 24px; padding-top: 4px; font-size: 10pt; }
+.page .body .footnotes div { width: 280%; }
+.page .body .wordart { font-size: 36pt; font-weight: 800; color: #4472c4; text-shadow: 2px 2px 3px rgba(0,0,0,.3); -webkit-text-stroke: 1px #2f528f; }

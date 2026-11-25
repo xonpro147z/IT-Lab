@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>TinHocLab – Thực hành Tin học</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  body { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 28px 48px 8px; display: flex; align-items: center; gap: 16px; }
+  header .logo { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg,#00c6ff,#0072ff); display: grid; place-items: center; font-weight: 800; font-size: 22px; box-shadow: 0 6px 20px rgba(0,114,255,.5); }
+  header h1 { margin: 0; font-size: 26px; }
+  header p { margin: 2px 0 0; opacity: .75; }
+  .student { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .student input { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); color: #fff; padding: 8px 12px; border-radius: 8px; width: 220px; font-size: 14px; }
+  .student input::placeholder { color: rgba(255,255,255,.6); }
+  main { flex: 1; padding: 24px 48px 40px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; }
+  .card { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; padding: 26px; backdrop-filter: blur(6px); cursor: pointer; transition: transform .15s, background .15s; position: relative; overflow: hidden; }
+  .card:hover { transform: translateY(-3px); background: rgba(255,255,255,.13); }
+  .card h2 { margin: 0 0 6px; font-size: 22px; }
+  .card p { margin: 0; opacity: .8; line-height: 1.5; }
+  .card .big { font-size: 64px; position: absolute; right: 22px; top: 12px; opacity: .9; }
+  .pc { grid-row: span 3; display: flex; flex-direction: column; background: linear-gradient(160deg, rgba(0,198,255,.25), rgba(0,114,255,.12)); }
+  .pc .feat { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pc .feat div { background: rgba(0,0,0,.2); padding: 10px 12px; border-radius: 10px; font-size: 14px; }
+  .pc .preview { flex: 1; margin-top: 18px; border-radius: 14px; background: radial-gradient(circle at 50% 60%, rgba(0,198,255,.35), transparent 60%); display: grid; place-items: center; font-size: 120px; min-height: 180px; }
+  .app { display: flex; gap: 18px; align-items: center; }
+  .app .icon { width: 72px; height: 72px; border-radius: 14px; display: grid; place-items: center; font-size: 34px; font-weight: 800; flex: none; }
+  .word .icon { background: #185abd; } .excel .icon { background: #107c41; } .ppt .icon { background: #c43e1c; }
+  .progress { font-size: 13px; margin-top: 8px; opacity: .9; }
+  .bar { height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: #4ade80; }
+  footer { padding: 12px 48px 20px; opacity: .6; font-size: 13px; display: flex; justify-content: space-between; }
+  footer a { color: #9cd; cursor: pointer; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">TH</div>
+  <div>
+    <h1>TinHocLab</h1>
+    <p>Phần mềm thực hành Tin học: lắp ráp máy tính 3D và tin học văn phòng</p>
+  </div>
+  <div class="student">
+    <span>👤</span><input id="studentName" placeholder="Nhập họ tên học sinh...">
+  </div>
+</header>
+<main>
+  <div class="card pc" onclick="location.href='pcbuild/pcbuild.html'">
+    <h2>🖥️ Lắp ráp máy tính 3D</h2>
+    <p>Chọn linh kiện, kiểm tra tương thích và lắp ráp một bộ máy tính hoàn chỉnh trong không gian 3D. Xoay, phóng to và quan sát từng chi tiết.</p>
+    <div class="feat">
+      <div>🧩 29 linh kiện: CPU, RAM, VGA, SSD, nguồn...</div>
+      <div>✅ Kiểm tra socket, DDR4/DDR5, công suất nguồn</div>
+      <div>🎓 Chế độ hướng dẫn từng bước</div>
+      <div>⚡ Khởi động máy, màn hình POST/BIOS</div>
+    </div>
+    <div class="preview">🛠️</div>
+    <div class="progress" id="prog-pc"></div>
+  </div>
+  <div class="card app word" onclick="location.href='office/word.html'">
+    <div class="icon">W</div>
+    <div><h2>Word – Soạn thảo văn bản</h2><p>Định dạng ký tự, đoạn văn, danh sách, bảng, hình ảnh, bố cục trang.</p><div class="progress" id="prog-word"></div></div>
+  </div>
+  <div class="card app excel" onclick="location.href='office/excel.html'">
+    <div class="icon">X</div>
+    <div><h2>Excel – Bảng tính</h2><p>Nhập liệu, công thức, hàm SUM, IF, VLOOKUP, COUNTIF..., định dạng, sắp xếp, biểu đồ.</p><div class="progress" id="prog-excel"></div></div>
+  </div>
+  <div class="card app ppt" onclick="location.href='office/powerpoint.html'">
+    <div class="icon">P</div>
+    <div><h2>PowerPoint – Trình chiếu</h2><p>Tạo trang chiếu, bố cục, hộp văn bản, hình khối, ảnh, chủ đề, hiệu ứng chuyển trang.</p><div class="progress" id="prog-ppt"></div></div>
+  </div>
+</main>
+<footer>
+  <span id="ver">TinHocLab</span>
+  <a id="reset">Xoá kết quả đã lưu trên máy này</a>
+</footer>
+<script src="common.js"></script>
+<script>
+  const nameInput = document.getElementById('studentName');
+  nameInput.value = Progress.student();
+  nameInput.addEventListener('input', () => Progress.setStudent(nameInput.value));
+  const show = (id, key, total) => {
+    const done = Progress.doneCount(key);
+    const el = document.getElementById(id);
+    if (total) el.innerHTML = `Đã hoàn thành ${done}/${total} ${key === 'pc' ? 'thử thách' : 'bài tập'}<div class="bar"><span style="width:${Math.round(done / total * 100)}%"></span></div>`;
+  };
+  show('prog-word', 'word', 7); show('prog-excel', 'excel', 6); show('prog-ppt', 'ppt', 5); show('prog-pc', 'pc', 4);
+  if (window.desktop) window.desktop.version().then(v => document.getElementById('ver').textContent = 'TinHocLab phiên bản ' + v);
+  document.getElementById('reset').onclick = () => { if (confirm('Xoá toàn bộ kết quả bài tập đã lưu?')) { Progress.reset(); location.reload(); } };
+</script>
+</body>
+</html>

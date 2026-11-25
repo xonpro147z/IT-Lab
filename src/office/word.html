@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Document1 - Word</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="office.css">
+<link rel="stylesheet" href="word.css">
+</head>
+<body class="word">
+<div id="titlebar"></div>
+<div id="tabs">
+  <button class="file">File</button>
+  <button data-tab="home" class="on">Home</button>
+  <button data-tab="insert">Insert</button>
+  <button data-tab="design">Design</button>
+  <button data-tab="layout">Layout</button>
+  <button data-tab="refs">References</button>
+  <button data-tab="review">Review</button>
+  <button data-tab="view">View</button>
+  <button data-tab="table" id="tabTable" class="ctx" hidden>Table Layout</button>
+  <button data-tab="picture" id="tabPicture" class="ctx" hidden>Picture Format</button>
+</div>
+<div id="ribbon">
+  <!-- HOME -->
+  <div class="rpanel on" id="rp-home">
+    <div class="grp"><div class="gbody">
+      <button class="rb big" data-cmd="paste" title="Paste (Ctrl+V)"><span data-i="paste"></span>Paste<span class="caret">▾</span></button>
+      <div class="col"><button class="rb" data-cmd="cut" title="Cut (Ctrl+X)"><span data-i="cut"></span></button><button class="rb" data-cmd="copy" title="Copy (Ctrl+C)"><span data-i="copy"></span></button><button class="rb" id="btnPainter" title="Format Painter"><span data-i="painter"></span></button></div>
+    </div><div class="glabel">Clipboard</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <div class="row">
+        <select class="rs" id="fontName" style="width:140px" title="Font">
+          <option>Calibri</option><option>Calibri Light</option><option>Aptos</option><option>Times New Roman</option><option>Arial</option><option>Cambria</option><option>Tahoma</option><option>Verdana</option><option>Segoe UI</option><option>Georgia</option><option>Courier New</option><option>Comic Sans MS</option>
+        </select>
+        <select class="rs" id="fontSize" style="width:52px" title="Font Size">
+          <option>8</option><option>9</option><option>10</option><option>10.5</option><option>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>22</option><option>24</option><option>26</option><option>28</option><option>36</option><option>48</option><option>72</option>
+        </select>
+        <button class="rb" data-cmd="grow" title="Increase Font Size (Ctrl+])"><span data-i="grow"></span></button><button class="rb" data-cmd="shrink" title="Decrease Font Size (Ctrl+[)"><span data-i="shrink"></span></button>
+        <button class="rb" id="btnCase" title="Change Case"><span data-i="case"></span><span class="caret">▾</span></button>
+        <button class="rb" data-cmd="removeFormat" title="Clear All Formatting"><span data-i="clearfmt"></span></button>
+      </div>
+      <div class="row">
+        <button class="rb" data-cmd="bold" title="Bold (Ctrl+B)"><span data-i="bold"></span></button>
+        <button class="rb" data-cmd="italic" title="Italic (Ctrl+I)"><span data-i="italic"></span></button>
+        <button class="rb" data-cmd="underline" title="Underline (Ctrl+U)"><span data-i="underline"></span></button>
+        <button class="rb" data-cmd="strikeThrough" title="Strikethrough"><span data-i="strike"></span></button>
+        <button class="rb" data-cmd="subscript" title="Subscript (Ctrl+=)"><span data-i="sub"></span></button>
+        <button class="rb" data-cmd="superscript" title="Superscript (Ctrl+Shift++)"><span data-i="sup"></span></button>
+        <button class="rb split" id="btnHilite" title="Text Highlight Color"><span class="cbtn"><span data-i="hilite"></span><span class="colorbar" id="hiliteBar" style="background:#ffff00"></span></span><span class="caret">▾</span></button>
+        <button class="rb split" id="btnColor" title="Font Color"><span class="cbtn"><span data-i="color"></span><span class="colorbar" id="colorBar" style="background:#c00000"></span></span><span class="caret">▾</span></button>
+      </div>
+    </div></div><div class="glabel">Font</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <div class="row">
+        <button class="rb split" id="btnBullets" title="Bullets"><span data-i="bullets"></span><span class="caret">▾</span></button>
+        <button class="rb split" id="btnNumbers" title="Numbering"><span data-i="numbering"></span><span class="caret">▾</span></button>
+        <button class="rb" data-cmd="outdent" title="Decrease Indent"><span data-i="outdent"></span></button>
+        <button class="rb" data-cmd="indent" title="Increase Indent"><span data-i="indent"></span></button>
+        <button class="rb" id="btnShading" title="Shading"><span data-i="shading"></span><span class="caret">▾</span></button>
+      </div>
+      <div class="row">
+        <button class="rb" data-cmd="justifyLeft" title="Align Left (Ctrl+L)"><span data-i="alignL"></span></button>
+        <button class="rb" data-cmd="justifyCenter" title="Center (Ctrl+E)"><span data-i="alignC"></span></button>
+        <button class="rb" data-cmd="justifyRight" title="Align Right (Ctrl+R)"><span data-i="alignR"></span></button>
+        <button class="rb" data-cmd="justifyFull" title="Justify (Ctrl+J)"><span data-i="justify"></span></button>
+        <button class="rb" id="btnSpacing" title="Line and Paragraph Spacing"><span data-i="spacing"></span><span class="caret">▾</span></button>
+      </div>
+    </div></div><div class="glabel">Paragraph</div></div>
+    <div class="grp"><div class="gbody stylebox">
+      <button class="rb" data-block="p" title="Normal"><span style="font-size:14px">AaBbCcDd</span><small>Normal</small></button>
+      <button class="rb" data-block="h1" title="Heading 1"><span style="font-size:15px;color:#2f5496">AaBbCc</span><small>Heading 1</small></button>
+      <button class="rb" data-block="h2" title="Heading 2"><span style="font-size:14px;color:#2f5496">AaBbCc</span><small>Heading 2</small></button>
+      <button class="rb" data-block="h3" title="Heading 3"><span style="font-size:13px;color:#1f3763">AaBbCc</span><small>Heading 3</small></button>
+      <button class="rb" data-block="title" title="Title"><span style="font-size:18px">AaB</span><small>Title</small></button>
+      <button class="rb" data-block="blockquote" title="Quote"><span style="font-size:13px;font-style:italic;color:#404040">AaBbCc</span><small>Quote</small></button>
+    </div><div class="glabel">Styles</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <button class="rb" id="btnFind" title="Find (Ctrl+F)"><span data-i="find"></span> Find</button>
+      <button class="rb" id="btnReplace" title="Replace (Ctrl+H)"><span data-i="replace"></span> Replace</button>
+      <button class="rb" data-cmd="selectAll" title="Select All (Ctrl+A)"><span data-i="select"></span> Select</button>
+    </div></div><div class="glabel">Editing</div></div>
+  </div>
+  <!-- INSERT -->
+  <div class="rpanel" id="rp-insert">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnPageBreak" title="Page Break (Ctrl+Enter)"><span data-i="pagebreak"></span>Page<br>Break</button></div><div class="glabel">Pages</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnTable" title="Table"><span data-i="table"></span>Table<span class="caret">▾</span></button></div><div class="glabel">Tables</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnPicture" title="Pictures"><span data-i="picture"></span>Pictures<span class="caret">▾</span></button><button class="rb big" id="btnShape" title="Shapes"><span data-i="shapes"></span>Shapes<span class="caret">▾</span></button></div><div class="glabel">Illustrations</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnLink" title="Link (Ctrl+K)"><span data-i="link"></span>Link</button></div><div class="glabel">Links</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnComment2" title="New Comment"><span data-i="comment"></span>Comment</button></div><div class="glabel">Comments</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnHeader" title="Header"><span data-i="header"></span>Header<span class="caret">▾</span></button><button class="rb big" id="btnFooter" title="Footer"><span data-i="footer"></span>Footer<span class="caret">▾</span></button><button class="rb big" id="btnPageNum" title="Page Number"><span data-i="pagenum"></span>Page<br>Number</button></div><div class="glabel">Header &amp; Footer</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnTextbox" title="Text Box"><span data-i="textbox"></span>Text<br>Box</button><button class="rb big" id="btnWordArt" title="WordArt"><span data-i="wordart"></span>WordArt</button><button class="rb big" id="btnDate" title="Date &amp; Time"><span data-i="date"></span>Date &amp;<br>Time</button></div><div class="glabel">Text</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnEquation" title="Equation"><span data-i="equation"></span>Equation</button><button class="rb big" id="btnSymbol" title="Symbol"><span data-i="symbol"></span>Symbol<span class="caret">▾</span></button></div><div class="glabel">Symbols</div></div>
+  </div>
+  <!-- DESIGN -->
+  <div class="rpanel" id="rp-design">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnWatermark" title="Watermark"><span data-i="watermark"></span>Watermark<span class="caret">▾</span></button><button class="rb big" id="btnPageColor" title="Page Color"><span data-i="pagecolor"></span>Page<br>Color<span class="caret">▾</span></button><button class="rb big" id="btnPageBorder" title="Page Borders"><span data-i="pageborder"></span>Page<br>Borders</button></div><div class="glabel">Page Background</div></div>
+  </div>
+  <!-- LAYOUT -->
+  <div class="rpanel" id="rp-layout">
+    <div class="grp"><div class="gbody">
+      <button class="rb big" id="btnMargins" title="Margins"><span data-i="margins"></span>Margins<span class="caret">▾</span></button>
+      <button class="rb big" id="btnOrient" title="Orientation"><span data-i="orientation"></span>Orientation<span class="caret">▾</span></button>
+      <button class="rb big" id="btnSize" title="Size"><span data-i="size"></span>Size<span class="caret">▾</span></button>
+      <button class="rb big" id="btnColumns" title="Columns"><span data-i="columns"></span>Columns<span class="caret">▾</span></button>
+      <div class="col"><button class="rb" id="btnBreaks" title="Breaks"><span data-i="breaks"></span> Breaks ▾</button></div>
+    </div><div class="glabel">Page Setup</div></div>
+    <div class="grp"><div class="gbody"><div class="col" style="gap:4px;padding-top:2px">
+      <div style="color:#616161">Indent</div>
+      <div class="row">Left: <input class="rs" id="indL" type="number" min="0" max="10" step="0.5" style="width:60px"> cm</div>
+    </div><div class="col" style="gap:4px;padding:2px 0 0 14px">
+      <div style="color:#616161">Spacing</div>
+      <div class="row">Before: <input class="rs" id="spB" type="number" min="0" max="72" step="6" style="width:56px"> pt</div>
+      <div class="row">After:&nbsp;&nbsp;&nbsp;<input class="rs" id="spA" type="number" min="0" max="72" step="6" style="width:56px"> pt</div>
+    </div></div><div class="glabel">Paragraph</div></div>
+  </div>
+  <!-- REFERENCES -->
+  <div class="rpanel" id="rp-refs">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnTOC" title="Table of Contents"><span data-i="toc"></span>Table of<br>Contents<span class="caret">▾</span></button><div class="col"><button class="rb" id="btnUpdateTOC">↻ Update Table</button></div></div><div class="glabel">Table of Contents</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnFootnote" title="Insert Footnote (Alt+Ctrl+F)"><span data-i="footnote"></span>Insert<br>Footnote</button></div><div class="glabel">Footnotes</div></div>
+  </div>
+  <!-- REVIEW -->
+  <div class="rpanel" id="rp-review">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnWordCount" title="Word Count"><span data-i="wordcount"></span>Word<br>Count</button></div><div class="glabel">Proofing</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnComment" title="New Comment"><span data-i="comment"></span>New<br>Comment</button><button class="rb big" id="btnDelComments" title="Delete All Comments"><span data-i="trash"></span>Delete</button></div><div class="glabel">Comments</div></div>
+  </div>
+  <!-- VIEW -->
+  <div class="rpanel" id="rp-view">
+    <div class="grp"><div class="gbody"><button class="rb big on" id="btnRuler" title="Ruler"><span data-i="margins"></span>Ruler</button></div><div class="glabel">Show</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" data-zoom="1" title="100%"><span data-i="zoom100"></span>100%</button><button class="rb big" data-zoom="fit" title="Page Width"><span data-i="pagewidth"></span>Page<br>Width</button><button class="rb big" id="btnPrint" title="Print (Ctrl+P)"><span data-i="print"></span>Print</button></div><div class="glabel">Zoom</div></div>
+  </div>
+  <!-- TABLE LAYOUT (contextual) -->
+  <div class="rpanel" id="rp-table">
+    <div class="grp"><div class="gbody"><button class="rb big" data-tbl="delMenu" id="btnTblDel"><span data-i="deletecells"></span>Delete<span class="caret">▾</span></button>
+      <button class="rb big" data-tbl="rowAbove"><span data-i="insertcells"></span>Insert<br>Above</button><div class="col"><button class="rb" data-tbl="rowBelow">⤓ Insert Below</button><button class="rb" data-tbl="colLeft">⇤ Insert Left</button><button class="rb" data-tbl="colRight">⇥ Insert Right</button></div>
+    </div><div class="glabel">Rows &amp; Columns</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" data-tbl="header"><span data-i="fmttable"></span>Header<br>Row</button><button class="rb big" id="btnCellShade"><span data-i="shading"></span>Shading<span class="caret">▾</span></button><button class="rb big" data-tbl="noborder"><span data-i="gridlines"></span>View<br>Gridlines</button></div><div class="glabel">Table Style</div></div>
+  </div>
+  <!-- PICTURE FORMAT (contextual) -->
+  <div class="rpanel" id="rp-picture">
+    <div class="grp"><div class="gbody"><button class="rb big" data-imgfx="border"><span data-i="outline"></span>Picture<br>Border</button><button class="rb big" data-imgfx="shadow"><span data-i="arrange"></span>Shadow</button><button class="rb big" data-imgfx="round"><span data-i="shapes"></span>Rounded</button></div><div class="glabel">Picture Styles</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" data-wrap="left"><span data-i="alignL"></span>Square<br>Left</button><button class="rb big" data-wrap="right"><span data-i="alignR"></span>Square<br>Right</button><button class="rb big" data-wrap="center"><span data-i="alignC"></span>Top and<br>Bottom</button></div><div class="glabel">Arrange</div></div>
+    <div class="grp"><div class="gbody"><div class="col"><div class="row">Width: <select class="rs" id="imgWidth" style="width:80px"><option value="">—</option><option>25%</option><option>50%</option><option>75%</option><option>100%</option></select></div><button class="rb" data-imgfx="del"><span data-i="trash"></span> Delete picture</button></div></div><div class="glabel">Size</div></div>
+  </div>
+</div>
+<div id="ruler"><div id="rulerInner"></div></div>
+<div id="work">
+  <div id="canvas">
+    <div class="page" id="page">
+      <div class="watermark" id="watermark" hidden></div>
+      <div class="hdr" id="hdr" contenteditable="true" hidden data-ph="Header"></div>
+      <div class="body" id="body" contenteditable="true" spellcheck="false"></div>
+      <div class="ftr" id="ftr" contenteditable="true" hidden data-ph="Footer"></div>
+    </div>
+  </div>
+</div>
+<div id="taskpane" hidden></div>
+<div id="status">
+  <span id="stPage">Page 1 of 1</span><span id="stWords">0 words</span><span>English (United States)</span><span>♿ Accessibility: Good to go</span><span class="sp"></span>
+  <span>Focus</span><span class="views"><span title="Read Mode">📖</span><span class="on" title="Print Layout">📄</span><span title="Web Layout">🌐</span></span>
+  <span>−</span><input type="range" id="zoom" min="50" max="200" value="100"><span>+</span><span id="zoomPct">100%</span>
+</div>
+<script src="../common.js"></script>
+<script src="icons.js"></script>
+<script src="office-common.js"></script>
+<script src="sample-images.js"></script>
+<script src="exercises-word.js"></script>
+<script src="word.js"></script>
+</body>
+</html>

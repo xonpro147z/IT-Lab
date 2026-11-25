@@ -1,0 +1,126 @@
+/* Office 365 style shell shared by Word / Excel / PowerPoint */
+:root { --app: #185abd; --app-dark: #103f91; --app-light: #dbe7f8; --app-tint: #c7dcf7; --bg: #f3f2f1; --line: #e1dfdd; --txt: #242424; --sub: #616161; }
+body.excel { --app: #107c41; --app-dark: #0b5a2f; --app-light: #d7ecdf; --app-tint: #bfe0cc; }
+body.ppt { --app: #c43e1c; --app-dark: #8f2c13; --app-light: #fbe3dc; --app-tint: #f5c7b9; }
+body { background: var(--bg); color: var(--txt); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 12px; font-family: "Segoe UI", "Segoe UI Web", -apple-system, "Noto Sans", Ubuntu, Arial, sans-serif; }
+
+/* Title bar */
+#titlebar { height: 40px; background: var(--app); color: #fff; display: flex; align-items: center; padding: 0 8px; gap: 4px; flex: none; position: relative; }
+#titlebar .waffle { width: 36px; height: 32px; display: grid; place-items: center; border-radius: 4px; cursor: pointer; }
+#titlebar .waffle:hover { background: rgba(255,255,255,.15); }
+#titlebar .applogo { width: 22px; height: 22px; border-radius: 4px; background: #fff; color: var(--app); display: grid; place-items: center; font-weight: 800; font-size: 13px; margin-right: 6px; }
+#titlebar .autosave { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 0 8px; opacity: .95; }
+#titlebar .toggle { width: 34px; height: 16px; border-radius: 8px; border: 1px solid #fff; position: relative; }
+#titlebar .toggle::after { content: ''; position: absolute; left: 3px; top: 3px; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+#titlebar .toggle + span { font-size: 11px; }
+#titlebar .qa { background: none; border: 0; color: #fff; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; display: grid; place-items: center; padding: 0; }
+#titlebar .qa:hover { background: rgba(255,255,255,.18); }
+#titlebar .docname { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; font-size: 13px; pointer-events: none; }
+#titlebar .docname > span { white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+#titlebar .search { pointer-events: auto; width: 320px; height: 28px; border-radius: 6px; background: rgba(255,255,255,.88); color: #616161; display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 12.5px; }
+#titlebar .search input { border: 0; background: none; outline: none; flex: 1; font-size: 12.5px; color: #242424; }
+#titlebar .spacer { flex: 1; }
+#titlebar .exbtn { background: #fff; color: var(--app); border: 0; padding: 5px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px; }
+#titlebar .user { width: 28px; height: 28px; border-radius: 50%; background: #fbe5d5; color: #8f2c13; display: grid; place-items: center; font-size: 11px; font-weight: 700; margin-left: 6px; }
+
+/* Ribbon tabs */
+#tabs { display: flex; background: var(--bg); padding: 4px 8px 0; gap: 0; flex: none; align-items: center; }
+#tabs button { background: none; border: 0; padding: 6px 10px 7px; cursor: pointer; font-size: 13px; color: var(--txt); border-radius: 4px 4px 0 0; position: relative; font-family: inherit; }
+#tabs button:hover { background: #e8e6e4; }
+#tabs button.on { color: var(--app); font-weight: 600; }
+#tabs button.on::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 2px; height: 3px; border-radius: 2px; background: var(--app); }
+#tabs button.file { color: var(--txt); }
+#tabs button.ctx { color: var(--app); }
+#tabs .tabsep { flex: 1; }
+#tabs .rbtn { display: flex; align-items: center; gap: 6px; border: 1px solid #d1d1d1; background: #fff; padding: 4px 10px; border-radius: 4px; margin-left: 6px; font-size: 12.5px; cursor: pointer; }
+#tabs .rbtn.share { background: var(--app); color: #fff; border-color: var(--app); }
+#ribbon { background: #fff; margin: 4px 8px 6px; border-radius: 8px; height: 104px; display: flex; flex: none; overflow-x: auto; overflow-y: hidden; box-shadow: 0 0 2px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.14); }
+.rpanel { display: none; padding: 4px 2px 0; }
+.rpanel.on { display: flex; }
+.grp { display: flex; flex-direction: column; padding: 0 6px; position: relative; }
+.grp + .grp::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 8px; width: 1px; background: #e0e0e0; }
+.grp .gbody { flex: 1; display: flex; align-items: flex-start; gap: 1px; }
+.grp .glabel { font-size: 11px; color: var(--sub); text-align: center; padding: 1px 14px 4px; white-space: nowrap; position: relative; }
+.grp .glabel .launch { position: absolute; right: -2px; bottom: 3px; width: 12px; height: 12px; cursor: pointer; opacity: .7; }
+.col { display: flex; flex-direction: column; gap: 1px; }
+.row { display: flex; gap: 1px; align-items: center; }
+.rb { background: none; border: 1px solid transparent; border-radius: 4px; cursor: pointer; color: var(--txt); font-size: 12px; min-width: 24px; height: 24px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; font-family: inherit; }
+.rb:hover { background: #f0f0f0; border-color: #e0e0e0; }
+.rb.on { background: var(--app-light); border-color: var(--app-tint); }
+.rb.big { flex-direction: column; height: 72px; min-width: 46px; padding: 3px 5px; font-size: 12px; line-height: 1.2; justify-content: flex-start; gap: 3px; }
+.rb.big [data-i] { height: 32px; }
+.rb [data-i] { display: inline-flex; }
+.rb .caret { font-size: 8px; opacity: .65; margin-left: 1px; }
+.rb.split { padding-right: 2px; }
+select.rs, input.rs { height: 24px; border: 1px solid #d1d1d1; border-bottom-color: #616161; border-radius: 4px; font-size: 12.5px; padding: 0 4px; background: #fff; color: var(--txt); font-family: inherit; }
+.colorbar { display: block; height: 4px; width: 16px; margin-top: -2px; }
+.cbtn { display: inline-flex; flex-direction: column; align-items: center; }
+.stylebox { display: flex; gap: 0; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+.stylebox .rb { height: 60px; width: 76px; flex-direction: column; border: 0; border-right: 1px solid #ededed; border-radius: 0; background: #fff; justify-content: center; }
+.stylebox .rb:hover { background: #f5f5f5; }
+.stylebox .rb small { font-size: 11px; color: var(--sub); }
+
+/* dropdown menus */
+.dropdown { position: fixed; background: #fff; border: 1px solid #d1d1d1; box-shadow: 0 8px 16px rgba(0,0,0,.14); border-radius: 6px; padding: 4px; z-index: 500; min-width: 170px; max-height: 70vh; overflow: auto; font-size: 12.5px; }
+.dropdown .it { padding: 6px 12px; cursor: pointer; border-radius: 4px; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+.dropdown .it:hover { background: #f0f0f0; }
+.dropdown .sep { height: 1px; background: var(--line); margin: 4px 0; }
+.dropdown .hd { font-size: 11.5px; font-weight: 600; color: var(--sub); padding: 6px 8px 2px; background: #fafafa; }
+.swatches { display: grid; grid-template-columns: repeat(10, 18px); gap: 3px; padding: 6px; }
+.swatches span { width: 18px; height: 18px; border: 1px solid #c8c6c4; cursor: pointer; }
+.swatches span:hover { outline: 2px solid #f29d2b; }
+.tablegrid { display: grid; grid-template-columns: repeat(10, 16px); gap: 2px; padding: 6px; }
+.tablegrid span { width: 16px; height: 16px; border: 1px solid #c8c6c4; }
+.tablegrid span.on { background: #fde7c3; border-color: #f29d2b; }
+.gallery { display: grid; gap: 6px; padding: 6px; }
+
+/* workspace */
+#work { flex: 1; min-height: 0; display: flex; position: relative; }
+#status { height: 24px; background: var(--bg); display: flex; align-items: center; padding: 0 12px; gap: 16px; font-size: 11.5px; color: var(--sub); flex: none; }
+#status .sp { flex: 1; }
+#status .views { display: flex; gap: 2px; }
+#status .views span { width: 22px; height: 18px; display: grid; place-items: center; border-radius: 3px; cursor: default; }
+#status .views span.on { background: #e0e0e0; }
+#status input[type=range] { width: 100px; accent-color: #616161; }
+
+/* MOS-style exam task pane */
+#taskpane { flex: none; background: #fff; border-top: 1px solid #c8c6c4; display: flex; flex-direction: column; height: 178px; font-size: 13px; }
+#taskpane.min { height: 34px; overflow: hidden; }
+#taskpane .tp-head { height: 34px; background: #2b2b2b; color: #fff; display: flex; align-items: center; gap: 14px; padding: 0 12px; flex: none; }
+#taskpane .tp-head b { font-weight: 600; }
+#taskpane .tp-head .proj { opacity: .75; }
+#taskpane .tp-head .timer { margin-left: auto; font-family: Consolas, "Ubuntu Mono", monospace; background: #3c3c3c; padding: 3px 10px; border-radius: 3px; }
+#taskpane .tp-head .hbtn { background: #3c3c3c; color: #fff; border: 1px solid #555; border-radius: 3px; padding: 4px 12px; cursor: pointer; font-size: 12px; font-family: inherit; }
+#taskpane .tp-head .hbtn:hover { background: #505050; }
+#taskpane .tp-head .hbtn.submit { background: var(--app); border-color: var(--app); }
+#taskpane .tp-body { flex: 1; display: flex; min-height: 0; }
+#taskpane .tp-tabs { display: flex; flex-direction: column; width: 120px; border-right: 1px solid var(--line); overflow-y: auto; background: #faf9f8; }
+#taskpane .tp-tabs button { border: 0; border-left: 3px solid transparent; background: none; text-align: left; padding: 7px 10px; cursor: pointer; font-size: 12.5px; display: flex; justify-content: space-between; font-family: inherit; }
+#taskpane .tp-tabs button:hover { background: #f0f0f0; }
+#taskpane .tp-tabs button.on { border-left-color: var(--app); background: #fff; font-weight: 600; }
+#taskpane .tp-tabs button .m { font-size: 11px; }
+#taskpane .tp-tabs button.ok .m { color: #107c10; } #taskpane .tp-tabs button.bad .m { color: #c50f1f; }
+#taskpane .tp-text { flex: 1; padding: 12px 18px; line-height: 1.6; overflow: auto; font-size: 14px; }
+#taskpane .tp-text .res { font-size: 12.5px; margin-top: 6px; }
+#taskpane .tp-act { width: 190px; padding: 10px; display: flex; flex-direction: column; gap: 6px; border-left: 1px solid var(--line); }
+#taskpane .tp-act label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; cursor: pointer; padding: 4px 2px; }
+#taskpane .tp-act .btn { width: 100%; font-size: 12.5px; }
+.btn.app { background: var(--app); border-color: var(--app); color: #fff; }
+.btn.app:hover { background: var(--app-dark); }
+
+/* Backstage (File) */
+#backstage { position: fixed; inset: 0; z-index: 400; display: flex; background: #fff; }
+#backstage .bs-nav { width: 200px; background: var(--app); color: #fff; padding-top: 8px; font-size: 13.5px; }
+#backstage .bs-nav div { padding: 10px 22px; cursor: pointer; }
+#backstage .bs-nav div:hover { background: rgba(255,255,255,.15); }
+#backstage .bs-nav div.back { font-size: 18px; padding: 8px 18px 14px; }
+#backstage .bs-body { flex: 1; padding: 28px 40px; overflow: auto; }
+#backstage h2 { font-weight: 400; font-size: 30px; margin: 0 0 18px; font-family: "Segoe UI Light", "Segoe UI", sans-serif; }
+.exlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.excard { border: 1px solid var(--line); border-radius: 6px; padding: 14px; cursor: pointer; background: #fff; font-size: 13px; }
+.excard:hover { border-color: var(--app); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.excard b { color: var(--app); }
+.excard p { margin: 6px 0 0; color: var(--sub); font-size: 12.5px; line-height: 1.45; }
+.excard .st { float: right; font-size: 12px; color: #107c10; }
+.modal { font-size: 13px; }
+#taskpane .tp-act .btn { white-space: nowrap; padding: 6px 4px; flex: 1; }

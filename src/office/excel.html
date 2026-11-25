@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Book1 - Excel</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="office.css">
+<link rel="stylesheet" href="excel.css">
+</head>
+<body class="excel">
+<div id="titlebar"></div>
+<div id="tabs">
+  <button class="file">File</button>
+  <button data-tab="home" class="on">Home</button>
+  <button data-tab="insert">Insert</button>
+  <button data-tab="formulas">Formulas</button>
+  <button data-tab="data">Data</button>
+  <button data-tab="view">View</button>
+  <button data-tab="chart" id="tabChart" class="ctx" hidden>Chart Design</button>
+</div>
+<div id="ribbon">
+  <div class="rpanel on" id="rp-home">
+    <div class="grp"><div class="gbody">
+      <button class="rb big" data-act="paste" title="Paste (Ctrl+V)"><span data-i="paste"></span>Paste<span class="caret">▾</span></button>
+      <div class="col"><button class="rb" data-act="cut" title="Cut (Ctrl+X)"><span data-i="cut"></span></button><button class="rb" data-act="copy" title="Copy (Ctrl+C)"><span data-i="copy"></span></button><button class="rb" id="btnPainter" title="Format Painter"><span data-i="painter"></span></button></div>
+    </div><div class="glabel">Clipboard</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <div class="row">
+        <select class="rs" id="fontName" style="width:128px" title="Font"><option>Calibri</option><option>Aptos Narrow</option><option>Arial</option><option>Times New Roman</option><option>Tahoma</option><option>Verdana</option><option>Segoe UI</option><option>Courier New</option></select>
+        <select class="rs" id="fontSize" style="width:50px" title="Font Size"><option>8</option><option>9</option><option>10</option><option selected>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option><option>36</option></select>
+        <button class="rb" id="fsUp" title="Increase Font Size"><span data-i="grow"></span></button><button class="rb" id="fsDown" title="Decrease Font Size"><span data-i="shrink"></span></button>
+      </div>
+      <div class="row">
+        <button class="rb" data-st="b" title="Bold (Ctrl+B)"><span data-i="bold"></span></button>
+        <button class="rb" data-st="i" title="Italic (Ctrl+I)"><span data-i="italic"></span></button>
+        <button class="rb" data-st="u" title="Underline (Ctrl+U)"><span data-i="underline"></span></button>
+        <button class="rb" id="btnBorder" title="Borders"><span data-i="borders"></span><span class="caret">▾</span></button>
+        <button class="rb split" id="btnFill" title="Fill Color"><span class="cbtn"><span data-i="fill"></span><span class="colorbar" id="fillBar" style="background:#ffff00"></span></span><span class="caret">▾</span></button>
+        <button class="rb split" id="btnColor" title="Font Color"><span class="cbtn"><span data-i="color"></span><span class="colorbar" id="colorBar" style="background:#c00000"></span></span><span class="caret">▾</span></button>
+      </div>
+    </div></div><div class="glabel">Font</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <div class="row"><button class="rb" data-al="left" title="Align Left"><span data-i="alignL"></span></button><button class="rb" data-al="center" title="Center"><span data-i="alignC"></span></button><button class="rb" data-al="right" title="Align Right"><span data-i="alignR"></span></button><button class="rb" data-st="wrap" title="Wrap Text"><span data-i="wrap"></span> Wrap Text</button></div>
+      <div class="row"><button class="rb" id="btnMerge" title="Merge &amp; Center"><span data-i="merge"></span> Merge &amp; Center<span class="caret">▾</span></button></div>
+    </div></div><div class="glabel">Alignment</div></div>
+    <div class="grp"><div class="gbody"><div class="col">
+      <select class="rs" id="numFmt" style="width:130px" title="Number Format"><option value="general">General</option><option value="number">Number</option><option value="currency">Currency</option><option value="accounting">Accounting</option><option value="date">Short Date</option><option value="percent">Percentage</option><option value="int">Comma Style</option><option value="text">Text</option></select>
+      <div class="row"><button class="rb" data-nf="accounting" title="Accounting Number Format"><span data-i="currency"></span></button><button class="rb" data-nf="percent" title="Percent Style (Ctrl+Shift+%)"><span data-i="percent"></span></button><button class="rb" data-nf="int" title="Comma Style"><span data-i="comma"></span></button><button class="rb" id="decInc" title="Increase Decimal"><span data-i="decinc"></span></button><button class="rb" id="decDec" title="Decrease Decimal"><span data-i="decdec"></span></button></div>
+    </div></div><div class="glabel">Number</div></div>
+    <div class="grp"><div class="gbody">
+      <button class="rb big" id="btnCond" title="Conditional Formatting"><span data-i="condfmt"></span>Conditional<br>Formatting ▾</button>
+      <button class="rb big" id="btnFmtTable" title="Format as Table"><span data-i="fmttable"></span>Format as<br>Table ▾</button>
+      <button class="rb big" id="btnCellStyles" title="Cell Styles"><span data-i="cellstyles"></span>Cell<br>Styles ▾</button>
+    </div><div class="glabel">Styles</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnInsertCells" title="Insert"><span data-i="insertcells"></span>Insert<span class="caret">▾</span></button><button class="rb big" id="btnDeleteCells" title="Delete"><span data-i="deletecells"></span>Delete<span class="caret">▾</span></button><button class="rb big" id="btnFormatCells" title="Format"><span data-i="formatcells"></span>Format<span class="caret">▾</span></button></div><div class="glabel">Cells</div></div>
+    <div class="grp"><div class="gbody">
+      <div class="col"><button class="rb split" id="btnAutoSum" title="AutoSum (Alt+=)"><span data-i="autosum"></span> AutoSum<span class="caret">▾</span></button><button class="rb" id="btnClear" title="Clear"><span data-i="clear"></span> Clear<span class="caret">▾</span></button></div>
+      <button class="rb big" id="btnSort" title="Sort &amp; Filter"><span data-i="sort"></span>Sort &amp;<br>Filter ▾</button>
+      <button class="rb big" id="btnFind" title="Find &amp; Select"><span data-i="find"></span>Find &amp;<br>Select ▾</button>
+    </div><div class="glabel">Editing</div></div>
+  </div>
+  <div class="rpanel" id="rp-insert">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnInsTable" title="Table (Ctrl+T)"><span data-i="table"></span>Table</button></div><div class="glabel">Tables</div></div>
+    <div class="grp"><div class="gbody">
+      <button class="rb big" data-chart="column" title="Insert Column Chart"><span data-i="colchart"></span>Column</button>
+      <button class="rb big" data-chart="bar" title="Insert Bar Chart"><span data-i="barchart"></span>Bar</button>
+      <button class="rb big" data-chart="line" title="Insert Line Chart"><span data-i="linechart"></span>Line</button>
+      <button class="rb big" data-chart="pie" title="Insert Pie Chart"><span data-i="piechart"></span>Pie</button>
+    </div><div class="glabel">Charts</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnInsFunc2" title="Insert Function"><span data-i="func"></span>Function</button></div><div class="glabel">Functions</div></div>
+  </div>
+  <div class="rpanel" id="rp-formulas">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnInsFunc" title="Insert Function (Shift+F3)"><span data-i="func"></span>Insert<br>Function</button>
+      <div class="col"><button class="rb" data-fn="SUM"><span data-i="autosum"></span> AutoSum</button><button class="rb" id="fnLogical">? Logical ▾</button><button class="rb" id="fnText">A Text ▾</button></div>
+      <div class="col"><button class="rb" id="fnMath">θ Math &amp; Trig ▾</button><button class="rb" id="fnLookup">🔎 Lookup &amp; Reference ▾</button><button class="rb" id="fnStat">📈 Statistical ▾</button></div>
+    </div><div class="glabel">Function Library</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnShowF" title="Show Formulas (Ctrl+`)"><span data-i="showf"></span>Show<br>Formulas</button></div><div class="glabel">Formula Auditing</div></div>
+  </div>
+  <div class="rpanel" id="rp-data">
+    <div class="grp"><div class="gbody"><div class="col"><button class="rb" data-sort="asc" title="Sort A to Z"><span data-i="sortasc"></span></button><button class="rb" data-sort="desc" title="Sort Z to A"><span data-i="sortdesc"></span></button></div><button class="rb big" id="btnSortDlg" title="Sort"><span data-i="sortcustom"></span>Sort</button></div><div class="glabel">Sort &amp; Filter</div></div>
+  </div>
+  <div class="rpanel" id="rp-view">
+    <div class="grp"><div class="gbody"><div class="col" style="padding-top:4px;gap:6px"><label><input type="checkbox" id="chkGrid" checked> Gridlines</label><label><input type="checkbox" id="chkHead" checked> Headings</label><label><input type="checkbox" id="chkFx" checked> Formula Bar</label></div></div><div class="glabel">Show</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnZoom100" title="100%"><span data-i="zoom100"></span>100%</button></div><div class="glabel">Zoom</div></div>
+  </div>
+  <div class="rpanel" id="rp-chart">
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnChartElem" title="Add Chart Element"><span data-i="chartelem"></span>Add Chart<br>Element ▾</button><button class="rb big" id="btnChartTitle" title="Chart Title"><span data-i="charttitle"></span>Chart<br>Title</button><button class="rb big" id="btnChartLegend" title="Legend"><span data-i="legend"></span>Legend</button><button class="rb big" id="btnChartLabels" title="Data Labels"><span data-i="datalabels"></span>Data<br>Labels</button></div><div class="glabel">Chart Layouts</div></div>
+    <div class="grp"><div class="gbody"><button class="rb big" id="btnChangeType" title="Change Chart Type"><span data-i="changechart"></span>Change<br>Chart Type</button><button class="rb big" id="btnChartDel" title="Delete Chart"><span data-i="trash"></span>Delete</button></div><div class="glabel">Type</div></div>
+  </div>
+</div>
+<div id="fxbar">
+  <input id="nameBox" value="A1" spellcheck="false" title="Name Box">
+  <span class="fxsep"><span class="x">✕</span> <span class="ok">✓</span> <i>fx</i></span>
+  <input id="fx" spellcheck="false" autocomplete="off">
+</div>
+<div id="work">
+  <div id="gridWrap">
+    <div id="gridInner">
+      <table id="grid"></table>
+      <div id="selBox"><div id="fillHandle"></div></div>
+      <input id="cellEditor" spellcheck="false" autocomplete="off" hidden>
+      <div id="charts"></div>
+    </div>
+  </div>
+</div>
+<div id="sheetbar"><span class="nav">◀ ▶</span><span class="sheet on">Sheet1</span><span class="add" title="New sheet">⊕</span></div>
+<div id="taskpane" hidden></div>
+<div id="status"><span id="stMode">Ready</span><span>♿ Accessibility: Good to go</span><span class="sp"></span><span id="stAgg"></span><span class="views"><span class="on" title="Normal">▦</span><span title="Page Layout">📄</span><span title="Page Break Preview">▤</span></span><span>−</span><input type="range" id="zoom" min="50" max="200" value="100"><span>+</span><span id="zoomPct">100%</span></div>
+<script src="../common.js"></script>
+<script src="icons.js"></script>
+<script src="office-common.js"></script>
+<script src="formula.js"></script>
+<script src="exercises-excel.js"></script>
+<script src="excel.js"></script>
+</body>
+</html>

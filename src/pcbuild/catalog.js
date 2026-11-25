@@ -1,0 +1,208 @@
+// Danh mục linh kiện, thử thách và các bước hướng dẫn lắp ráp
+// Giá chỉ mang tính tham khảo (VNĐ) phục vụ học tập.
+
+export const CATEGORIES = [
+  { id: 'case', name: 'Vỏ máy (Case)', icon: '🗄️',
+    info: 'Vỏ máy chứa và bảo vệ toàn bộ linh kiện, có quạt hút/thổi gió để làm mát. Cần chọn vỏ hỗ trợ đúng kích thước mainboard (ATX, mATX) và đủ chỗ cho card đồ hoạ, tản nhiệt.' },
+  { id: 'mb', name: 'Bo mạch chủ', icon: '🟩',
+    info: 'Bo mạch chủ (mainboard) là tấm mạch chính kết nối mọi linh kiện: CPU, RAM, ổ cứng, card đồ hoạ. Socket CPU và loại RAM (DDR4/DDR5) của mainboard quyết định CPU và RAM nào lắp được.' },
+  { id: 'cpu', name: 'CPU (Bộ xử lý)', icon: '🔲',
+    info: 'CPU – bộ xử lý trung tâm, "bộ não" của máy tính, thực hiện các lệnh của chương trình. CPU phải cùng socket với mainboard. CPU có chữ F (Intel) hoặc không có chữ G (AMD đời cũ) thường không có đồ hoạ tích hợp.' },
+  { id: 'cooler', name: 'Tản nhiệt CPU', icon: '❄️',
+    info: 'Tản nhiệt CPU giúp giải nhiệt cho CPU. Giữa CPU và đế tản cần có keo tản nhiệt. Tản phải hỗ trợ socket CPU, đủ công suất tản (W) và không cao hơn giới hạn của vỏ máy.' },
+  { id: 'ram', name: 'RAM (Bộ nhớ trong)', icon: '📏',
+    info: 'RAM là bộ nhớ tạm thời, lưu dữ liệu của chương trình đang chạy; mất dữ liệu khi tắt máy. RAM DDR4 và DDR5 có khấc khác nhau nên không lắp lẫn được. Nên lắp 2 thanh để chạy kênh đôi (dual channel).' },
+  { id: 'storage', name: 'Ổ lưu trữ', icon: '💾',
+    info: 'Ổ lưu trữ (SSD, HDD) lưu hệ điều hành và dữ liệu lâu dài, không mất khi tắt máy. SSD M.2 NVMe nhanh hơn rất nhiều so với ổ cứng cơ HDD. Máy cần ít nhất một ổ để cài hệ điều hành.' },
+  { id: 'gpu', name: 'Card đồ hoạ (VGA)', icon: '🎮',
+    info: 'Card đồ hoạ (GPU/VGA) xử lý hình ảnh, cần thiết cho chơi game, dựng phim, đồ hoạ 3D. Nếu CPU có đồ hoạ tích hợp thì có thể không cần lắp VGA rời. VGA mạnh thường cần thêm dây nguồn PCIe.' },
+  { id: 'psu', name: 'Nguồn (PSU)', icon: '🔌',
+    info: 'Bộ nguồn (PSU) chuyển điện xoay chiều 220V thành điện một chiều 12V, 5V, 3.3V cho linh kiện. Công suất nguồn phải lớn hơn tổng điện năng tiêu thụ, nên dư khoảng 30%.' },
+  { id: 'cable', name: 'Cáp kết nối', icon: '〰️',
+    info: 'Các dây cáp truyền điện và tín hiệu: cáp 24-pin cấp điện cho mainboard, cáp 8-pin cho CPU, cáp PCIe cho VGA, cáp SATA cho ổ cứng HDD, cáp Front Panel nối nút nguồn của vỏ máy với mainboard.' },
+];
+
+export const PARTS = [
+  // ===== Vỏ máy =====
+  { id: 'case-mid', cat: 'case', slot: 'case', name: 'Vỏ Mid Tower ATX (kính cường lực)', price: 1890000,
+    forms: ['ATX', 'mATX'], maxGpu: 365, maxCooler: 165, color: 0x1d1f24, accent: 0x00c6ff,
+    specs: ['Hỗ trợ ATX, mATX', 'VGA dài tối đa 365 mm', 'Tản CPU cao tối đa 165 mm', '3 quạt RGB'] },
+  { id: 'case-mini', cat: 'case', slot: 'case', name: 'Vỏ Mini Tower mATX', price: 990000,
+    forms: ['mATX'], maxGpu: 300, maxCooler: 150, color: 0xe9ecef, accent: 0xff4fa3,
+    specs: ['Chỉ hỗ trợ mATX', 'VGA dài tối đa 300 mm', 'Tản CPU cao tối đa 150 mm', '3 quạt RGB'] },
+
+  // ===== Mainboard =====
+  { id: 'mb-b760m', cat: 'mb', slot: 'mb', name: 'Mainboard B760M (Intel, DDR4)', price: 2690000,
+    socket: 'LGA1700', mem: 'DDR4', form: 'mATX', color: 0x1a1d21, accent: 0x9aa4ad, brand: 'B760M',
+    specs: ['Socket LGA1700 (Intel thế hệ 12–14)', 'RAM DDR4, 4 khe', 'Kích thước mATX', '1 khe M.2, 4 cổng SATA'] },
+  { id: 'mb-z790', cat: 'mb', slot: 'mb', name: 'Mainboard Z790 (Intel, DDR5)', price: 6490000,
+    socket: 'LGA1700', mem: 'DDR5', form: 'ATX', color: 0x111316, accent: 0xc0c6cc, brand: 'Z790',
+    specs: ['Socket LGA1700 (Intel thế hệ 12–14)', 'RAM DDR5, 4 khe', 'Kích thước ATX', 'Hỗ trợ ép xung CPU dòng K'] },
+  { id: 'mb-b550m', cat: 'mb', slot: 'mb', name: 'Mainboard B550M (AMD, DDR4)', price: 2390000,
+    socket: 'AM4', mem: 'DDR4', form: 'mATX', color: 0x1b1b1b, accent: 0xd4a017, brand: 'B550M',
+    specs: ['Socket AM4 (Ryzen 3000–5000)', 'RAM DDR4, 4 khe', 'Kích thước mATX', 'PCIe 4.0'] },
+  { id: 'mb-b650', cat: 'mb', slot: 'mb', name: 'Mainboard B650 (AMD, DDR5)', price: 4590000,
+    socket: 'AM5', mem: 'DDR5', form: 'ATX', color: 0x15171a, accent: 0xe03c31, brand: 'B650',
+    specs: ['Socket AM5 (Ryzen 7000–9000)', 'RAM DDR5, 4 khe', 'Kích thước ATX', 'PCIe 4.0'] },
+
+  // ===== CPU =====
+  { id: 'cpu-i3', cat: 'cpu', slot: 'cpu', name: 'Intel Core i3-12100', price: 2590000, brand: 'intel',
+    socket: 'LGA1700', cores: 4, threads: 8, ghz: 4.3, power: 90, igpu: true,
+    specs: ['4 nhân / 8 luồng, 4.3 GHz', 'Socket LGA1700', 'Có đồ hoạ tích hợp UHD 730', 'Điện năng ~90 W'] },
+  { id: 'cpu-i5f', cat: 'cpu', slot: 'cpu', name: 'Intel Core i5-13400F', price: 4290000, brand: 'intel',
+    socket: 'LGA1700', cores: 10, threads: 16, ghz: 4.6, power: 150, igpu: false,
+    specs: ['10 nhân / 16 luồng, 4.6 GHz', 'Socket LGA1700', 'KHÔNG có đồ hoạ tích hợp (chữ F)', 'Điện năng ~150 W'] },
+  { id: 'cpu-i7k', cat: 'cpu', slot: 'cpu', name: 'Intel Core i7-14700K', price: 9990000, brand: 'intel',
+    socket: 'LGA1700', cores: 20, threads: 28, ghz: 5.6, power: 250, igpu: true,
+    specs: ['20 nhân / 28 luồng, 5.6 GHz', 'Socket LGA1700', 'Có đồ hoạ tích hợp UHD 770', 'Điện năng ~250 W, cần tản tốt'] },
+  { id: 'cpu-r5g', cat: 'cpu', slot: 'cpu', name: 'AMD Ryzen 5 5600G', price: 2990000, brand: 'amd',
+    socket: 'AM4', cores: 6, threads: 12, ghz: 4.4, power: 88, igpu: true,
+    specs: ['6 nhân / 12 luồng, 4.4 GHz', 'Socket AM4', 'Có đồ hoạ tích hợp Radeon Vega 7', 'Điện năng ~88 W'] },
+  { id: 'cpu-r5-7600', cat: 'cpu', slot: 'cpu', name: 'AMD Ryzen 5 7600', price: 5290000, brand: 'amd',
+    socket: 'AM5', cores: 6, threads: 12, ghz: 5.1, power: 88, igpu: true,
+    specs: ['6 nhân / 12 luồng, 5.1 GHz', 'Socket AM5', 'Có đồ hoạ tích hợp Radeon', 'Điện năng ~88 W'] },
+  { id: 'cpu-r7x3d', cat: 'cpu', slot: 'cpu', name: 'AMD Ryzen 7 7800X3D', price: 10490000, brand: 'amd',
+    socket: 'AM5', cores: 8, threads: 16, ghz: 5.0, power: 120, igpu: true,
+    specs: ['8 nhân / 16 luồng, 5.0 GHz', 'Socket AM5, bộ nhớ đệm 3D V-Cache', 'Có đồ hoạ tích hợp Radeon', 'Điện năng ~120 W'] },
+
+  // ===== Tản nhiệt =====
+  { id: 'cool-stock', cat: 'cooler', slot: 'cooler', name: 'Tản nhiệt khí cơ bản (quạt tròn)', price: 150000,
+    type: 'stock', height: 60, maxTdp: 95, sockets: ['LGA1700', 'AM4', 'AM5'],
+    specs: ['Cao 60 mm', 'Tản tối đa ~95 W', 'Hỗ trợ LGA1700, AM4, AM5', 'Có sẵn keo tản nhiệt'] },
+  { id: 'cool-ak400', cat: 'cooler', slot: 'cooler', name: 'Tản nhiệt tháp 4 ống đồng', price: 690000,
+    type: 'tower', height: 155, maxTdp: 220, sockets: ['LGA1700', 'AM4', 'AM5'],
+    specs: ['Cao 155 mm', 'Tản tối đa ~220 W', 'Hỗ trợ LGA1700, AM4, AM5', '1 quạt 120 mm'] },
+  { id: 'cool-dual', cat: 'cooler', slot: 'cooler', name: 'Tản nhiệt tháp đôi 2 quạt', price: 2890000,
+    type: 'dual', height: 165, maxTdp: 260, sockets: ['LGA1700', 'AM4', 'AM5'],
+    specs: ['Cao 165 mm', 'Tản tối đa ~260 W', 'Hỗ trợ LGA1700, AM4, AM5', '2 quạt 140 mm'] },
+
+  // ===== RAM =====
+  { id: 'ram-d4-16', cat: 'ram', slot: 'ram', name: 'RAM DDR4 16GB (2×8GB) 3200MHz', price: 990000,
+    type: 'DDR4', size: 16, mhz: 3200, color: 0x2b2f36, rgb: false,
+    specs: ['DDR4, bus 3200 MHz', 'Kit 2 thanh × 8 GB', 'Tản nhiệt nhôm'] },
+  { id: 'ram-d4-32', cat: 'ram', slot: 'ram', name: 'RAM DDR4 32GB (2×16GB) 3600MHz RGB', price: 1990000,
+    type: 'DDR4', size: 32, mhz: 3600, color: 0x1f2329, rgb: true,
+    specs: ['DDR4, bus 3600 MHz', 'Kit 2 thanh × 16 GB', 'Có đèn RGB'] },
+  { id: 'ram-d5-16', cat: 'ram', slot: 'ram', name: 'RAM DDR5 16GB (2×8GB) 5600MHz', price: 1490000,
+    type: 'DDR5', size: 16, mhz: 5600, color: 0x9aa0a6, rgb: false,
+    specs: ['DDR5, bus 5600 MHz', 'Kit 2 thanh × 8 GB'] },
+  { id: 'ram-d5-32', cat: 'ram', slot: 'ram', name: 'RAM DDR5 32GB (2×16GB) 6000MHz RGB', price: 2790000,
+    type: 'DDR5', size: 32, mhz: 6000, color: 0xf2f2f2, rgb: true,
+    specs: ['DDR5, bus 6000 MHz', 'Kit 2 thanh × 16 GB', 'Có đèn RGB'] },
+
+  // ===== Lưu trữ =====
+  { id: 'ssd-500', cat: 'storage', slot: 'm2', name: 'SSD M.2 NVMe 500GB', price: 990000, kind: 'm2', size: 500,
+    specs: ['Chuẩn M.2 2280 NVMe PCIe 4.0', 'Đọc ~5000 MB/s', 'Lắp trực tiếp lên mainboard'] },
+  { id: 'ssd-1t', cat: 'storage', slot: 'm2', name: 'SSD M.2 NVMe 1TB', price: 1690000, kind: 'm2', size: 1000,
+    specs: ['Chuẩn M.2 2280 NVMe PCIe 4.0', 'Đọc ~7000 MB/s', 'Lắp trực tiếp lên mainboard'] },
+  { id: 'hdd-1t', cat: 'storage', slot: 'hdd', name: 'Ổ cứng HDD 1TB 7200rpm', price: 1090000, kind: 'hdd', size: 1000,
+    specs: ['Ổ cứng cơ 3.5 inch', 'Tốc độ ~200 MB/s', 'Cần cáp SATA (dữ liệu + nguồn)'] },
+
+  // ===== VGA =====
+  { id: 'gpu-1650', cat: 'gpu', slot: 'gpu', name: 'GeForce GTX 1650 4GB', price: 3290000, brand: 'nvidia',
+    vram: 4, power: 75, length: 170, fans: 1, thick: 3.6, pcie: 0, color: 0x23272e,
+    specs: ['VRAM 4 GB GDDR6', 'Dài 170 mm', 'Điện năng 75 W', 'Không cần dây nguồn phụ'] },
+  { id: 'gpu-4060', cat: 'gpu', slot: 'gpu', name: 'GeForce RTX 4060 8GB', price: 7990000, brand: 'nvidia',
+    vram: 8, power: 115, length: 245, fans: 2, thick: 4, pcie: 1, color: 0x2a2d33,
+    specs: ['VRAM 8 GB GDDR6', 'Dài 245 mm', 'Điện năng 115 W', 'Cần 1 dây nguồn PCIe 8-pin'] },
+  { id: 'gpu-7800', cat: 'gpu', slot: 'gpu', name: 'Radeon RX 7800 XT 16GB', price: 13490000, brand: 'amd',
+    vram: 16, power: 263, length: 320, fans: 3, thick: 5.2, pcie: 2, color: 0x30343a,
+    specs: ['VRAM 16 GB GDDR6', 'Dài 320 mm', 'Điện năng 263 W', 'Cần 2 dây nguồn PCIe 8-pin'] },
+  { id: 'gpu-4080', cat: 'gpu', slot: 'gpu', name: 'GeForce RTX 4080 SUPER 16GB', price: 26990000, brand: 'nvidia',
+    vram: 16, power: 320, length: 340, fans: 3, thick: 6.2, pcie: 1, color: 0x1b1d21,
+    specs: ['VRAM 16 GB GDDR6X', 'Dài 340 mm', 'Điện năng 320 W', 'Cần dây nguồn 16-pin (12VHPWR)'] },
+
+  // ===== Nguồn =====
+  { id: 'psu-450', cat: 'psu', slot: 'psu', name: 'Nguồn 450W 80 Plus Bronze', price: 890000, watt: 450,
+    specs: ['Công suất 450 W', 'Hiệu suất 80 Plus Bronze', 'Dây liền'] },
+  { id: 'psu-650', cat: 'psu', slot: 'psu', name: 'Nguồn 650W 80 Plus Bronze', price: 1390000, watt: 650,
+    specs: ['Công suất 650 W', 'Hiệu suất 80 Plus Bronze', 'Có 2 dây PCIe 8-pin'] },
+  { id: 'psu-850', cat: 'psu', slot: 'psu', name: 'Nguồn 850W 80 Plus Gold', price: 2590000, watt: 850,
+    specs: ['Công suất 850 W', 'Hiệu suất 80 Plus Gold', 'Dây rời (modular), có dây 16-pin'] },
+
+  // ===== Cáp =====
+  { id: 'c-24pin', cat: 'cable', slot: 'c-24pin', cable: true, name: 'Cáp nguồn mainboard 24-pin', price: 0,
+    needs: ['psu', 'mb'], specs: ['Từ nguồn → cổng 24-pin bên phải mainboard', 'Cấp điện chính cho mainboard'] },
+  { id: 'c-cpu8', cat: 'cable', slot: 'c-cpu8', cable: true, name: 'Cáp nguồn CPU 8-pin', price: 0,
+    needs: ['psu', 'mb'], specs: ['Từ nguồn → cổng 8-pin góc trên bên trái mainboard', 'Cấp điện cho CPU'] },
+  { id: 'c-pcie', cat: 'cable', slot: 'c-pcie', cable: true, name: 'Cáp nguồn PCIe cho VGA', price: 0,
+    needs: ['psu', 'gpu'], specs: ['Từ nguồn → cạnh trên card đồ hoạ', 'Chỉ cần với VGA có cổng nguồn phụ'] },
+  { id: 'c-sata', cat: 'cable', slot: 'c-sata', cable: true, name: 'Cáp SATA (dữ liệu + nguồn) cho HDD', price: 0,
+    needs: ['psu', 'hdd', 'mb'], specs: ['Cáp dữ liệu SATA: HDD → mainboard', 'Cáp nguồn SATA: nguồn → HDD'] },
+  { id: 'c-fp', cat: 'cable', slot: 'c-fp', cable: true, name: 'Cáp Front Panel (nút nguồn, đèn)', price: 0,
+    needs: ['mb'], specs: ['Từ mặt trước vỏ máy → chân F_PANEL góc dưới mainboard', 'Nút nguồn chỉ hoạt động khi đã cắm cáp này'] },
+];
+
+export const partById = (id) => PARTS.find(p => p.id === id);
+
+// ===== Thử thách =====
+export const CHALLENGES = [
+  { id: 'office', title: 'Máy văn phòng tiết kiệm',
+    desc: 'Lắp một máy tính văn phòng KHÔNG dùng card đồ hoạ rời, tổng chi phí không quá 15 triệu đồng, khởi động thành công.',
+    check: (b) => [
+      [!b.parts.gpu, 'Không lắp card đồ hoạ rời'],
+      [b.total <= 15000000, 'Tổng chi phí ≤ 15.000.000đ'],
+      [b.booted, 'Khởi động thành công'],
+    ] },
+  { id: 'gaming', title: 'Máy chơi game tầm trung',
+    desc: 'Lắp máy chơi game có card đồ hoạ rời, tổng chi phí không quá 30 triệu đồng, không có cảnh báo nào và khởi động thành công.',
+    check: (b) => [
+      [!!b.parts.gpu, 'Có card đồ hoạ rời'],
+      [b.total <= 30000000, 'Tổng chi phí ≤ 30.000.000đ'],
+      [b.warnings === 0, 'Không có cảnh báo'],
+      [b.booted, 'Khởi động thành công'],
+    ] },
+  { id: 'amd', title: 'Máy AMD thế hệ mới',
+    desc: 'Lắp máy dùng CPU AMD socket AM5 và RAM DDR5, khởi động thành công.',
+    check: (b) => [
+      [b.parts.cpu && b.parts.cpu.socket === 'AM5', 'CPU socket AM5'],
+      [b.parts.ram && b.parts.ram.type === 'DDR5', 'RAM DDR5'],
+      [b.booted, 'Khởi động thành công'],
+    ] },
+  { id: 'workstation', title: 'Máy đồ hoạ – dựng phim cao cấp',
+    desc: 'CPU từ 8 nhân trở lên, RAM ít nhất 32GB, VGA có ít nhất 16GB VRAM, không có cảnh báo, khởi động thành công.',
+    check: (b) => [
+      [b.parts.cpu && b.parts.cpu.cores >= 8, 'CPU ≥ 8 nhân'],
+      [b.parts.ram && b.parts.ram.size >= 32, 'RAM ≥ 32 GB'],
+      [b.parts.gpu && b.parts.gpu.vram >= 16, 'VGA ≥ 16 GB VRAM'],
+      [b.warnings === 0, 'Không có cảnh báo'],
+      [b.booted, 'Khởi động thành công'],
+    ] },
+];
+
+// ===== Các bước hướng dẫn =====
+// done(s): đã hoàn thành bước; skip(s): bước không cần thiết với cấu hình hiện tại
+export const GUIDE_STEPS = [
+  { slot: 'case', title: 'Chọn vỏ máy',
+    text: 'Chọn một vỏ máy ở cột bên trái (nhóm "Vỏ máy"). Vỏ Mid Tower rộng rãi, hỗ trợ mainboard ATX; vỏ Mini Tower nhỏ gọn, chỉ hỗ trợ mATX. Bấm "Tiếp tục" khi đã chọn xong.',
+    manual: true },
+  { slot: 'mb', title: 'Lắp bo mạch chủ vào vỏ',
+    text: 'Chọn một mainboard, sau đó bấm vào vùng phát sáng trên khay vỏ máy. Mainboard được bắt vít lên các cọc đồng (standoff) để không chạm vào vỏ kim loại. Lưu ý: kích thước mainboard phải phù hợp với vỏ.' },
+  { slot: 'cpu', title: 'Lắp CPU vào socket',
+    text: 'Chọn CPU cùng socket với mainboard. Thực tế: mở lẫy socket, đặt CPU khớp với hình tam giác đánh dấu ở góc, nhẹ nhàng hạ xuống – không ấn mạnh – rồi khoá lẫy lại.' },
+  { slot: 'cooler', title: 'Lắp tản nhiệt CPU',
+    text: 'Bôi một lớp keo tản nhiệt mỏng lên mặt CPU, đặt tản nhiệt lên và vặn vít chéo nhau từng chút một. Tản phải đủ công suất cho CPU và không cao quá giới hạn của vỏ.' },
+  { slot: 'ram', title: 'Lắp RAM',
+    text: 'Chọn RAM đúng loại mainboard hỗ trợ (DDR4 hoặc DDR5). Mở lẫy khe RAM, đặt thanh RAM khớp với khấc rồi ấn đều hai đầu đến khi nghe "tách". Kit 2 thanh nên cắm khe số 2 và 4 để chạy kênh đôi.' },
+  { slot: 'storage', title: 'Lắp ổ lưu trữ',
+    text: 'Lắp SSD M.2 vào khe M.2 giữa socket CPU và khe PCIe (cắm nghiêng 30° rồi ấn xuống và bắt vít), hoặc lắp ổ HDD vào lồng ổ cứng phía trước dưới vỏ. Máy cần ít nhất 1 ổ để cài hệ điều hành.' },
+  { slot: 'psu', title: 'Lắp bộ nguồn',
+    text: 'Đặt bộ nguồn vào khoang dưới phía sau vỏ, quạt hướng xuống dưới để hút gió mát, rồi bắt 4 vít ở mặt sau vỏ. Chọn nguồn có công suất dư khoảng 30% so với tổng điện năng.' },
+  { slot: 'gpu', title: 'Lắp card đồ hoạ',
+    text: 'Tháo nắp chắn khe PCIe ở mặt sau vỏ, cắm card vào khe PCIe x16 trên cùng đến khi lẫy khoá bật lên, rồi bắt vít giữ card. Nếu CPU có đồ hoạ tích hợp, bạn có thể bỏ qua bước này.',
+    optional: true },
+  { slot: 'c-24pin', title: 'Cắm cáp 24-pin cho mainboard',
+    text: 'Chọn "Cáp nguồn mainboard 24-pin" trong nhóm Cáp và bấm vào cổng phát sáng ở cạnh phải mainboard. Đây là nguồn điện chính của mainboard.' },
+  { slot: 'c-cpu8', title: 'Cắm cáp nguồn CPU 8-pin',
+    text: 'Chọn "Cáp nguồn CPU 8-pin" và cắm vào cổng ở góc trên bên trái mainboard. Thiếu dây này CPU sẽ không có điện và máy không khởi động.' },
+  { slot: 'c-pcie', title: 'Cắm cáp nguồn cho VGA',
+    text: 'Card đồ hoạ này cần nguồn phụ. Chọn "Cáp nguồn PCIe cho VGA" và cắm vào cạnh trên của card.',
+    skipIf: (s) => !s.parts.gpu || !s.parts.gpu.pcie },
+  { slot: 'c-sata', title: 'Cắm cáp SATA cho HDD',
+    text: 'Ổ HDD cần 2 dây: dây dữ liệu SATA nối về mainboard và dây nguồn SATA từ bộ nguồn.',
+    skipIf: (s) => !s.parts.hdd },
+  { slot: 'c-fp', title: 'Cắm cáp Front Panel',
+    text: 'Cắm các dây nhỏ (POWER SW, RESET SW, HDD LED, POWER LED) từ mặt trước vỏ vào chân F_PANEL ở góc dưới bên phải mainboard. Thiếu dây này nút nguồn trên vỏ sẽ không hoạt động.' },
+  { slot: 'boot', title: 'Bật nguồn!',
+    text: 'Bấm nút "⚡ Bật nguồn" ở cột bên phải hoặc bấm vào nút nguồn trên nóc vỏ máy để kiểm tra thành quả.', manual: true },
+];

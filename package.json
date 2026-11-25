@@ -1,0 +1,112 @@
+{
+  "name": "tinhoclab",
+  "version": "1.0.0",
+  "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:linux": "electron-builder --linux deb AppImage",
+    "dist:win": "electron-builder --win nsis portable",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist": "electron-builder"
+  },
+  "author": {
+    "name": "TinHocLab",
+    "email": "tinhoclab@example.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "three": "^0.170.0"
+  },
+  "productName": "TinHocLab",
+  "build": {
+    "appId": "vn.tinhoclab.app",
+    "productName": "TinHocLab",
+    "copyright": "TinHocLab",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-${version}-Setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "shortcutName": "TinHocLab",
+      "language": "1066"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.education",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "TinHocLab ${version}"
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "category": "Education",
+      "maintainer": "TinHocLab <tinhoclab@example.com>",
+      "synopsis": "Phần mềm thực hành Tin học",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0"
+      ]
+    },
+    "publish": null
+  },
+  "homepage": "https://tinhoclab.local"
+}
