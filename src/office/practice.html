@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Luyện tập Office – TinHocLab</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="../ui/apple.css">
+<style>
+  body { min-height: 100vh; }
+  .top { position: sticky; top: 0; z-index: 10; height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 22px; background: rgba(251,251,253,.78); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
+  .top .tb { appearance: none; background: none; border: 0; font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 980px; cursor: pointer; color: var(--ink); }
+  .top .tb:hover { background: rgba(0,0,0,.06); }
+  .top .title { font-weight: 600; font-size: 15px; } .top .sp { flex: 1; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 80px; }
+  .hero { padding: 64px 0 30px; }
+  .hero .display { font-size: clamp(42px, 5.6vw, 72px); }
+  .hero .lead { margin-top: 18px; }
+  .bar { display: flex; align-items: center; gap: 18px; margin: 26px 0 30px; flex-wrap: wrap; }
+  .sum { margin-left: auto; color: var(--ink2); font-size: 14px; }
+  .sum b { color: var(--ink); font-size: 20px; font-family: var(--font-display); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .pj { background: #fff; border-radius: 22px; padding: 22px 22px 18px; box-shadow: 0 0 0 1px var(--line); display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out); animation: rise .5s var(--ease-out) both; }
+  .pj:hover { transform: translateY(-3px); box-shadow: 0 12px 34px rgba(0,0,0,.09), 0 0 0 1px var(--line); }
+  .pj .k { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink2); font-weight: 600; }
+  .pj .k i { width: 26px; height: 26px; border-radius: 7px; color: #fff; font-style: normal; display: grid; place-items: center; font-family: var(--font-display); font-size: 13px; }
+  .pj h3 { margin: 0; font-family: var(--font-display); font-size: 21px; letter-spacing: -0.02em; line-height: 1.2; }
+  .pj p { margin: 0; font-size: 14px; color: var(--ink2); line-height: 1.45; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tags span { font-size: 11.5px; background: var(--bg2); border-radius: 980px; padding: 3px 9px; color: var(--ink2); }
+  .foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: 6px; font-size: 13px; }
+  .foot .sc { color: var(--ink2); } .foot .sc.ok { color: #1a7f37; font-weight: 600; }
+  .foot .go { color: var(--link); font-weight: 500; }
+  .pbar { height: 4px; background: rgba(0,0,0,.07); border-radius: 2px; overflow: hidden; } .pbar span { display: block; height: 100%; border-radius: 2px; }
+  .new { font-size: 10.5px; background: #ff375f; color: #fff; border-radius: 980px; padding: 2px 7px; margin-left: auto; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+  .office { margin-top: 56px; padding: 34px; border-radius: 28px; background: var(--bg2); display: flex; align-items: center; gap: 30px; }
+  .office h2 { font-family: var(--font-display); font-size: 30px; letter-spacing: -0.025em; margin: 0 0 6px; }
+  .office p { margin: 0; color: var(--ink2); }
+</style>
+</head>
+<body class="apple">
+<div class="top">
+  <button class="tb" data-nav="../index.html">‹ TinHocLab</button>
+  <span class="title">Luyện tập Office</span>
+  <span class="sp"></span>
+  <button class="tb" data-nav="index.html">Mở Office ›</button>
+</div>
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow reveal">Khu luyện tập</p>
+    <h1 class="display reveal" style="--d:.06s">Từng dự án.<br>Chấm điểm từng bước.</h1>
+    <p class="lead reveal" style="--d:.12s">Mỗi dự án mở Word, Excel hoặc PowerPoint với một tệp có sẵn và danh sách nhiệm vụ bằng tiếng Anh, như bài thi MOS. Làm xong bấm <b>Submit project</b> để xem kết quả.</p>
+  </section>
+  <div class="bar">
+    <div class="segmented" id="seg"><button data-a="word" class="on">Word</button><button data-a="excel">Excel</button><button data-a="ppt">PowerPoint</button></div>
+    <div class="sum" id="sum"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <section class="office reveal">
+    <div style="flex:1"><h2>Cần làm tự do?</h2><p>Khu <b>Office</b> mở Word, Excel, PowerPoint đầy đủ chức năng, không chấm điểm. Tệp đã lưu vẫn nằm trong thư mục Documents của máy giả lập.</p></div>
+    <button class="pill dark" data-nav="index.html">Mở khu Office</button>
+  </section>
+</div>
+<script src="../common.js"></script>
+<script src="../ui/motion.js"></script>
+<script src="sample-images.js"></script>
+<script src="exercises-word.js"></script>
+<script src="exercises-word-pro.js"></script>
+<script src="exercises-excel.js"></script>
+<script src="exercises-excel-pro.js"></script>
+<script src="exercises-ppt.js"></script>
+<script src="exercises-ppt-pro.js"></script>
+<script>
+  const dummy = () => ({});
+  const APPS = {
+    word: { name: 'Word', page: 'word.html', color: '#185abd', letter: 'W', list: [...WORD_EXERCISES(), ...WORD_EXERCISES_PRO()] },
+    excel: { name: 'Excel', page: 'excel.html', color: '#107c41', letter: 'X', list: [...EXCEL_EXERCISES(), ...EXCEL_EXERCISES_PRO()] },
+    ppt: { name: 'PowerPoint', page: 'powerpoint.html', color: '#c43e1c', letter: 'P', list: [...PPT_EXERCISES(dummy), ...PPT_EXERCISES_PRO(dummy)] },
+  };
+  const NEW = new Set(['w8', 'w9', 'w10', 'w11', 'w12', 'x7', 'x8', 'p6', 'p7', 'p8']);
+  let cur = (location.hash || '#word').slice(1); if (cur === 'powerpoint') cur = 'ppt'; if (!APPS[cur]) cur = 'word';
+  function draw() {
+    const A = APPS[cur];
+    document.querySelectorAll('#seg button').forEach((b) => b.classList.toggle('on', b.dataset.a === cur));
+    const done = A.list.filter((e) => { const r = Progress.get(cur, e.id); return r && r.score === r.max; }).length;
+    document.getElementById('sum').innerHTML = `<b>${done}</b> / ${A.list.length} dự án hoàn thành`;
+    document.getElementById('grid').innerHTML = A.list.map((e, i) => {
+      const r = Progress.get(cur, e.id); const pct = r ? Math.round(r.score / r.max * 100) : 0;
+      return `<div class="pj" style="animation-delay:${i * 0.035}s" data-id="${e.id}"><div class="k"><i style="background:${A.color}">${A.letter}</i>Dự án ${i + 1} · ${e.tasks.length} nhiệm vụ${NEW.has(e.id) ? '<span class="new">Mới</span>' : ''}</div>
+        <h3>${escapeHtml(e.title)}</h3><p>${escapeHtml(e.intro)}</p>${e.skills ? `<div class="tags">${e.skills.map((s) => `<span>${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+        <div class="pbar"><span style="width:${pct}%;background:${pct === 100 ? '#30d158' : A.color}"></span></div>
+        <div class="foot"><span class="sc ${pct === 100 ? 'ok' : ''}">${r ? (pct === 100 ? '✓ Hoàn thành' : `Tốt nhất: ${r.score}/${r.max}`) : 'Chưa làm'}</span><span class="go">${r ? 'Làm lại' : 'Bắt đầu'} ›</span></div></div>`;
+    }).join('');
+    document.querySelectorAll('.pj').forEach((c) => (c.onclick = () => { document.body.classList.add('leaving'); setTimeout(() => (location.href = `${A.page}?ex=${c.dataset.id}`), 250); }));
+  }
+  document.querySelectorAll('#seg button').forEach((b) => (b.onclick = () => { cur = b.dataset.a; history.replaceState(null, '', '#' + cur); draw(); }));
+  draw();
+</script>
+</body>
+</html>

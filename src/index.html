@@ -71,9 +71,8 @@
   <a data-nav="pcbuild/pcbuild.html">Lắp ráp</a>
   <a data-nav="explore/explore.html">Khám phá</a>
   <a data-nav="keys/keys.html">Phím tắt</a>
-  <a data-nav="office/word.html">Word</a>
-  <a data-nav="office/excel.html">Excel</a>
-  <a data-nav="office/powerpoint.html">PowerPoint</a>
+  <a data-nav="office/index.html">Office</a>
+  <a data-nav="office/practice.html">Luyện tập Office</a>
   <span class="sp"></span>
   <input class="field" id="studentName" placeholder="Họ tên học sinh" style="width:190px">
 </nav>
@@ -152,12 +151,13 @@
   <div class="wrap">
     <div class="split">
       <div><p class="eyebrow reveal">Tin học văn phòng</p><h2 class="headline reveal" style="--d:.08s">Word. Excel.<br>PowerPoint.</h2></div>
-      <p class="lead reveal" style="--d:.16s">Giao diện như Microsoft 365, hoàn toàn bằng tiếng Anh. Chấm điểm tự động như bài thi MOS — từng nhiệm vụ, từng giây.</p>
+      <p class="lead reveal" style="--d:.16s">Hai khu riêng biệt. <b>Office</b> để dùng tự do như Microsoft 365 — tab File, Track Changes, macro, hiệu ứng, video. <b>Luyện tập</b> để làm dự án chấm điểm tự động như bài thi MOS.</p>
     </div>
+    <p class="reveal" style="margin-top:40px;display:flex;gap:22px;align-items:center;flex-wrap:wrap"><a class="pill" data-nav="office/index.html">Mở Office</a><a class="link" data-nav="office/practice.html">Vào khu luyện tập</a></p>
     <div class="feature-grid">
-      <div class="card-a feature reveal" data-nav="office/word.html"><div><div class="appmark" style="background:#185abd">W</div><h3>Word</h3><p class="muted" style="margin:6px 0 0">Định dạng, bảng, hình ảnh, mục lục, chú thích cuối trang.</p></div><div><div class="bar"><span id="barW" style="background:#185abd"></span></div><div class="meta"><span id="mW"></span><span>Mở ›</span></div></div></div>
-      <div class="card-a feature reveal" style="--d:.1s" data-nav="office/excel.html"><div><div class="appmark" style="background:#107c41">X</div><h3>Excel</h3><p class="muted" style="margin:6px 0 0">Hơn 50 hàm, VLOOKUP, định dạng có điều kiện, biểu đồ.</p></div><div><div class="bar"><span id="barX" style="background:#107c41"></span></div><div class="meta"><span id="mX"></span><span>Mở ›</span></div></div></div>
-      <div class="card-a feature reveal" data-nav="office/powerpoint.html"><div><div class="appmark" style="background:#c43e1c">P</div><h3>PowerPoint</h3><p class="muted" style="margin:6px 0 0">Bố cục, chủ đề, hiệu ứng chuyển trang, trình chiếu.</p></div><div><div class="bar"><span id="barP" style="background:#c43e1c"></span></div><div class="meta"><span id="mP"></span><span>Mở ›</span></div></div></div>
+      <div class="card-a feature reveal" data-nav="office/practice.html#word"><div><div class="appmark" style="background:#185abd">W</div><h3>Word</h3><p class="muted" style="margin:6px 0 0">Styles, mục lục, header/footer, số trang, Track Changes, Compare, bảo vệ tài liệu.</p></div><div><div class="bar"><span id="barW" style="background:#185abd"></span></div><div class="meta"><span id="mW"></span><span>Mở ›</span></div></div></div>
+      <div class="card-a feature reveal" style="--d:.1s" data-nav="office/practice.html#excel"><div><div class="appmark" style="background:#107c41">X</div><h3>Excel</h3><p class="muted" style="margin:6px 0 0">Hơn 50 hàm, biểu đồ, nhiều trang tính, Protect Sheet, macro.</p></div><div><div class="bar"><span id="barX" style="background:#107c41"></span></div><div class="meta"><span id="mX"></span><span>Mở ›</span></div></div></div>
+      <div class="card-a feature reveal" data-nav="office/practice.html#powerpoint"><div><div class="appmark" style="background:#c43e1c">P</div><h3>PowerPoint</h3><p class="muted" style="margin:6px 0 0">Transition, Animation, chèn ảnh và video, chỉnh sửa ảnh.</p></div><div><div class="bar"><span id="barP" style="background:#c43e1c"></span></div><div class="meta"><span id="mP"></span><span>Mở ›</span></div></div></div>
       <div class="card-a feature reveal" style="--d:.1s;background:#1d1d1f;color:#f5f5f7" data-nav="explore/explore.html"><div><div class="appmark" style="background:linear-gradient(135deg,#ff9f0a,#ff375f)">?</div><h3>Đố vui nhận biết</h3><p style="margin:6px 0 0;color:#a1a1a6">Nhìn mô hình 3D, gọi đúng tên. Mười câu, mỗi lần một khác.</p></div><div><div class="meta" style="color:#a1a1a6"><span id="mQ"></span><span>Chơi ›</span></div></div></div>
     </div>
   </div>
@@ -172,7 +172,7 @@
   nameInput.value = Progress.student();
   nameInput.addEventListener('input', () => Progress.setStudent(nameInput.value));
   const set = (k, total, bar, meta) => { const d = Progress.doneCount(k); document.getElementById(meta).textContent = `${d}/${total} dự án hoàn thành`; document.getElementById(bar).parentElement.parentElement.parentElement.style.setProperty('--w', Math.round(d / total * 100) + '%'); };
-  set('word', 7, 'barW', 'mW'); set('excel', 6, 'barX', 'mX'); set('ppt', 5, 'barP', 'mP');
+  set('word', 12, 'barW', 'mW'); set('excel', 8, 'barX', 'mX'); set('ppt', 8, 'barP', 'mP');
   document.getElementById('pcDone').textContent = Progress.doneCount('pc') + '/4';
   const qz = Progress.get('explore', 'quiz'); document.getElementById('mQ').textContent = qz ? `Điểm cao nhất: ${qz.score}/${qz.max}` : 'Chưa chơi lần nào';
   const words = ['USB-C', 'Lightning', 'FireWire', 'Thunderbolt 5', 'HDMI 2.1', 'DisplayPort', 'VGA', 'DVI', 'RJ45', 'PS/2', 'Đĩa mềm 3½"', 'CD · DVD · Blu-ray', 'SSD NVMe', 'Ổ cứng HDD', 'microSD', 'Micro-USB', 'Mini-USB', 'MagSafe', '12V-2x6', 'SATA', 'Molex', 'Sạc dự phòng', 'Router Wi-Fi 7', 'UPS', 'RS-232', 'Jack 3,5 mm'];

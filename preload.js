@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('desktop', {
   openFile: (opts) => ipcRenderer.invoke('file:open', opts),
   openImage: () => ipcRenderer.invoke('file:openImage'),
   version: () => ipcRenderer.invoke('app:version'),
+  openMedia: (kind) => ipcRenderer.invoke('file:openMedia', kind),
+  readMedia: (p) => ipcRenderer.invoke('file:readMedia', p),
   platform: process.platform,
   kbCapture: (on) => ipcRenderer.send('kb:capture', on),
   onCombo: (cb) => ipcRenderer.on('kb:combo', (_e, c) => cb(c)),
