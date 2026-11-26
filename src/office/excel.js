@@ -837,4 +837,4 @@ runner.api = api;
 window.__xl = { api, runner, select, startEdit, commitEdit, setRaw: (a, v) => { const p = parseAddr(a); setRaw(p.r, p.c, v); renderAll(); }, S };
 
 buildGrid(); renderAll(); select(0, 0);
-setTimeout(() => fileMenu(0), 50);
+

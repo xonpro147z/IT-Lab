@@ -475,4 +475,4 @@ const api = {
 runner.api = api;
 window.__word = { api, runner, setDoc };
 setDoc({ html: '<p><br></p>' });
-setTimeout(() => fileMenu(0), 50);
+
