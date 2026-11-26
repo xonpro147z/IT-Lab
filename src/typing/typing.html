@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Luyện gõ phím – TinHocLab</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="../ui/apple.css">
+<link rel="stylesheet" href="typing.css">
+</head>
+<body class="apple">
+<header id="top">
+  <button class="tb" data-nav="../index.html">‹ TinHocLab</button>
+  <div class="title">Luyện gõ phím</div>
+  <span class="spacer"></span>
+  <input class="field" id="student" placeholder="Họ tên học sinh" style="width:180px">
+  <button class="tb" id="btnHistory">Lịch sử &amp; kỷ lục</button>
+</header>
+
+<div id="layout">
+  <main id="main">
+    <div id="config">
+      <div class="grp" id="cfgLang"><button data-v="en">English</button><button data-v="vi">Tiếng Việt</button></div>
+      <i class="sep"></i>
+      <div class="grp" id="cfgExtra"><button data-v="punct" title="Thêm chữ hoa và dấu câu">@ dấu câu</button><button data-v="nums" title="Thêm số">#&nbsp;số</button></div>
+      <i class="sep"></i>
+      <div class="grp" id="cfgMode"><button data-v="time">⏱ thời gian</button><button data-v="words">A số từ</button><button data-v="quote">❝ trích dẫn</button><button data-v="lesson">✎ bài luyện</button></div>
+      <i class="sep"></i>
+      <div class="grp" id="cfgAmount"></div>
+    </div>
+    <div id="cfg2">
+      <div id="imeBox"><span class="lab">Bộ gõ tiếng Việt:</span>
+        <div class="grp" id="cfgIme"><button data-v="telex">Telex (tích hợp)</button><button data-v="vni">VNI (tích hợp)</button><button data-v="os">Bộ gõ của máy (Unikey/EVKey)</button></div>
+      </div>
+      <select id="lessonSel" class="field"></select>
+    </div>
+
+    <section id="test">
+      <div id="live"><span id="lvProgress">30</span><span id="lvWpm"></span><span id="lvAcc"></span></div>
+      <div id="wordsWrap" tabindex="-1">
+        <input id="hidden" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div id="words"></div>
+        <div id="caret"></div>
+        <div id="focusMsg">Bấm vào đây hoặc gõ phím bất kỳ để tiếp tục</div>
+      </div>
+      <div id="hints"><span id="capsWarn">⇪ Caps Lock đang bật</span><span id="imeWarn"></span></div>
+      <div id="restartRow"><button id="btnRestart" class="round" title="Làm lại (Tab)">↻</button><span class="kbdh"><kbd>Tab</kbd> / <kbd>Esc</kbd> bài mới&nbsp;&nbsp;·&nbsp;&nbsp;gõ sai có thể <kbd>⌫</kbd> quay lại từ trước</span></div>
+    </section>
+
+    <section id="result" hidden>
+      <div class="rtop">
+        <div class="big"><div><div class="lab">wpm</div><div class="num" id="rWpm">0</div></div><div><div class="lab">độ chính xác</div><div class="num" id="rAcc">0%</div></div></div>
+        <canvas id="chart" width="900" height="260"></canvas>
+      </div>
+      <div class="rstats">
+        <div><div class="lab">kiểu bài</div><div id="rType"></div></div>
+        <div><div class="lab">raw</div><div id="rRaw"></div></div>
+        <div><div class="lab">ký tự</div><div id="rChars" title="đúng / sai / thừa / thiếu"></div></div>
+        <div><div class="lab">ổn định</div><div id="rCons"></div></div>
+        <div><div class="lab">thời gian</div><div id="rTime"></div></div>
+      </div>
+      <div id="rBadge"></div>
+      <div class="ractions"><button class="pill dark" id="btnNext">Bài tiếp theo ›</button><button class="pill light" id="btnRepeat">Gõ lại bài này</button></div>
+    </section>
+  </main>
+
+  <aside id="catPanel">
+    <div id="catStage">
+      <div id="badge">Gõ bất kỳ phím nào <span id="lastKeys"></span></div><div id="petHint">Bấm vào đầu mèo để vuốt ♥</div>
+      <div id="catHost"></div>
+    </div>
+    <div id="chips"></div>
+    <div id="soundRow">
+      <label>Âm thanh <select id="soundSel" class="field"></select></label>
+      <label class="vol">🔈 <input type="range" id="vol" min="0" max="1" step="0.05"></label>
+    </div>
+    <p id="swNote" class="muted"></p>
+  </aside>
+</div>
+
+<div id="histModal" hidden>
+  <div class="card">
+    <div class="hd"><b>Lịch sử luyện gõ</b><span class="spacer"></span><button class="tb" id="btnClearHist">Xoá lịch sử</button><button class="tb" id="btnCloseHist">Đóng</button></div>
+    <div id="pbBox"></div>
+    <div class="tblwrap"><table id="histTbl"></table></div>
+  </div>
+</div>
+
+<script src="../common.js"></script>
+<script src="../ui/motion.js"></script>
+<script type="module" src="typing.js"></script>
+</body>
+</html>

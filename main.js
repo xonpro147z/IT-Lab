@@ -112,3 +112,18 @@ ipcMain.handle('file:openImage', async () => {
 });
 
 ipcMain.handle('app:version', () => app.getVersion());
+
+// ===== Video / audio cho PowerPoint =====
+const MEDIA = { mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', m4v: 'video/mp4', ogv: 'video/ogg', mp3: 'audio/mpeg', wav: 'audio/wav', m4a: 'audio/mp4', ogg: 'audio/ogg' };
+const mediaMime = (p) => MEDIA[path.extname(p).slice(1).toLowerCase()];
+ipcMain.handle('file:openMedia', async (_e, kind) => {
+  const exts = kind === 'audio' ? ['mp3', 'wav', 'm4a', 'ogg'] : ['mp4', 'webm', 'mov', 'm4v', 'ogv'];
+  const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: [{ name: kind === 'audio' ? 'Audio Files' : 'Video Files', extensions: exts }] });
+  if (r.canceled || !r.filePaths.length) return { ok: false };
+  const p = r.filePaths[0];
+  if (fs.statSync(p).size > 300 * 1024 * 1024) return { ok: false, error: 'too big' };
+  return { ok: true, path: p, name: path.basename(p), mime: mediaMime(p), data: fs.readFileSync(p) };
+});
+ipcMain.handle('file:readMedia', async (_e, p) => {
+  try { if (!mediaMime(p) || !fs.existsSync(p)) return { ok: false }; return { ok: true, mime: mediaMime(p), data: fs.readFileSync(p) }; } catch { return { ok: false }; }
+});

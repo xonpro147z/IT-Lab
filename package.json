@@ -1,6 +1,6 @@
 {
   "name": "tinhoclab",
-  "version": "1.3.0",
+  "version": "1.6.1",
   "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
   "main": "main.js",
   "scripts": {
