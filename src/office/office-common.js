@@ -40,7 +40,10 @@ function initRibbon(onFile) {
     $$('#tabs button').forEach((x) => x.classList.remove('on'));
     b.classList.add('on');
     $$('.rpanel').forEach((p) => p.classList.toggle('on', p.id === 'rp-' + b.dataset.tab));
+    fitRibbon();
   }));
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(fitRibbon, 80); });
+  setTimeout(fitRibbon, 0); setTimeout(fitRibbon, 600);
   const f = $('#tabs .file'); if (f) f.addEventListener('click', onFile);
   // keep the document selection when clicking ribbon buttons
   $('#ribbon').addEventListener('mousedown', (e) => { if (!e.target.closest('select,input')) e.preventDefault(); });
@@ -48,6 +51,37 @@ function initRibbon(onFile) {
   $$('.grp .glabel').forEach((g) => { if (!g.querySelector('.launch')) g.insertAdjacentHTML('beforeend', '<svg class="launch" viewBox="0 0 12 12"><path d="M2 2h3M2 2v3M2 2l7 7M9 5v4H5" fill="none" stroke="#616161" stroke-width="1"/></svg>'); });
   $('#tabs').insertAdjacentHTML('beforeend', `<span class="tabsep"></span><span class="rbtn">💬 Comments</span><span class="rbtn share">Share ▾</span>`);
 }
+
+// ---- Ribbon tự thu gọn nhóm khi cửa sổ hẹp (giống Office thật) ----
+let grpPop = null;
+function closeGroupPop() { if (!grpPop) return; const { pop, grp, body } = grpPop; grp.insertBefore(body, grp.querySelector('.glabel')); pop.remove(); grpPop = null; }
+function collapseGroup(g) {
+  g.classList.add('collapsed');
+  const label = (g.querySelector('.glabel').firstChild?.textContent || '').trim();
+  const ic = g.querySelector('.gbody [data-i] svg, .gbody svg');
+  const b = document.createElement('button'); b.className = 'rb big gcoll'; b.title = label;
+  b.innerHTML = `<span class="gci">${ic ? ic.outerHTML : ''}</span>${label}<span class="caret">▾</span>`;
+  g.insertBefore(b, g.firstChild);
+  b.addEventListener('click', (e) => {
+    e.stopPropagation(); if (grpPop && grpPop.grp === g) return closeGroupPop(); closeGroupPop();
+    const body = g.querySelector('.gbody'); const pop = document.createElement('div'); pop.className = 'grouppop';
+    pop.appendChild(body); document.body.appendChild(pop);
+    const r = b.getBoundingClientRect(); pop.style.top = r.bottom + 4 + 'px'; pop.style.left = Math.max(6, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + 'px';
+    pop.addEventListener('mousedown', (ev) => { if (!ev.target.closest('select,input')) ev.preventDefault(); });
+    grpPop = { pop, grp: g, body };
+  });
+}
+function fitRibbon() {
+  const rb = $('#ribbon'); if (!rb) return;
+  closeGroupPop();
+  $$('.grp.collapsed', rb).forEach((g) => { g.classList.remove('collapsed'); g.querySelector('.gcoll')?.remove(); });
+  const panel = $('.rpanel.on', rb); if (!panel) return;
+  const groups = $$(':scope > .grp', panel).filter((g) => !g.classList.contains('grow'));
+  const gc = $('.galcells', panel); if (gc) gc.style.maxWidth = '';
+  for (let i = groups.length - 1; i >= 1 && rb.scrollWidth > rb.clientWidth + 1; i--) collapseGroup(groups[i]);
+  if (gc && gc.firstElementChild) { const cw = gc.firstElementChild.offsetWidth || 76; gc.style.maxWidth = Math.max(cw, Math.floor((gc.clientWidth + 1) / cw) * cw) + 'px'; }
+}
+document.addEventListener('mousedown', (e) => { if (grpPop && !grpPop.pop.contains(e.target) && !e.target.closest('.gcoll,.dropdown,.modal,.mbg')) closeGroupPop(); });
 
 // ---- Dropdowns ----
 let openDD = null;
@@ -122,23 +156,29 @@ async function pickImage() {
 }
 
 // ---- MOS-style exam task pane ----
+const TL = (en, vi) => (typeof OfficeLang !== 'undefined' ? OfficeLang.t(en, vi) : en);
 class TaskRunner {
   constructor({ app, exercises, load, api }) {
     Object.assign(this, { app, exercises, load, api });
     this.ex = null; this.cur = 0; this.results = null; this.marks = {}; this.t0 = 0; this.timer = null;
     this.pane = $('#taskpane');
   }
+  // bản đề bài theo ngôn ngữ đang chọn (tài liệu và cách chấm giữ nguyên)
+  lx(ex) { return typeof OfficeLang !== 'undefined' ? OfficeLang.localize([ex])[0] : ex; }
   listHTML() {
-    return `<div class="exlist">${this.exercises.map((ex, i) => {
-      const r = Progress.get(this.app, ex.id);
-      return `<div class="excard" data-i="${i}"><span class="st">${r ? (r.score === r.max ? '✔ Completed' : `${r.score}/${r.max}`) : ''}</span><b>Project ${i + 1}: ${escapeHtml(ex.title)}</b><p>${escapeHtml(ex.intro)}</p><p style="color:#8a8886">${ex.tasks.length} tasks</p></div>`;
+    return `<div class="exlist">${this.exercises.map((raw, i) => {
+      const ex = this.lx(raw); const r = Progress.get(this.app, ex.id);
+      return `<div class="excard" data-i="${i}"><span class="st">${r ? (r.score === r.max ? TL('✔ Completed', '✔ Hoàn thành') : `${r.score}/${r.max}`) : ''}</span><b>${TL('Project', 'Dự án')} ${i + 1}: ${escapeHtml(ex.title)}</b><p>${escapeHtml(ex.intro)}</p><p style="color:#8a8886">${ex.tasks.length} ${TL('tasks', 'nhiệm vụ')}</p></div>`;
     }).join('')}</div>`;
   }
   renderPicker(body, close) {
-    body.innerHTML = `<h2>Practice Projects</h2><p style="color:#616161;margin-top:-8px;font-size:13px">Choose a project, complete each task, then click <b>Submit project</b> to see your score.</p>${this.listHTML()}
-      <h2 style="margin-top:30px;font-size:22px">Blank</h2><div class="exlist"><div class="excard" data-free="1"><b>Blank document</b><p>Free practice without scoring.</p></div></div>`;
+    body.innerHTML = `<h2>${TL('Practice Projects', 'Dự án luyện tập')}</h2><p style="color:#616161;margin-top:-8px;font-size:13px">${TL('Choose a project, complete each task, then click <b>Submit project</b> to see your score.', 'Chọn một dự án, làm từng nhiệm vụ, rồi bấm <b>Nộp bài</b> để xem điểm.')} ${this.langSwitch()}</p>${this.listHTML()}
+      <h2 style="margin-top:30px;font-size:22px">${TL('Blank', 'Trống')}</h2><div class="exlist"><div class="excard" data-free="1"><b>${TL('Blank document', 'Tài liệu trống')}</b><p>${TL('Free practice without scoring.', 'Luyện tập tự do, không chấm điểm.')}</p></div></div>`;
     body.querySelectorAll('.excard').forEach((c) => c.onclick = () => { close(); if (c.dataset.free) this.free(); else this.start(this.exercises[+c.dataset.i]); });
+    this.bindLang(body, () => this.renderPicker(body, close));
   }
+  langSwitch() { if (typeof OfficeLang === 'undefined') return ''; const l = OfficeLang.get(); return `<span class="langsw" title="Ngôn ngữ đề bài / Task language"><button data-lang="vi" class="${l === 'vi' ? 'on' : ''}">Tiếng Việt</button><button data-lang="en" class="${l === 'en' ? 'on' : ''}">English</button></span>`; }
+  bindLang(root, redraw) { root.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); OfficeLang.set(b.dataset.lang); redraw(); })); }
   free() { this.ex = null; this.pane.hidden = true; clearInterval(this.timer); this.load(null); }
   start(ex) {
     this.ex = ex; this.cur = 0; this.results = null; this.marks = {};
@@ -150,39 +190,42 @@ class TaskRunner {
   }
   elapsed() { const s = Math.floor((Date.now() - this.t0) / 1000); const p = (x) => String(x).padStart(2, '0'); return `${p(Math.floor(s / 3600))}:${p(Math.floor(s / 60) % 60)}:${p(s % 60)}`; }
   render() {
-    const ex = this.ex; if (!ex) return;
+    if (!this.ex) return;
+    const ex = this.lx(this.ex);
     const t = ex.tasks[this.cur]; const res = this.results; const mk = this.marks[this.cur] || {};
-    const idx = this.exercises.indexOf(ex) + 1;
-    this.pane.innerHTML = `<div class="tp-head"><span class="proj">Project ${idx} of ${this.exercises.length}</span><b>${escapeHtml(ex.title)}</b>
-        <span class="timer" title="Time elapsed">⏱ <span id="tpTimer">${this.elapsed()}</span></span>
-        <button class="hbtn" data-a="list">Projects</button><button class="hbtn" data-a="restart">Restart project</button><button class="hbtn submit" data-a="check">Submit project</button><button class="hbtn" data-a="min" title="Minimize">▾</button></div>
-      <div class="tp-body"><div class="tp-tabs">${ex.tasks.map((_, i) => { const m = this.marks[i] || {}; const st = res ? (res[i] ? 'ok' : 'bad') : ''; return `<button data-i="${i}" class="${i === this.cur ? 'on' : ''} ${st}">Task ${i + 1}<span class="m">${res ? (res[i] ? '✔' : '✘') : (m.done ? '✓' : '') + (m.review ? ' ⚑' : '')}</span></button>`; }).join('')}</div>
-      <div class="tp-text">${t.text}${res ? `<div class="res" style="color:${res[this.cur] ? '#107c10' : '#c50f1f'}">${res[this.cur] ? '✔ Correct' : '✘ Not correct yet' + (t.hint ? ' — Hint: ' + t.hint : '')}</div>` : ''}</div>
-      <div class="tp-act"><label><input type="checkbox" data-m="done" ${mk.done ? 'checked' : ''}> Mark task complete</label><label><input type="checkbox" data-m="review" ${mk.review ? 'checked' : ''}> Mark for review</label>
-        <div style="display:flex;gap:6px;margin-top:auto"><button class="btn" data-a="prev">◀ Previous</button><button class="btn" data-a="next">Next ▶</button></div></div></div>`;
+    const idx = this.exercises.indexOf(this.ex) + 1;
+    this.pane.innerHTML = `<div class="tp-head"><span class="proj">${TL(`Project ${idx} of ${this.exercises.length}`, `Dự án ${idx}/${this.exercises.length}`)}</span><b>${escapeHtml(ex.title)}</b>
+        ${this.langSwitch()}
+        <span class="timer" title="${TL('Time elapsed', 'Thời gian đã làm')}">⏱ <span id="tpTimer">${this.elapsed()}</span></span>
+        <button class="hbtn" data-a="list">${TL('Projects', 'Danh sách dự án')}</button><button class="hbtn" data-a="restart">${TL('Restart project', 'Làm lại từ đầu')}</button><button class="hbtn submit" data-a="check">${TL('Submit project', 'Nộp bài')}</button><button class="hbtn" data-a="min" title="${TL('Minimize', 'Thu nhỏ')}">▾</button></div>
+      <div class="tp-body"><div class="tp-tabs">${ex.tasks.map((_, i) => { const m = this.marks[i] || {}; const st = res ? (res[i] ? 'ok' : 'bad') : ''; return `<button data-i="${i}" class="${i === this.cur ? 'on' : ''} ${st}">${TL('Task', 'Nhiệm vụ')} ${i + 1}<span class="m">${res ? (res[i] ? '✔' : '✘') : (m.done ? '✓' : '') + (m.review ? ' ⚑' : '')}</span></button>`; }).join('')}</div>
+      <div class="tp-text">${t.text}${res ? `<div class="res" style="color:${res[this.cur] ? '#107c10' : '#c50f1f'}">${res[this.cur] ? TL('✔ Correct', '✔ Đúng') : TL('✘ Not correct yet', '✘ Chưa đúng') + (t.hint ? TL(' — Hint: ', ' — Gợi ý: ') + t.hint : '')}</div>` : ''}</div>
+      <div class="tp-act"><label><input type="checkbox" data-m="done" ${mk.done ? 'checked' : ''}> ${TL('Mark task complete', 'Đánh dấu đã làm xong')}</label><label><input type="checkbox" data-m="review" ${mk.review ? 'checked' : ''}> ${TL('Mark for review', 'Đánh dấu để xem lại')}</label>
+        <div style="display:flex;gap:6px;margin-top:auto"><button class="btn" data-a="prev">◀ ${TL('Previous', 'Trước')}</button><button class="btn" data-a="next">${TL('Next', 'Tiếp')} ▶</button></div></div></div>`;
     this.pane.querySelectorAll('.tp-tabs button').forEach((b) => b.onclick = () => { this.cur = +b.dataset.i; this.render(); });
     this.pane.querySelectorAll('[data-m]').forEach((c) => c.onchange = () => { this.marks[this.cur] = { ...(this.marks[this.cur] || {}), [c.dataset.m]: c.checked }; this.render(); });
+    this.bindLang(this.pane, () => this.render());
     this.pane.onclick = async (e) => {
       const a = e.target.dataset.a; if (!a) return;
       if (a === 'check') this.check();
       if (a === 'next') { this.cur = (this.cur + 1) % ex.tasks.length; this.render(); }
       if (a === 'prev') { this.cur = (this.cur - 1 + ex.tasks.length) % ex.tasks.length; this.render(); }
       if (a === 'min') { this.pane.classList.toggle('min'); e.target.textContent = this.pane.classList.contains('min') ? '▴' : '▾'; }
-      if (a === 'restart') { const r = await modal('<h3>Restart project</h3><p>All changes you made in this project will be lost. Do you want to restart?</p>', [['Cancel'], ['Restart', 'primary']]); if (r.i === 1) this.start(ex); }
+      if (a === 'restart') { const r = await modal(TL('<h3>Restart project</h3><p>All changes you made in this project will be lost. Do you want to restart?</p>', '<h3>Làm lại từ đầu</h3><p>Mọi thay đổi em đã làm trong dự án này sẽ mất. Em có muốn làm lại không?</p>'), [[TL('Cancel', 'Huỷ')], [TL('Restart', 'Làm lại'), 'primary']]); if (r.i === 1) this.start(this.ex); }
       if (a === 'list') this.onList && this.onList();
     };
   }
   check() {
-    const ex = this.ex;
+    const ex = this.lx(this.ex);
     this.results = ex.tasks.map((t) => { try { return !!t.check(this.api); } catch (err) { console.warn(err); return false; } });
     const score = this.results.filter(Boolean).length;
     Progress.record(this.app, ex.id, score, ex.tasks.length);
     this.render();
     const pct = Math.round(score / ex.tasks.length * 100);
-    modal(`<h3>${score === ex.tasks.length ? '🎉 Excellent work!' : 'Project results'}</h3>
-      <p><b>${escapeHtml(ex.title)}</b>${Progress.student() ? ' — ' + escapeHtml(Progress.student()) : ''} · Time: ${this.elapsed()}</p>
-      <div style="font-size:30px;font-weight:700;color:${pct >= 80 ? '#107c10' : pct >= 50 ? '#b35c00' : '#c50f1f'}">${score}/${ex.tasks.length} tasks correct (${pct}%)</div>
-      <div style="margin-top:10px">${ex.tasks.map((t, i) => `<div style="padding:3px 0">${this.results[i] ? '✅' : '❌'} Task ${i + 1}: ${t.text.replace(/<[^>]+>/g, '')}</div>`).join('')}</div>`);
+    modal(`<h3>${score === ex.tasks.length ? TL('🎉 Excellent work!', '🎉 Xuất sắc!') : TL('Project results', 'Kết quả dự án')}</h3>
+      <p><b>${escapeHtml(ex.title)}</b>${Progress.student() ? ' — ' + escapeHtml(Progress.student()) : ''} · ${TL('Time', 'Thời gian')}: ${this.elapsed()}</p>
+      <div style="font-size:30px;font-weight:700;color:${pct >= 80 ? '#107c10' : pct >= 50 ? '#b35c00' : '#c50f1f'}">${TL(`${score}/${ex.tasks.length} tasks correct`, `Đúng ${score}/${ex.tasks.length} nhiệm vụ`)} (${pct}%)</div>
+      <div style="margin-top:10px">${ex.tasks.map((t, i) => `<div style="padding:3px 0">${this.results[i] ? '✅' : '❌'} ${TL('Task', 'Nhiệm vụ')} ${i + 1}: ${t.text.replace(/<[^>]+>/g, '')}</div>`).join('')}</div>`, [[TL('Close', 'Đóng'), 'primary']]);
   }
 }
 

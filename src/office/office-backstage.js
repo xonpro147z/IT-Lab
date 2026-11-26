@@ -397,7 +397,7 @@ const Office = (() => {
     $$('#tabs .file').forEach((f) => { const n = f.cloneNode(true); f.replaceWith(n); n.addEventListener('click', () => openBackstage('info')); });
     const ex = $('#btnEx');
     if (MODE === 'practice') {
-      ex.textContent = 'Exit Practice'; ex.onclick = () => (location.href = 'practice.html#' + A.app.toLowerCase());
+      ex.textContent = (typeof OfficeLang !== 'undefined' ? OfficeLang.t('Exit Practice', 'Thoát luyện tập') : 'Exit Practice'); ex.onclick = () => (location.href = 'practice.html#' + A.app.toLowerCase());
       runner.onList = () => (location.href = 'practice.html#' + A.app.toLowerCase());
       const e = runner.exercises.find((x) => x.id === params.get('ex'));
       if (e) { runner.start(e); resetFile(e.title); }

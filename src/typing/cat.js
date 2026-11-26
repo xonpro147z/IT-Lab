@@ -38,8 +38,8 @@ export class Cat {
     host.appendChild(this.svg);
     this.keys = new Map();
     this.paws = {
-      L: { rest: [150, 266], x: 150, y: 266, tx: 150, ty: 266, t: 0 },
-      R: { rest: [270, 266], x: 270, y: 266, tx: 270, ty: 266, t: 0 },
+      L: { rest: [156, 266], x: 156, y: 266, tx: 156, ty: 266, t: 0 },
+      R: { rest: [264, 266], x: 264, y: 266, tx: 264, ty: 266, t: 0 },
     };
     this.look = [0, 0]; this.lookT = [0, 0]; this.dil = 0;
     this.lastHit = 0; this.lastActive = performance.now(); this.blinkAt = performance.now() + 2500;
@@ -76,7 +76,17 @@ export class Cat {
     const defs = el('defs', {}, s);
     const outline = shade(c.body, lumHex(c.body) > 0.75 ? -0.2 : -0.3);
     const grad = (id, col) => { const g = el('radialGradient', { id, cx: '42%', cy: '35%', r: '75%' }, defs); el('stop', { offset: '0%', 'stop-color': shade(col, 0.16) }, g); el('stop', { offset: '70%', 'stop-color': col }, g); el('stop', { offset: '100%', 'stop-color': shade(col, -0.12) }, g); return `url(#${id})`; };
-    const furBody = grad('gBody', c.body), furHead = grad('gHead', c.body);
+    const furHead = grad('gHead', c.body);
+    const gb = el('radialGradient', { id: 'gBody', gradientUnits: 'userSpaceOnUse', cx: 196, cy: 218, r: 129, gradientTransform: 'translate(196 218) scale(1 0.77) translate(-196 -218)' }, defs);
+    el('stop', { offset: '0%', 'stop-color': shade(c.body, 0.16) }, gb); el('stop', { offset: '70%', 'stop-color': c.body }, gb); el('stop', { offset: '100%', 'stop-color': shade(c.body, -0.12) }, gb);
+    const furBody = 'url(#gBody)';
+    const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const stops = [[0, hex(shade(c.body, 0.16))], [0.7, hex(c.body)], [1, hex(shade(c.body, -0.12))]];
+    this.bodyAt = (x, y) => { // màu của lớp lông thân tại điểm (x, y) – để bàn tay cùng màu chỗ nó nằm
+      const t = Math.min(1, Math.hypot(x - 196, (y - 218) / 0.77) / 129);
+      const i = t <= 0.7 ? 0 : 1, a = stops[i], b = stops[i + 1], k = (t - a[0]) / (b[0] - a[0]);
+      return 'rgb(' + a[1].map((v, j) => Math.round(v + (b[1][j] - v) * k)).join(',') + ')';
+    };
     const legCol = c.pattern === 'points' ? c.dark : c.body;
     const pawCol = ['tuxedo', 'bicolor', 'calico'].includes(c.pattern) ? c.light : c.pattern === 'points' ? shade(c.dark, 0.1) : c.pattern === 'tabby' ? c.light : shade(c.body, 0.08);
     this.pawCol = pawCol;
@@ -173,21 +183,39 @@ export class Cat {
         x += kw;
       });
     });
-    // ---- hai chân trước ngắn, bàn chân mochi có đệm hồng ----
+    // ---- hai tay trước: mọc từ hai bên vai, thon dần, bàn tay liền khối với cánh tay ----
     this.legs = {};
+    const sock = ['tuxedo', 'bicolor', 'calico', 'tabby'].includes(c.pattern) && pawCol !== legCol;
     for (const side of ['L', 'R']) {
       const g = el('g', {}, s);
-      const ol = el('path', { fill: 'none', stroke: outline, 'stroke-width': 30, 'stroke-linecap': 'round' }, g);
-      const fill = el('path', { fill: 'none', stroke: (c.pattern === 'calico' && side === 'L') ? c.p1 : legCol, 'stroke-width': 25.5, 'stroke-linecap': 'round' }, g);
+      // màu tay: cùng lớp màu với thân (không lộ đường nối); khác màu thì chuyển dần từ màu thân ở vai
+      const tipCol = (c.pattern === 'calico' && side === 'L') ? c.p1 : legCol;
+      let armCol = furBody;
+      if (tipCol !== c.body) {
+        const lg = el('linearGradient', { id: 'gArm' + side, gradientUnits: 'userSpaceOnUse', x1: 0, y1: 214, x2: 0, y2: 254 }, defs);
+        el('stop', { offset: '0%', 'stop-color': c.body }, lg); el('stop', { offset: '100%', 'stop-color': tipCol }, lg);
+        armCol = `url(#gArm${side})`;
+      }
+      // viền tay mờ dần lên phía vai để tay "mọc" ra từ thân
+      const og = el('linearGradient', { id: 'gOl' + side, gradientUnits: 'userSpaceOnUse', x1: 0, y1: 222, x2: 0, y2: 258 }, defs);
+      el('stop', { offset: '0%', 'stop-color': outline, 'stop-opacity': 0 }, og); el('stop', { offset: '100%', 'stop-color': outline, 'stop-opacity': 1 }, og);
+      const shadow = el('ellipse', { rx: 14, ry: 4.5, fill: 'rgba(0,0,0,.22)' }, g);
+      const ol = el('path', { fill: 'none', stroke: `url(#gOl${side})`, 'stroke-width': 4.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, g);
+      const pawOl = el('g', {}, g);
+      el('path', { d: 'M-15 -2 C -15 -12, 15 -12, 15 -2 C 15 9, 9 13, 0 13 C -9 13, -15 9, -15 -2 Z', fill: outline, stroke: outline, 'stroke-width': 4.6, 'stroke-linejoin': 'round' }, pawOl);
+      const cap = el('circle', { cx: side === 'L' ? 160 : 260, cy: 214, r: 15, fill: armCol }, g);
+      const fill = el('path', { fill: armCol }, g);
+      const sockP = el('path', { fill: sock ? pawCol : 'none' }, g);
       const stripes = el('g', {}, g);
       const paw = el('g', {}, g);
-      el('ellipse', { cx: 0, cy: 0, rx: 17, ry: 12.5, fill: pawCol, stroke: outline, 'stroke-width': 2.2 }, paw);
-      el('path', { d: 'M-6 -4 l 0 6 M6 -4 l 0 6', stroke: outline, 'stroke-width': 1.6, 'stroke-linecap': 'round', opacity: 0.55 }, paw);
+      const pawFill = el('path', { d: 'M-15 -2 C -15 -12, 15 -12, 15 -2 C 15 9, 9 13, 0 13 C -9 13, -15 9, -15 -2 Z', fill: sock ? pawCol : tipCol === c.body ? c.body : tipCol }, paw);
+      el('ellipse', { cx: -3, cy: -4, rx: 8, ry: 4, fill: '#fff', opacity: 0.22 }, paw);
+      el('path', { d: 'M-5.5 6.5 q 0.5 3.2 0 5.6 M5.5 6.5 q -0.5 3.2 0 5.6', stroke: outline, 'stroke-width': 1.7, 'stroke-linecap': 'round', fill: 'none', opacity: 0.6 }, paw);
       const beans = el('g', { opacity: 0 }, paw);
-      el('ellipse', { cx: 0, cy: 4, rx: 6, ry: 4.5, fill: '#f7a1b1' }, beans);
-      [-8, 0, 8].forEach((x) => el('circle', { cx: x, cy: -4, r: 2.6, fill: '#f7a1b1' }, beans));
-      this.legs[side] = { ol, fill, paw, beans, stripes, shoulder: side === 'L' ? [180, 214] : [240, 214] };
-      if (c.pattern === 'tabby') for (let i = 0; i < 2; i++) el('path', { stroke: c.dark, 'stroke-width': 4, 'stroke-linecap': 'round', fill: 'none', opacity: 0.6 }, stripes);
+      el('ellipse', { cx: 0, cy: 2, rx: 5.5, ry: 4, fill: '#f7a1b1' }, beans);
+      [-8, 0, 8].forEach((x) => el('ellipse', { cx: x, cy: x ? 8.5 : 10, rx: 2.6, ry: 2.2, fill: '#f7a1b1' }, beans));
+      this.legs[side] = { pawFill, matchBody: !sock && tipCol === c.body, ol, fill, sockP, paw, pawOl, beans, stripes, shadow, shoulder: side === 'L' ? [160, 214] : [260, 214], out: side === 'L' ? -1 : 1 };
+      if (c.pattern === 'tabby') for (let i = 0; i < 2; i++) el('path', { stroke: c.dark, 'stroke-width': 4, 'stroke-linecap': 'round', fill: 'none', opacity: 0.55 }, stripes);
     }
     this.fxLayer = el('g', { 'pointer-events': 'none' }, s);
     this.fx = [];
@@ -230,13 +258,33 @@ export class Cat {
       const lift = age < 45 ? (age / 45) * 12 : age < 95 ? 12 * (1 - (age - 45) / 50) : 0;
       const y = p.y - lift;
       const [sx, sy] = L.shoulder;
-      const mx = (sx + p.x) / 2 + (side === 'L' ? -6 : 6), my = Math.min(sy, y) + (y - sy) * 0.4;
-      const d = `M${sx} ${sy} Q ${mx} ${my} ${p.x} ${y - 4}`;
-      L.ol.setAttribute('d', d); L.fill.setAttribute('d', d);
+      // đường tâm cánh tay: bezier bậc 3 từ vai tới cổ tay, khuỷu hơi phình ra ngoài
+      const wx = p.x, wy = y - 7;
+      const c1 = [sx + L.out * 5, sy + 20], c2 = [wx + L.out * 2, wy - 20];
+      const B = (t) => { const u = 1 - t; return [u * u * u * sx + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * wx, u * u * u * sy + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * wy]; };
+      const D = (t) => { const u = 1 - t; return [3 * u * u * (c1[0] - sx) + 6 * u * t * (c2[0] - c1[0]) + 3 * t * t * (wx - c2[0]), 3 * u * u * (c1[1] - sy) + 6 * u * t * (c2[1] - c1[1]) + 3 * t * t * (wy - c2[1])]; };
+      const N = 24, lft = [], rgt = [];
+      for (let i = 0; i <= N; i++) {
+        const t = i / N, [px, py] = B(t), [dx, dy] = D(t), len = Math.hypot(dx, dy) || 1;
+        const w = 15 - 4.5 * Math.pow(t, 0.8); // thon dần từ vai xuống cổ tay
+        lft.push([px - (dy / len) * w, py + (dx / len) * w]); rgt.push([px + (dy / len) * w, py - (dx / len) * w]);
+      }
+      const f = (q) => q[0].toFixed(1) + ' ' + q[1].toFixed(1);
+      const side1 = 'M' + lft.map(f).join(' L'), side2 = 'M' + rgt.map(f).join(' L');
+      const o0 = 0;
+      L.ol.setAttribute('d', 'M' + lft.slice(o0).map(f).join(' L') + ' M' + rgt.slice(o0).map(f).join(' L'));
+      L.fill.setAttribute('d', side1 + ' L' + rgt.slice().reverse().map(f).join(' L') + ' Z');
+      const k0 = Math.round(N * 0.8), [mx0, my0] = B(k0 / N), [tdx, tdy] = D(k0 / N), tl = Math.hypot(tdx, tdy) || 1;
+      L.sockP.setAttribute('d', 'M' + f(rgt[k0]) + ' Q ' + f([mx0 - (tdx / tl) * 9, my0 - (tdy / tl) * 9]) + ' ' + f(lft[k0]) + ' L' + lft.slice(k0 + 1).map(f).join(' L') + ' L' + rgt.slice(k0).reverse().map(f).join(' L') + ' Z');
+      const [ex, ey] = D(1); const rot = Math.max(-28, Math.min(28, (Math.atan2(-ex, ey) * 180) / Math.PI * 0.6));
       const squash = age < 130 && age > 45;
-      L.paw.setAttribute('transform', `translate(${p.x} ${y}) scale(${squash ? 1.08 : 1} ${squash ? 0.88 : 1})`);
+      const tf = `translate(${p.x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(1)}) scale(${squash ? 1.08 : 1} ${squash ? 0.9 : 1})`;
+      L.paw.setAttribute('transform', tf); L.pawOl.setAttribute('transform', tf);
+      if (L.matchBody) L.pawFill.setAttribute('fill', this.bodyAt(p.x, y - 4));
       L.beans.setAttribute('opacity', lift > 4 ? 1 : 0);
-      [...L.stripes.children].forEach((st, i) => { const t = 0.35 + i * 0.22; const x = sx + (p.x - sx) * t, yy = sy + (y - sy) * t; st.setAttribute('d', `M${x - 11} ${yy} l 22 2`); });
+      L.shadow.setAttribute('cx', p.x.toFixed(1)); L.shadow.setAttribute('cy', (p.y + 11).toFixed(1));
+      L.shadow.setAttribute('opacity', (1 - lift / 16).toFixed(2)); L.shadow.setAttribute('rx', (14 - lift * 0.3).toFixed(1));
+      [...L.stripes.children].forEach((st, i) => { const t = 0.3 + i * 0.2; const [px, py] = B(t), [dx, dy] = D(t), len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len, w = 12 - 4 * t; st.setAttribute('d', `M${(px - nx * w).toFixed(1)} ${(py - ny * w).toFixed(1)} Q ${(px + dx / len * 3).toFixed(1)} ${(py + dy / len * 3).toFixed(1)} ${(px + nx * w).toFixed(1)} ${(py + ny * w).toFixed(1)}`); });
     }
     // hướng nhìn: phím vừa gõ > con trỏ chuột > nhìn thẳng
     let near = 0;

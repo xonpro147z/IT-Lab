@@ -18,6 +18,8 @@ export default [
 | **Kiểu dáng công nghiệp** | Hình dáng bên ngoài của sản phẩm | Kiểu dáng một chiếc xe máy | |
 | **Bí mật kinh doanh** | Thông tin bí mật mang lại lợi thế | Công thức một loại nước giải khát | |
 
+{{photos:puma,coke,adidas|Nhãn hiệu xuất hiện khắp nơi: trên biển hiệu cửa hàng, chai nước, giày thể thao. Tên và logo của các hãng được pháp luật bảo hộ, người khác không được dùng để làm hàng nhái.}}
+
 **Quyền tác giả phát sinh tự động** ngay khi tác phẩm được tạo ra và thể hiện dưới dạng nhất định, không cần đăng ký. Bức tranh em vẽ, đoạn code Scratch em viết đều thuộc quyền tác giả của em. Theo luật Việt Nam, với đa số loại tác phẩm, quyền này kéo dài suốt cuộc đời tác giả và **50 năm** sau khi tác giả mất. Sau thời gian đó, tác phẩm thuộc **phạm vi công cộng**, ai cũng được dùng.
 
 ## Giấy phép phần mềm
@@ -65,7 +67,11 @@ Các giấy phép mã nguồn mở phổ biến:
   body: `
 **Creative Commons** (CC) là tổ chức phi lợi nhuận đưa ra bộ **giấy phép miễn phí**. Tác giả dùng các giấy phép này để nói trước với mọi người: “Bạn **được phép** dùng tác phẩm của tôi, miễn là tuân theo các điều kiện sau.” Nhờ vậy người dùng không cần xin phép từng lần. Wikipedia, nhiều kho ảnh và tài liệu học tập mở dùng giấy phép CC.
 
+{{photo:ccbuttons|Huy hiệu Creative Commons. Chính các ảnh trong Bách khoa này cũng được dùng theo giấy phép CC hoặc thuộc phạm vi công cộng.}}
+
 ## Bốn điều kiện cơ bản
+{{icons:i_by,i_sa,i_nc,i_nd|Bốn biểu tượng điều kiện của Creative Commons. Mỗi giấy phép là sự kết hợp của một vài biểu tượng này.}}
+
 | Ký hiệu | Tên | Ý nghĩa |
 | **BY** | Ghi công (*Attribution*) | Phải ghi tên tác giả, nguồn và giấy phép. **Có trong mọi giấy phép CC** |
 | **SA** | Chia sẻ tương tự (*ShareAlike*) | Nếu em chỉnh sửa, phối lại, sản phẩm mới phải dùng **cùng giấy phép** |
@@ -73,6 +79,8 @@ Các giấy phép mã nguồn mở phổ biến:
 | **ND** | Không phái sinh (*NoDerivatives*) | Chỉ được dùng nguyên bản, **không được chỉnh sửa** |
 
 ## Sáu giấy phép
+{{icons:cc_by,cc_by_sa,cc_by_nc,cc_by_nc_sa,cc_by_nd,cc_by_nc_nd|Sáu huy hiệu giấy phép chính thức, xếp từ thoáng nhất đến chặt nhất. Khi thấy huy hiệu này dưới một bức ảnh hay bài viết, em biết ngay mình được dùng tác phẩm thế nào.}}
+
 {{fig:cc-grid|Sáu giấy phép CC kết hợp từ bốn điều kiện, xếp từ thoáng nhất đến chặt nhất.}}
 
 | Giấy phép | Được sửa? | Được dùng thương mại? | Ghi chú |
@@ -82,6 +90,8 @@ Các giấy phép mã nguồn mở phổ biến:
 | CC BY-NC-SA | ✓ (cùng giấy phép) | ✗ | |
 | CC BY-ND | ✗ | ✓ | |
 | CC BY-NC-ND | ✗ | ✗ | Chặt nhất: chỉ được chia sẻ nguyên bản, ghi công, không kiếm tiền |
+
+{{icons:cc_zero|Biểu tượng CC0: tác giả từ bỏ quyền, ai cũng được dùng tự do.}}
 
 Ngoài ra, **CC0** (“không giữ quyền”) nghĩa là tác giả từ bỏ quyền ở mức tối đa, đưa tác phẩm vào **phạm vi công cộng**. Em dùng tự do, không bắt buộc ghi công, nhưng ghi công vẫn là việc nên làm.
 
@@ -136,6 +146,8 @@ Nhiều dịch vụ hiện hỗ trợ **khoá truy cập** (*passkey*): đăng n
 ## Xác thực nhiều yếu tố (2FA / MFA)
 {{fig:twofa|Xác thực hai lớp yêu cầu ít nhất hai loại bằng chứng khác nhau.}}
 
+{{photo:yubikey|Khoá bảo mật phần cứng là yếu tố “điều em CÓ”: cắm vào máy hoặc chạm vào điện thoại để xác nhận đăng nhập.}}
+
 Kể cả khi kẻ xấu biết mật khẩu, chúng vẫn **không đăng nhập được** nếu thiếu yếu tố thứ hai. Nên ưu tiên ứng dụng xác thực (Google Authenticator, Microsoft Authenticator) hơn mã gửi qua tin nhắn SMS.
 
 ## Bảo vệ thiết bị
@@ -174,6 +186,8 @@ Dấu hiệu nhận biết:
 > Nghi ngờ thì **không bấm**: tự gõ địa chỉ chính thức vào trình duyệt, hoặc hỏi người lớn. Lỡ nhập mật khẩu vào trang giả thì **đổi mật khẩu ngay** và bật xác thực hai lớp.
 
 ## Wi-Fi công cộng
+{{photo:wifisign|Mật khẩu Wi-Fi công cộng ai cũng biết, nên mọi người dùng chung một mạng.}}
+
 - Tránh đăng nhập tài khoản quan trọng hoặc chuyển tiền khi dùng Wi-Fi quán cà phê.
 - Kiểm tra đúng tên mạng; kẻ gian có thể phát Wi-Fi giả trùng tên.
 - Tắt chế độ tự động kết nối Wi-Fi lạ.
@@ -227,6 +241,16 @@ Xem thêm: [[danh-tinh-so|Danh tính kỹ thuật số]] · [[dat-lai-thiet-bi|�
 
 > Em có thể luyện tạo và định dạng biểu đồ trong phần **Luyện tập Office → Excel** của TinHocLab.
 
+## Những biểu đồ nổi tiếng trong lịch sử
+Biểu đồ đã giúp con người hiểu dữ liệu từ hơn 200 năm trước, khi chưa có máy tính:
+- **William Playfair (1786)** vẽ một trong những **biểu đồ cột** đầu tiên, so sánh hàng hoá Scotland xuất và nhập khẩu với từng nước.
+- **Florence Nightingale (1858)**, nữ y tá người Anh, dùng biểu đồ “hoa hồng” (một dạng biểu đồ tròn) để chứng minh phần lớn binh sĩ chết vì **bệnh có thể phòng tránh** chứ không phải vì vết thương. Nhờ vậy điều kiện vệ sinh trong bệnh viện quân đội được cải thiện.
+- **Charles Minard (1869)** thể hiện cuộc hành quân của Napoléon sang Nga năm 1812 trên một hình duy nhất. Độ rộng dải màu cho biết số quân còn lại, dải màu đen là đường rút lui trong giá rét.
+
+{{photos:playfair,nightingale|Biểu đồ cột của Playfair và biểu đồ “hoa hồng” của Nightingale.}}
+
+{{photo:minard|Biểu đồ của Minard được nhiều người xem là một trong những biểu đồ hay nhất từng được vẽ.}}
+
 ## Đọc biểu đồ có tư duy phản biện
 {{fig:chart-trap|Cùng một bộ số liệu, cắt trục làm chênh lệch trông lớn hơn nhiều.}}
 
@@ -257,6 +281,8 @@ Xem thêm: [[danh-tinh-so|Danh tính kỹ thuật số]] · [[dat-lai-thiet-bi|�
 - **Học sâu** (*Deep Learning*): học máy dùng **mạng nơ-ron nhân tạo** nhiều lớp, mô phỏng một cách đơn giản cách các tế bào thần kinh kết nối. Học sâu giỏi xử lý ảnh, âm thanh, ngôn ngữ.
 - **AI tạo sinh** (*Generative AI*): AI **tạo ra nội dung mới** như văn bản, hình ảnh, âm nhạc, video, mã lập trình.
 
+{{photos:deepblue,roomba,waymo|Deep Blue đánh bại nhà vô địch cờ vua thế giới Garry Kasparov năm 1997; robot hút bụi tự lập bản đồ căn phòng; xe tự lái dùng camera và cảm biến để “nhìn” đường.}}
+
 ## Phân loại theo năng lực
 | Loại | Mô tả | Hiện trạng |
 | **AI hẹp** (Narrow AI / ANI) | Giỏi một hoặc một nhóm nhiệm vụ cụ thể | **Mọi AI hiện nay** đều thuộc loại này, kể cả chatbot rất giỏi |
@@ -271,6 +297,8 @@ Xem thêm: [[danh-tinh-so|Danh tính kỹ thuật số]] · [[dat-lai-thiet-bi|�
 | **Hệ thống gợi ý** | Đoán điều em thích | Gợi ý video, sản phẩm, bài hát |
 | **AI tạo sinh** | Tạo nội dung mới | Chatbot (ChatGPT, Gemini, Copilot, Claude…), tạo ảnh, tạo nhạc |
 | **Robot và điều khiển** | Hành động trong thế giới thật | Robot hút bụi, cánh tay robot trong nhà máy |
+
+{{photo:robotarm|Robot công nghiệp được điều khiển bằng máy tính, ngày càng được kết hợp với AI để nhận biết vật thể.}}
 
 ## Chatbot AI hoạt động thế nào?
 Chatbot dựa trên **mô hình ngôn ngữ lớn** (*LLM*), được huấn luyện trên lượng văn bản khổng lồ. Về cơ bản, mô hình học cách **dự đoán từ tiếp theo** hợp lý nhất. Nhờ vậy nó viết được câu trả lời trôi chảy, nhưng điều đó **không có nghĩa là nó luôn đúng**.
@@ -305,6 +333,8 @@ Các công cụ [[tri-tue-nhan-tao|AI]] có thể là một **gia sư kiên nh�
 2. **Đúng:** AI có thể sai hoặc bịa nguồn. Hãy **kiểm tra lại** bằng sách giáo khoa và nguồn tin cậy; xem [[tim-kiem|Tìm kiếm thông tin hiệu quả]].
 3. **Đủ riêng tư:** không nhập họ tên đầy đủ, địa chỉ, số điện thoại, ảnh cá nhân, mật khẩu hay thông tin của bạn bè vào chatbot. Kiểm tra **độ tuổi tối thiểu** của từng dịch vụ và hỏi ý kiến cha mẹ.
 4. **Đề rõ nguồn:** nếu được phép dùng, hãy **ghi rõ** em đã dùng công cụ nào, vào việc gì. Nộp bài AI viết mà nhận là của mình là **gian lận** và đạo văn; xem [[so-huu-tri-tue|Sở hữu trí tuệ]].
+
+{{photo:libpc|Máy tính và AI là công cụ hỗ trợ học tập; điều quan trọng là em vẫn tự suy nghĩ.}}
 
 ## Nên và không nên
 | ✅ Nên dùng AI để… | ❌ Không nên dùng AI để… |

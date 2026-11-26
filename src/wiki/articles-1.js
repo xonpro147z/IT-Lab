@@ -31,6 +31,10 @@ Có thể hình dung hệ điều hành như **người quản lý toà nhà**: 
 | Android | Google (dựa trên Linux) | Điện thoại, máy tính bảng | Hệ điều hành có nhiều người dùng nhất thế giới |
 | iOS / iPadOS | Apple | iPhone, iPad | Kho ứng dụng kiểm duyệt chặt, cập nhật đồng loạt |
 
+{{photos:surface,macair|Hai hệ điều hành phổ biến nhất trên máy tính xách tay: Windows và macOS.}}
+
+{{photos:mint,android,chromebook|Ba hệ điều hành trên ba loại thiết bị khác nhau.}}
+
 Theo số liệu StatCounter tháng 9/2026, tính trên mọi loại thiết bị, Android chiếm khoảng 42%, Windows khoảng 30% và iOS khoảng 19%.
 
 ## Phân loại
@@ -66,10 +70,14 @@ Những máy tính đầu tiên (thập niên 1940–1950) **không có hệ đi
 ## Thời kỳ máy tính lớn (1950–1970)
 Các hệ thống *xử lý theo lô* (batch) cho phép xếp hàng nhiều công việc để máy tự chạy lần lượt. Sau đó xuất hiện hệ thống *chia sẻ thời gian*, cho nhiều người cùng dùng một máy tính lớn qua các thiết bị đầu cuối.
 
+{{photos:eniac,pdp7|Từ những cỗ máy chiếm cả căn phòng đến chiếc máy tính đầu tiên chạy UNIX.}}
+
 Năm **1969**, Ken Thompson và Dennis Ritchie tại Bell Labs (Mỹ) phát triển **UNIX**. UNIX được viết lại bằng ngôn ngữ C nên dễ chuyển sang máy khác. Nhiều ý tưởng của UNIX như cây thư mục, “mọi thứ là tệp”, kết hợp các lệnh nhỏ vẫn còn trong Linux và macOS ngày nay.
 
 ## Máy tính cá nhân và dòng lệnh (1980)
 Năm **1981**, IBM ra mắt máy tính cá nhân IBM PC, chạy **MS-DOS** của Microsoft. Người dùng phải gõ lệnh như \`dir\`, \`copy\`, \`cd\` để làm việc. Đây là lý do cửa sổ *Command Prompt* trên Windows vẫn hiểu nhiều lệnh giống DOS.
+
+{{photos:ibmpc,mac128|Hai chiếc máy đã đưa máy tính vào văn phòng và gia đình: IBM PC (dòng lệnh) và Macintosh (giao diện đồ hoạ).}}
 
 ## Cuộc cách mạng giao diện đồ hoạ (1984–1995)
 - **1984:** Apple Macintosh đưa giao diện đồ hoạ với cửa sổ, biểu tượng và chuột đến người dùng phổ thông. Ý tưởng này bắt nguồn từ phòng thí nghiệm Xerox PARC.
@@ -83,10 +91,14 @@ Năm **1991**, sinh viên Phần Lan **Linus Torvalds** công bố nhân **Linux
 - **2001:** Windows XP, hệ điều hành phổ thông đầu tiên của Microsoft dùng nhân NT ổn định; cùng năm Apple ra Mac OS X dựa trên UNIX.
 - **2007:** iPhone ra mắt cùng iPhone OS (sau đổi tên **iOS**), mở ra kỷ nguyên điện thoại cảm ứng.
 - **2008:** Điện thoại Android đầu tiên được bán; Android sau đó trở thành hệ điều hành có nhiều người dùng nhất thế giới.
-- **2011:** Chromebook với ChromeOS, hệ điều hành “sống trên trình duyệt”.
+- **2011:** Chromebook với ChromeOS
+
+, hệ điều hành “sống trên trình duyệt”.
 - **2015:** Windows 10; **2021:** Windows 11 với thanh Taskbar căn giữa.
 - **2025:** Apple đổi cách đặt tên theo năm (iOS 26, macOS 26); Microsoft ngừng hỗ trợ Windows 10 (14/10/2025).
 - **2026:** Google phát hành Android 17 (6/2026).
+
+{{photo:g1|Bàn phím trượt và màn hình cảm ứng của chiếc điện thoại Android đầu tiên.}}
 
 ## Xu hướng hiện nay
 - **Trí tuệ nhân tạo tích hợp:** trợ lý AI có sẵn trong hệ điều hành; xem [[tri-tue-nhan-tao|Trí tuệ nhân tạo]].
@@ -127,6 +139,8 @@ Máy tính lưu mọi thứ (chữ, ảnh, nhạc, video) dưới dạng các co
 
 Sau PB còn có Exabyte (EB), Zettabyte (ZB) và Yottabyte (YB).
 
+{{photo:floppy|Đĩa mềm 3,5 inch phổ biến chỉ chứa 1,44 MB, chưa đủ cho một bức ảnh điện thoại ngày nay.}}
+
 ## Vì sao là 1.024 mà không phải 1.000?
 Máy tính dùng hệ **nhị phân** (cơ số 2), và 2¹⁰ = 1.024 là luỹ thừa của 2 gần với 1.000 nhất. Tuy nhiên có **hai cách tính** đang cùng tồn tại:
 
@@ -144,6 +158,8 @@ Nhà sản xuất tính 1 TB = 1.000.000.000.000 byte. Windows lại chia cho 1.
 Ổ cứng **không bị thiếu dung lượng**, chỉ là hai bên dùng hai cách đếm khác nhau. Ngoài ra hệ điều hành và phân vùng khôi phục cũng chiếm thêm một phần.
 
 ## Bộ nhớ trong và bộ nhớ ngoài
+{{photos:hdd,ssd,usb|Các thiết bị lưu trữ lâu dài: ổ cứng HDD có đĩa quay, SSD không có bộ phận chuyển động nên nhanh và bền hơn, USB nhỏ gọn dễ mang theo.}}
+
 - **RAM** (bộ nhớ tạm): lưu dữ liệu đang dùng, mất khi tắt máy. RAM càng lớn, mở được càng nhiều chương trình cùng lúc.
 - **Ổ lưu trữ** (HDD, SSD, USB, thẻ nhớ): lưu lâu dài, không mất khi tắt máy. Xem thêm phần [[loi-may-tinh|lỗi “ổ đĩa đầy”]].
 - **Bộ nhớ đám mây**: lưu trên máy chủ qua Internet, ví dụ Google Drive, OneDrive; xem [[ung-dung-dam-may|Ứng dụng đám mây]].
@@ -190,6 +206,8 @@ Hầu hết sự cố máy tính hằng ngày đều có thể tự xử lý n�
 > Nhớ: **Không tự ý tháo máy** hoặc can thiệp phần cứng khi máy đang cắm điện. Phòng máy trường học thì hãy báo thầy cô.
 
 ## Phòng bệnh hơn chữa bệnh
+{{photos:dusty,crack|Hai “thủ phạm” thường gặp: bụi làm máy nóng, chậm và tự tắt; va đập làm hỏng màn hình.}}
+
 - Cập nhật hệ điều hành và ứng dụng thường xuyên.
 - **Sao lưu dữ liệu** theo quy tắc 3-2-1: 3 bản sao, trên 2 loại thiết bị, 1 bản ở nơi khác (ví dụ đám mây).
 - Tắt máy đúng cách, không rút điện đột ngột.
@@ -235,6 +253,8 @@ Tên mục có thể khác đôi chút tuỳ phiên bản.
 | Android | Cài đặt → Hệ thống → Tuỳ chọn đặt lại → **Xoá mọi dữ liệu (đặt lại cài đặt gốc)** |
 | iPhone / iPad | Cài đặt → Cài đặt chung → Chuyển hoặc đặt lại iPhone → **Xoá tất cả nội dung và cài đặt** |
 
+{{photo:recovery|Trên điện thoại Android, khôi phục cài đặt gốc cũng có thể làm trong chế độ khôi phục (Recovery) bằng tổ hợp phím nguồn và âm lượng.}}
+
 ## Checklist an toàn
 1. **Sao lưu** dữ liệu quan trọng lên đám mây hoặc ổ ngoài; xem [[ung-dung-dam-may|Ứng dụng đám mây]].
 2. Ghi nhớ mật khẩu tài khoản Google, Apple ID, Microsoft. Sau khi đặt lại, nhiều máy yêu cầu đăng nhập lại tài khoản cũ để chống trộm (*khoá kích hoạt*).
@@ -267,6 +287,8 @@ Tên mục có thể khác đôi chút tuỳ phiên bản.
 - **Modem:** kết nối nhà em với nhà cung cấp Internet (Viettel, VNPT, FPT…).
 - **Router (bộ định tuyến):** chia sẻ kết nối cho nhiều thiết bị và phát Wi-Fi. Nhiều gia đình dùng thiết bị kết hợp cả hai.
 - **Switch:** nối nhiều máy tính bằng dây trong phòng máy.
+
+{{photos:switch,fiber|Hạ tầng thật của mạng: switch và dây mạng trong phòng máy, sợi quang truyền dữ liệu bằng ánh sáng đi khắp thế giới.}}
 
 ## Điều gì xảy ra khi em gõ một địa chỉ web?
 {{fig:net-dns|Hành trình của một yêu cầu truy cập trang web.}}

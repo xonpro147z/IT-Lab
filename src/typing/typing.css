@@ -26,7 +26,7 @@ body { margin: 0; display: flex; flex-direction: column; overflow: hidden; backg
 #live #lvWpm, #live #lvAcc { color: var(--ink3); font-weight: 500; font-size: 18px; align-self: flex-end; padding-bottom: 3px; }
 #wordsWrap { position: relative; height: calc(var(--lh) * 3); --lh: 46px; overflow: hidden; outline: none; cursor: text; margin-top: 8px; }
 #hidden { position: absolute; opacity: 0; pointer-events: none; left: 0; top: 0; width: 10px; height: 10px; }
-#words { position: relative; display: flex; flex-wrap: wrap; align-content: flex-start; font-family: 'Roboto Mono', 'JetBrains Mono', Consolas, 'DejaVu Sans Mono', 'Courier New', monospace; font-size: 27px; line-height: var(--lh); color: #b9b9bf; transition: transform .14s ease-out; user-select: none; }
+#words { position: relative; display: flex; flex-wrap: wrap; align-content: flex-start; font-family: 'TinHoc Mono', 'Roboto Mono', 'JetBrains Mono', Consolas, 'DejaVu Sans Mono', 'Courier New', monospace; font-size: 27px; line-height: var(--lh); color: #b9b9bf; transition: transform .14s ease-out; user-select: none; }
 .word { margin: 0 .3em 0 0; position: relative; white-space: pre; }
 .word.err { text-decoration: underline; text-decoration-color: #e24a4a; text-underline-offset: 7px; text-decoration-thickness: 2px; }
 .word i { font-style: normal; transition: color .06s; }

@@ -5,9 +5,9 @@ const [page, out, scriptFile] = process.argv.filter(a => !a.startsWith('--')).sl
 app.commandLine.appendSwitch('use-angle', 'swiftshader');
 app.commandLine.appendSwitch('enable-unsafe-swiftshader');
 app.whenReady().then(async () => {
-  const win = new BrowserWindow({ width: 1366, height: 800, show: true, webPreferences: { preload: path.join(__dirname, '..', 'preload.js') } });
+  const win = new BrowserWindow({ width: +(process.env.W || 1366), height: +(process.env.H || 800), show: true, webPreferences: { preload: path.join(__dirname, '..', 'preload.js') } });
   win.webContents.on('console-message', (e, level, msg, line, src) => { if (level >= 2) console.log('CONSOLE', level, msg, src + ':' + line); });
-  await win.loadFile(path.join(__dirname, '..', 'src', page));
+  { const [pg, qs] = page.split('?'); await win.loadFile(path.join(__dirname, '..', 'src', pg), qs ? { search: qs } : {}); }
   await new Promise(r => setTimeout(r, 2500));
   if (scriptFile) {
     const code = fs.readFileSync(scriptFile, 'utf8');

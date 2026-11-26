@@ -25,6 +25,7 @@ Phần mềm chạy hoàn toàn offline, không cần Internet.
 
 ### Bách khoa Tin học (src/wiki)
 - Kho kiến thức kiểu Wikipedia, 17 bài trong 6 chủ đề: hệ điều hành và lược sử, đơn vị bộ nhớ, lỗi máy tính, đặt lại thiết bị, mạng và Internet, điện toán đám mây, ứng dụng đám mây, trình duyệt, toán tử tìm kiếm, danh tính số, sở hữu trí tuệ và giấy phép phần mềm, Creative Commons, bảo mật, biểu đồ, AI, dùng AI trong học tập.
+- 49 ảnh thật và biểu tượng từ Wikimedia Commons (giấy phép CC hoặc phạm vi công cộng), ghi tác giả dưới ảnh và trong mục "Nguồn ảnh"; danh sách đầy đủ ở src/wiki/photos/CREDITS.md.
 - Mục lục, hộp thông tin, liên kết nội bộ, hình minh hoạ SVG, tìm kiếm có/không dấu, câu hỏi kiểm tra cuối bài, theo dõi bài đã đọc.
 - Thêm bài: thêm đối tượng vào src/wiki/articles-*.js (cú pháp ## tiêu đề, - danh sách, | bảng |, > ghi chú, [[id|liên kết]], {{fig:tên|chú thích}}).
 
@@ -121,3 +122,30 @@ Mỗi bài tập là một đối tượng `{ id, title, intro, start, tasks: [{
 ```
 
 Tệp bài làm được lưu với đuôi `.thw` (Word), `.thx` (Excel), `.thp` (PowerPoint).
+
+## Ôn luyện IC3 GS6 (v1.10.0)
+
+- **Học sinh**: mở *Ôn IC3*, nhập họ tên + lớp (trường không bắt buộc). 113 câu tự biên soạn (không phải đề IIG) cho Level 1 và Level 2, 7 chủ đề GS6; 6 dạng: một đáp án, nhiều đáp án, đúng/sai nhiều ý, kéo thả ghép nối, sắp thứ tự, bấm trên hình.
+- Chế độ: Luyện tập (chấm ngay, combo), Kiểm tra theo chủ đề, Thi thử 35 câu/50 phút, Thử thách 60 giây, Ôn câu sai. Thang 0–1000, đạt từ 700.
+- Trò chơi hoá: XP và cấp độ, chuỗi ngày học, 14 huy hiệu, bảng xếp hạng lớp (tuần / mọi lúc).
+- **Giáo viên**: bấm *🔒 Giáo viên* → đặt mật khẩu lần đầu → bật *Nhận kết quả*. Máy học sinh cùng mạng LAN tự tìm thấy (UDP 47124, HTTP 47123). Nếu không tự tìm thấy, học sinh bấm nút kết nối và nhập IP hiển thị trên máy giáo viên.
+  - Windows: lần đầu bật, chọn **Allow access** ở hộp thoại Tường lửa (Private networks).
+  - Kết quả lọc theo lớp/cấp/bài/chế độ/ngày/điểm, xem chi tiết từng bài, xuất Excel (CSV UTF‑8), thống kê theo lớp, theo chủ đề, 15 câu hay sai nhất, học sinh đang online.
+  - Học sinh làm khi chưa kết nối: kết quả được xếp hàng và tự gửi lại khi thấy máy giáo viên.
+
+## v1.11.0 – Soạn đề, nhập PDF/Word, meme
+
+- **Mật khẩu giáo viên**: đổi mật khẩu có thông báo rõ ràng; **mã khôi phục** (XXXX-XXXX) cấp khi tạo mật khẩu hoặc trong Cài đặt; màn khoá có “Quên mật khẩu?”.
+- **Soạn đề** (khu giáo viên → 📝 Soạn đề): 6 dạng câu (một đáp án, nhiều đáp án, Đúng/Sai nhiều ý, ghép nối kéo thả, sắp xếp thứ tự, bấm vào hình với vùng tự khoanh). Mỗi câu chèn được ảnh/GIF/video: dán Ctrl+V, kéo thả từ trình duyệt, chọn tệp hoặc dán link. Tự lưu; xem thử như học sinh; bật “Phát cho học sinh”.
+- **Nhập từ PDF / Word (.docx) / văn bản**: tự nhận dạng dạng câu và đáp án (dòng “Đáp án:”, chữ in đậm, gạch chân, tô màu, bảng đáp án cuối đề…), sau đó xem lại trước khi tạo đề. Mẫu: `src/ic3/mau/`.
+- **Meme**: meme chung cho mọi bài luyện tập, meme riêng cho từng đề và từng câu (đúng/sai); meme cuối bài kiểm tra.
+- Học sinh nhận đề qua LAN (ảnh/video tải về máy và lưu sẵn), mục “📚 Đề của thầy cô” trên trang chính; kết quả gửi về như bài IC3 (cấp độ “Đề GV”).
+
+- v1.11.1: sửa lỗi không gõ được mật khẩu ở màn khoá giáo viên.
+
+## v1.12.0 – Sửa ribbon, đề luyện tập song ngữ
+- Ribbon Word/Excel/PowerPoint: ô Styles không còn chữ tràn/đè; tên tệp trên thanh tiêu đề không đè nút Undo/Redo; khi cửa sổ hẹp, các nhóm bên phải tự thu gọn thành một nút (bấm để mở) như Office thật; nhóm Paragraph có thêm Sort, Show/Hide ¶, Borders.
+- Luyện tập Office: đề bài, gợi ý, tên dự án và khung làm bài có **Tiếng Việt / English** (đổi được cả khi đang làm). Tài liệu và cách chấm giữ nguyên.
+
+- v1.12.1: đóng gói phông Roboto Mono (OFL) để chữ tiếng Việt có hai dấu (ế, ố, ồ…) hiển thị đúng trên Linux; vẽ lại tay mèo (liền thân, thon dần, đệm chân, bóng chạm phím); sửa lỗi phải bấm Space 2 lần khi dùng bộ gõ ibus/fcitx trên Linux.
+- v1.12.2: tay mèo liền với thân (cùng lớp màu, bo tròn ở vai, viền mờ dần), bàn tay cùng màu với chỗ nó nằm.

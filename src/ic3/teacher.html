@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; worker-src 'self' blob:">
+<title>Giáo viên – Ôn luyện IC3</title>
+<link rel="stylesheet" href="../common.css">
+<link rel="stylesheet" href="ic3.css">
+<link rel="stylesheet" href="teacher.css">
+</head>
+<body>
+<header id="top">
+  <button class="tb" data-nav="ic3.html">‹ Ôn luyện IC3</button>
+  <div class="brand"><span class="logo">IC3</span><span><b>Khu vực giáo viên</b><small>Thống kê kết quả học sinh qua mạng LAN</small></span></div>
+  <span class="spacer"></span>
+  <button id="srv" class="net"></button>
+  <button class="tb" id="logout" hidden>Khoá</button>
+</header>
+<main id="app"></main>
+<div id="toast"></div>
+<script src="../common.js"></script>
+<script src="../ui/motion.js"></script>
+<script type="module" src="teacher.js"></script>
+</body>
+</html>

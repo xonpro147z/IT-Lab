@@ -4,6 +4,7 @@ import A2 from './articles-2.js';
 import A3 from './articles-3.js';
 import { FIGS } from './figs.js';
 import { MOCKS, heroSVG, GRAD } from './illus.js';
+import { PHOTOS } from './photos.js';
 Object.assign(FIGS, MOCKS);
 
 export const CATS = [
@@ -72,13 +73,25 @@ function inline(s) {
 export const slug = (s) => norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 function render(md) {
   const L = md.trim().split('\n');
-  let out = '', i = 0; const toc = [];
+  let out = '', i = 0; const toc = []; const used = [];
   const take = (re) => { const r = []; while (i < L.length && re.test(L[i])) r.push(L[i++]); return r; };
   while (i < L.length) {
     const ln = L[i];
     if (!ln.trim()) { i++; continue; }
     if (ln.startsWith('## ')) { const t = ln.slice(3).trim(); const id = slug(t); toc.push({ t, id, lv: 2 }); out += `<h2 id="${id}">${inline(t)}</h2>`; i++; continue; }
     if (ln.startsWith('### ')) { const t = ln.slice(4).trim(); const id = slug(t); toc.push({ t, id, lv: 3 }); out += `<h3 id="${id}">${inline(t)}</h3>`; i++; continue; }
+    const ic = ln.match(/^\{\{icons:([\w,-]+)(?:\|(.+))?\}\}$/);
+    if (ic) {
+      const ks = ic[1].split(',').filter((k) => PHOTOS[k]); ks.forEach((k) => used.includes(k) || used.push(k));
+      out += `<figure class="icons c${Math.min(ks.length, 4)}"><div class="igrid">${ks.map((k) => { const [t, ...d] = PHOTOS[k].cap.split(' – '); return `<div class="ii" data-photo="${k}"><img src="${PHOTOS[k].src}" alt="${esc(PHOTOS[k].cap)}"><b>${esc(t)}</b>${d.length ? `<span>${esc(d.join(' – '))}</span>` : ''}</div>`; }).join('')}</div>${ic[2] ? `<figcaption>${inline(ic[2])}</figcaption>` : ''}<div class="credit">Biểu tượng: Creative Commons · Wikimedia Commons</div></figure>`;
+      i++; continue;
+    }
+    const ph = ln.match(/^\{\{photos?:([\w,-]+)(?:\|(.+))?\}\}$/);
+    if (ph) {
+      const ks = ph[1].split(',').filter((k) => PHOTOS[k]); ks.forEach((k) => used.includes(k) || used.push(k));
+      out += `<figure class="photo n${ks.length}"><div class="pgrid">${ks.map((k) => `<div class="pi" data-photo="${k}"><img src="${PHOTOS[k].src}" alt="${esc(PHOTOS[k].cap)}" loading="lazy"><span class="pc">${esc(PHOTOS[k].cap)}</span></div>`).join('')}</div>${ph[2] ? `<figcaption>${inline(ph[2])}</figcaption>` : ''}<div class="credit">Ảnh: ${ks.map((k) => `${esc(PHOTOS[k].author)} · ${esc(PHOTOS[k].lic)}`).join(' — ')} · Wikimedia Commons</div></figure>`;
+      i++; continue;
+    }
     const fig = ln.match(/^\{\{fig:([\w-]+)(?:\|(.+))?\}\}$/);
     if (fig) { const f = FIGS[fig[1]]; out += `<figure class="fig">${f ? f() : ''}${fig[2] ? `<figcaption>${inline(fig[2])}</figcaption>` : ''}</figure>`; i++; continue; }
     if (/^\|/.test(ln)) {
@@ -93,10 +106,10 @@ function render(md) {
       const kind = /^(Cẩn thận|Cảnh báo)/.test(txt) ? 'warn' : /^(Mẹo|Thử thách)/.test(txt) ? 'tip' : 'note';
       out += `<div class="callout ${kind}">${inline(txt)}</div>`; continue;
     }
-    const para = []; while (i < L.length && L[i].trim() && !/^(#{2,3} |\||- |\d+\. |> |\{\{fig:)/.test(L[i])) para.push(L[i++]);
+    const para = []; while (i < L.length && L[i].trim() && !/^(#{2,3} |\||- |\d+\. |> |\{\{)/.test(L[i])) para.push(L[i++]);
     out += `<p>${inline(para.join(' '))}</p>`;
   }
-  return { html: out, toc };
+  return { html: out, toc, used };
 }
 const plain = (md) => md.replace(/\{\{[^}]+\}\}/g, ' ').replace(/\[\[([^\]|]+)\|?([^\]]*)\]\]/g, (_, a, b) => b || (BY[a] ? BY[a].title : a)).replace(/[*`#>|]/g, ' ').replace(/\s+/g, ' ');
 const buildIndex = () => ARTS.map((a) => ({ a, title: norm(a.title), alias: norm((a.aliases || []).join(' | ')), sum: norm(a.summary), body: norm(plain(a.body)), raw: plain(a.body) }));
@@ -199,7 +212,7 @@ function searchPage(q) {
 function article(id) {
   const a = BY[id]; if (!a) { main.innerHTML = `<section class="band"><h2 class="h2">Chưa có bài “${esc(id)}”.</h2><p><a href="#/">Về trang chính</a></p></section>`; return; }
   pills(a.cat);
-  const { html, toc } = render(a.body);
+  const { html, toc, used } = render(a.body);
   const cat = catOf(a);
   const idx = ARTS.indexOf(a), prev = ARTS[(idx - 1 + ARTS.length) % ARTS.length], next = ARTS[(idx + 1) % ARTS.length];
   const box = a.infobox ? `<div class="side-card info"><h4>${esc(a.infobox.title || 'Thông tin nhanh')}</h4>${a.infobox.rows.map(([k, v]) => `<div class="kv"><span>${inline(k)}</span><b>${inline(v)}</b></div>`).join('')}</div>` : '';
@@ -218,6 +231,7 @@ function article(id) {
       <div class="body">${html}
         ${a.quiz ? `<h2 id="quiz">Kiểm tra nhanh</h2><div id="quizBox"></div>` : ''}
         ${rel.length ? `<h2 id="xem-them">Xem thêm</h2><div class="grid mini">${rel.map((r) => card(BY[r])).join('')}</div>` : ''}
+        ${used.length ? `<h2 id="nguon-anh">Nguồn ảnh</h2><ul class="credits">${used.map((k) => `<li><b>${esc(PHOTOS[k].cap)}</b> – ${esc(PHOTOS[k].author)}, giấy phép ${esc(PHOTOS[k].lic)}, Wikimedia Commons (<span class="url">${esc(PHOTOS[k].page)}</span>)</li>`).join('')}</ul>` : ''}
         <p class="foot">Nội dung biên soạn cho học sinh, cập nhật 11/2026. Một số số liệu (thị phần, phiên bản) thay đổi theo thời gian; khi cần chính xác, hãy kiểm tra nguồn mới nhất. Hình minh hoạ được vẽ mô phỏng, không phải ảnh chụp màn hình thật.</p>
       </div>
       <aside class="aside">${box}${tocH}</aside>
@@ -228,6 +242,7 @@ function article(id) {
   main.querySelectorAll('[data-jump]').forEach((el) => (el.onclick = (e) => { e.preventDefault(); const t = document.getElementById(el.dataset.jump); if (t) $('#main').scrollTo({ top: t.offsetTop - 70, behavior: 'smooth' }); }));
   const setRead = (v) => { if (v) P.read[id] = true; else delete P.read[id]; save(); $('#readBtn').textContent = P.read[id] ? '✓ Đã đọc' : '○ Đánh dấu đã đọc'; };
   $('#readBtn').onclick = () => setRead(!P.read[id]);
+  main.querySelectorAll('[data-photo]').forEach((el) => (el.onclick = () => lightbox(el.dataset.photo)));
   if (a.quiz) quiz(a);
   // thanh tiến độ đọc + mục lục đang đọc + tự đánh dấu đã đọc
   const sc = $('#main'), bar = $('#readbar'), links = [...main.querySelectorAll('.toc a')];
@@ -257,6 +272,12 @@ function quiz(a) {
     const ag = $('#qAgain'); if (ag) ag.onclick = () => { for (const k in ans) delete ans[k]; draw(); };
   };
   draw();
+}
+function lightbox(k) {
+  const p = PHOTOS[k]; const d = document.createElement('div'); d.className = 'lightbox';
+  d.innerHTML = `<img src="${p.src}" alt=""><div class="lbcap"><b>${esc(p.cap)}</b><span>Ảnh: ${esc(p.author)} · ${esc(p.lic)} · Wikimedia Commons</span></div><button aria-label="Đóng">✕</button>`;
+  d.onclick = () => d.remove(); document.body.appendChild(d);
+  const esc2 = (e) => { if (e.key === 'Escape') { d.remove(); removeEventListener('keydown', esc2); } }; addEventListener('keydown', esc2);
 }
 function confetti() {
   const c = document.createElement('div'); c.className = 'confetti';

@@ -50,10 +50,11 @@
   <section class="hero">
     <p class="eyebrow reveal">Khu luyện tập</p>
     <h1 class="display reveal" style="--d:.06s">Từng dự án.<br>Chấm điểm từng bước.</h1>
-    <p class="lead reveal" style="--d:.12s">Mỗi dự án mở Word, Excel hoặc PowerPoint với một tệp có sẵn và danh sách nhiệm vụ bằng tiếng Anh, như bài thi MOS. Làm xong bấm <b>Submit project</b> để xem kết quả.</p>
+    <p class="lead reveal" style="--d:.12s" id="lead"></p>
   </section>
   <div class="bar">
     <div class="segmented" id="seg"><button data-a="word" class="on">Word</button><button data-a="excel">Excel</button><button data-a="ppt">PowerPoint</button></div>
+    <div class="segmented" id="lang" title="Ngôn ngữ đề bài"><button data-l="vi">🇻🇳 Tiếng Việt</button><button data-l="en">🇬🇧 English</button></div>
     <div class="sum" id="sum"></div>
   </div>
   <div class="grid" id="grid"></div>
@@ -65,6 +66,7 @@
 <script src="../common.js"></script>
 <script src="../ui/motion.js"></script>
 <script src="sample-images.js"></script>
+<script src="exercises-vi.js"></script>
 <script src="exercises-word.js"></script>
 <script src="exercises-word-pro.js"></script>
 <script src="exercises-excel.js"></script>
@@ -74,14 +76,17 @@
 <script>
   const dummy = () => ({});
   const APPS = {
-    word: { name: 'Word', page: 'word.html', color: '#185abd', letter: 'W', list: [...WORD_EXERCISES(), ...WORD_EXERCISES_PRO()] },
-    excel: { name: 'Excel', page: 'excel.html', color: '#107c41', letter: 'X', list: [...EXCEL_EXERCISES(), ...EXCEL_EXERCISES_PRO()] },
-    ppt: { name: 'PowerPoint', page: 'powerpoint.html', color: '#c43e1c', letter: 'P', list: [...PPT_EXERCISES(dummy), ...PPT_EXERCISES_PRO(dummy)] },
+    word: { name: 'Word', page: 'word.html', color: '#185abd', letter: 'W', raw: [...WORD_EXERCISES(), ...WORD_EXERCISES_PRO()] },
+    excel: { name: 'Excel', page: 'excel.html', color: '#107c41', letter: 'X', raw: [...EXCEL_EXERCISES(), ...EXCEL_EXERCISES_PRO()] },
+    ppt: { name: 'PowerPoint', page: 'powerpoint.html', color: '#c43e1c', letter: 'P', raw: [...PPT_EXERCISES(dummy), ...PPT_EXERCISES_PRO(dummy)] },
   };
   const NEW = new Set(['w8', 'w9', 'w10', 'w11', 'w12', 'x7', 'x8', 'p6', 'p7', 'p8']);
   let cur = (location.hash || '#word').slice(1); if (cur === 'powerpoint') cur = 'ppt'; if (!APPS[cur]) cur = 'word';
   function draw() {
-    const A = APPS[cur];
+    const A = APPS[cur]; A.list = OfficeLang.localize(A.raw);
+    const vi = OfficeLang.get() === 'vi';
+    document.querySelectorAll('#lang button').forEach((b) => b.classList.toggle('on', b.dataset.l === OfficeLang.get()));
+    document.getElementById('lead').innerHTML = vi ? 'Mỗi dự án mở Word, Excel hoặc PowerPoint với một tệp có sẵn và danh sách nhiệm vụ giống bài thi MOS. Đề bài có <b>tiếng Việt</b> hoặc <b>tiếng Anh</b> – chọn ở nút bên dưới, đổi được cả khi đang làm. Làm xong bấm <b>Nộp bài</b> để xem kết quả.' : 'Each project opens Word, Excel or PowerPoint with a ready-made file and a MOS-style task list. Choose <b>Vietnamese</b> or <b>English</b> instructions below – you can switch any time, even while working. Click <b>Submit project</b> to see your score.';
     document.querySelectorAll('#seg button').forEach((b) => b.classList.toggle('on', b.dataset.a === cur));
     const done = A.list.filter((e) => { const r = Progress.get(cur, e.id); return r && r.score === r.max; }).length;
     document.getElementById('sum').innerHTML = `<b>${done}</b> / ${A.list.length} dự án hoàn thành`;
@@ -95,6 +100,7 @@
     document.querySelectorAll('.pj').forEach((c) => (c.onclick = () => { document.body.classList.add('leaving'); setTimeout(() => (location.href = `${A.page}?ex=${c.dataset.id}`), 250); }));
   }
   document.querySelectorAll('#seg button').forEach((b) => (b.onclick = () => { cur = b.dataset.a; history.replaceState(null, '', '#' + cur); draw(); }));
+  document.querySelectorAll('#lang button').forEach((b) => (b.onclick = () => { OfficeLang.set(b.dataset.l); draw(); }));
   draw();
 </script>
 </body>

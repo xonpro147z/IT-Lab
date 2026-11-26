@@ -222,8 +222,21 @@ function commit(final = false) {
   renderWord(T.idx); placeCaret(); updateLive();
 }
 
+// Bộ gõ có "chữ đang soạn" (ibus/fcitx trên Linux, bộ gõ Telex của hệ điều hành…):
+// phím Space đầu tiên bị bộ gõ dùng để chốt chữ → ghi nhớ lại để tự sang từ mới, không bắt bấm 2 lần.
+let pendSpace = false;
+const isSpaceKey = (e) => e.key === ' ' || e.code === 'Space' || e.keyCode === 32;
+input.addEventListener('compositionend', () => {
+  setTimeout(() => {
+    if (!pendSpace || !T || T.ended) { pendSpace = false; return; }
+    pendSpace = false;
+    const v = input.value.normalize('NFC').replace(/ /g, '');
+    if (v.length) { T.cur = v; if (!T.started) start(); commit(); }
+  }, 0);
+});
 input.addEventListener('keydown', (e) => {
-  if (!T || T.ended || e.isComposing) return;
+  if (!T || T.ended) return;
+  if (e.isComposing || e.keyCode === 229) { if (isSpaceKey(e)) pendSpace = true; return; }
   if (e.key === ' ') { e.preventDefault(); if (T.cur.length) { if (!T.started) start(); commit(); } return; }
   if (e.key === 'Backspace') {
     if (!T.cur.length) {
@@ -244,7 +257,14 @@ input.addEventListener('keydown', (e) => {
 input.addEventListener('input', (e) => {
   if (!T || T.ended) { input.value = ''; return; }
   let v = input.value.normalize('NFC');
-  if (v.includes(' ')) { v = v.replace(/ /g, ''); input.value = v; }
+  if (v.includes(' ')) {
+    // bộ gõ chốt chữ kèm dấu cách ("the ") → dấu cách vẫn là sang từ mới
+    if (e.isComposing) { pendSpace = true; v = v.replace(/ /g, ''); input.value = v; T.cur = v; onType(true); return; }
+    const parts = v.split(' '); const rest = parts.pop();
+    for (const w of parts) { if (!w) continue; T.cur = w; if (!T.started) start(); onType(true); if (T.ended) return; commit(); if (T.ended) return; }
+    pendSpace = false; T.cur = rest; input.value = rest; if (rest) onType(true); else { renderWord(T.idx); placeCaret(); }
+    return;
+  }
   T.cur = v; onType(!e.inputType || e.inputType.startsWith('insert'));
 });
 

@@ -91,7 +91,8 @@ const WP = (() => {
     const box = $('#rp-home .stylebox'); if (!box) return;
     box.id = 'styleGal';
     const shown = ['Normal', 'No Spacing', 'Heading 1', 'Heading 2', 'Heading 3', 'Title', 'Subtitle', 'Emphasis', 'Strong', 'Quote', ...L.custom.filter((c) => c.gallery !== false).map((c) => c.n)];
-    box.innerHTML = shown.map((n) => { const st = styleBy(n); return `<button class="rb" data-st="${n}" title="${n}"><span style="${st.custom ? st.custom.css : st.prev}">AaBbCcDd</span><small>${n}</small></button>`; }).join('') + '<button class="rb galmore" id="btnStyleMore" title="More">▾</button>';
+    box.innerHTML = '<div class="galcells">' + shown.map((n) => { const st = styleBy(n); return `<button class="rb" data-st="${n}" title="${n}"><span style="${st.custom ? st.custom.css : st.prev}">AaBbCcDd</span><small>${n}</small></button>`; }).join('') + '</div><button class="rb galmore" id="btnStyleMore" title="More Styles">▾</button>';
+    box.closest('.grp') && box.closest('.grp').classList.add('grow');
     box.querySelectorAll('[data-st]').forEach((b) => {
       b.addEventListener('click', () => applyStyle(b.dataset.st));
       b.addEventListener('contextmenu', (e) => { e.preventDefault(); styleMenu(b.dataset.st, e.clientX, e.clientY); });
