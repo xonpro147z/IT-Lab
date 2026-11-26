@@ -1,6 +1,6 @@
 {
   "name": "tinhoclab",
-  "version": "1.6.1",
+  "version": "1.8.0",
   "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
   "main": "main.js",
   "scripts": {
@@ -33,6 +33,8 @@
     "files": [
       "main.js",
       "preload.js",
+      "updater.js",
+      "content/**/*",
       "src/**/*",
       "build/icon.png",
       "package.json"
@@ -107,7 +109,17 @@
         "libsecret-1-0"
       ]
     },
-    "publish": null
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "xonpro147z",
+        "repo": "IT-Lab",
+        "releaseType": "release"
+      }
+    ]
   },
-  "homepage": "https://tinhoclab.local"
+  "homepage": "https://tinhoclab.local",
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  }
 }

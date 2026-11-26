@@ -161,6 +161,7 @@ function glassMat(tint = 0x9fb2c4) {
 }
 const noPick = (m) => { m.raycast = () => {}; return m; };
 export function caseModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const c = part.color, lt = light(c);
   const shell = mat(c, { metalness: 0.55, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.4 });
@@ -258,6 +259,7 @@ function pcbTexture(part, W, H) {
   }, 1024, Math.round(1024 * H / W));
 }
 export function motherboardModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const H = boardH(part.form), W = BOARD_W;
   const intel = /^LGA/.test(part.socket || '');
@@ -346,6 +348,7 @@ export const BOARD_ANCHORS = {
 
 // ======================= CPU (gốc ở giữa socket) =======================
 export function cpuModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const intel = part.brand === 'intel';
   const w = intel ? 3.75 : 4.0, h = intel ? 4.5 : 4.0;
@@ -386,6 +389,7 @@ function finStack(w, h, n, gap, z0, { color = 0xcfd4d9, topColor = 0x15171a, log
   return s;
 }
 export function coolerModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const z0 = 0.5;
   if (part.type === 'aio') {
@@ -452,6 +456,7 @@ export function coolerModel(part) {
 
 // ======================= RAM (kit 2 thanh, khe 2 và 4) =======================
 export function ramModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const ddr5 = part.type === 'DDR5';
   const col = part.color, lt = light(col);
@@ -485,6 +490,7 @@ export function ramModel(part) {
 
 // ======================= SSD M.2 =======================
 export function m2Model(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const isSam = /samsung|990|980/i.test(part.name), isWD = /wd|sn\d/i.test(part.name);
   g.add(box(8.0, 2.2, 0.08, PCB(0x0d0d0d), 0, 0, 0.04));
@@ -503,6 +509,7 @@ export function m2Model(part) {
 
 // ======================= Card đồ hoạ (gốc tại đầu khe PCIe, card theo +x, quạt hướng xuống -y) =======================
 export function gpuModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const L = part.length / 10, T = part.thick, Hh = 11.8;
   const x0 = -4.4, zc = Hh / 2 + 0.3, xc = x0 + L / 2;
@@ -558,6 +565,7 @@ export function gpuModel(part) {
 // ======================= Bộ nguồn (gốc ở tâm hộp) =======================
 export const PSU_POS = new THREE.Vector3(-13.6, 4.9, -2.4);
 export function psuModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const body = mat(0x17181b, { metalness: 0.6, roughness: 0.45, roughnessMap: grain() });
   g.add(box(15, 8.6, 15, body, 0, 0, 0, 0.35));
@@ -588,6 +596,7 @@ export const PSU_OUT = new THREE.Vector3(7.6, 2.5, 4);
 // ======================= HDD 3.5" / SSD 2.5" =======================
 export const HDD_POS = new THREE.Vector3(13.2, 4.8, -1.85);
 export function hddModel(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const al = mat(0xb6bcc3, { metalness: 0.9, roughness: 0.38, roughnessMap: brushed() });
   g.add(box(14.7, 2.6, 10.2, al, 0, 0, 0, 0.2));
@@ -607,6 +616,7 @@ export function hddModel(part) {
   return g;
 }
 export function ssd25Model(part) {
+  part = { name: '', ...part };
   const g = new THREE.Group();
   const sam = part.brand === 'Samsung';
   g.add(box(10, 0.7, 7, mat(sam ? 0x2b2d31 : 0x3a3f47, { metalness: 0.7, roughness: 0.35, roughnessMap: brushed() }), 1.5, -0.8, 0, 0.18));

@@ -42,6 +42,8 @@ jobs:
             dist/*.dmg
             dist/*.deb
             dist/*.AppImage
+            dist/*.blockmap
+            dist/latest*.yml
           if-no-files-found: ignore
 
   # Chỉ 1 job tạo Release, sau khi cả 3 máy đóng gói xong (tránh tạo trùng)

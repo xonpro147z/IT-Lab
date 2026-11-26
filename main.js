@@ -51,6 +51,7 @@ const menuTemplate = [
     label: 'Tệp',
     submenu: [
       { label: 'Về màn hình chính', accelerator: 'CmdOrCtrl+H', click: () => win && win.loadFile(path.join(__dirname, 'src', 'index.html')) },
+      { label: 'Kiểm tra cập nhật…', click: () => require('./updater').checkAll(true) },
       { type: 'separator' },
       process.platform === 'darwin' ? { role: 'close', label: 'Đóng' } : { role: 'quit', label: 'Thoát' },
     ],
@@ -79,6 +80,7 @@ const menuTemplate = [
 app.whenReady().then(() => {
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
   createWindow();
+  require('./updater').init();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 

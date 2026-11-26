@@ -63,6 +63,11 @@
   footer .wrap { display: flex; justify-content: space-between; }
   footer a { color: var(--ink2); cursor: pointer; }
   @media (max-width: 860px) { .split, .feature-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr; } .stats > div + div { border-left: 0; padding-left: 0; } }
+  #btnUpdate { position: relative; cursor: pointer; }
+  #btnUpdate.busy { opacity: .5; pointer-events: none; }
+  #updDot { display: none; position: absolute; top: 2px; right: -6px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 0 2px #fff; }
+  #updDot.on { display: block; }
+  #btnUpdate2 { cursor: pointer; margin-left: 18px; }
 </style>
 </head>
 <body class="apple">
@@ -72,15 +77,17 @@
   <a data-nav="explore/explore.html">Khám phá</a>
   <a data-nav="keys/keys.html">Phím tắt</a>
   <a data-nav="typing/typing.html">Luyện gõ</a>
+  <a data-nav="wiki/wiki.html">Bách khoa</a>
   <a data-nav="office/index.html">Office</a>
   <a data-nav="office/practice.html">Luyện tập Office</a>
   <span class="sp"></span>
+  <a id="btnUpdate" title="Kiểm tra phiên bản mới và kiến thức mới"><span id="updDot"></span>⟳ Cập nhật</a>
   <input class="field" id="studentName" placeholder="Họ tên học sinh" style="width:190px">
 </nav>
 
 <section class="hero">
   <div class="wrap">
-    <p class="eyebrow reveal">TinHocLab 1.1</p>
+    <p class="eyebrow reveal" id="heroVer">TinHocLab</p>
     <h1 class="display reveal" style="--d:.08s">Hiểu máy tính.<br><span class="grad-text">Từ bên trong.</span></h1>
     <p class="lead reveal" style="--d:.16s">Lắp ráp một chiếc máy tính thật trong không gian 3D. Khám phá mọi cổng kết nối. Luyện Word, Excel, PowerPoint như trong phòng thi.</p>
     <div class="ctas reveal" style="--d:.24s"><a class="pill" data-nav="pcbuild/pcbuild.html">Bắt đầu lắp ráp</a><a class="link" data-nav="explore/explore.html">Khám phá phần cứng</a></div>
@@ -166,6 +173,16 @@
 <section class="sec">
   <div class="wrap">
     <div class="split">
+      <div><p class="eyebrow reveal">Bách khoa Tin học</p><h2 class="headline reveal" style="--d:.08s">Tò mò.<br>Tra cứu. Hiểu sâu.</h2></div>
+      <p class="lead reveal" style="--d:.16s">Kho kiến thức kiểu Wikipedia dành cho học sinh: hệ điều hành và lịch sử, điện toán đám mây, trình duyệt web, toán tử tìm kiếm, danh tính số, bản quyền và giấy phép Creative Commons, bảo mật, biểu đồ, đơn vị bộ nhớ, sửa lỗi máy tính và cách dùng AI đúng đắn — mỗi bài đều có câu hỏi kiểm tra nhanh.</p>
+    </div>
+    <p class="reveal" style="margin-top:44px"><a class="pill dark" data-nav="wiki/wiki.html">Mở Bách khoa Tin học</a></p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="split">
       <div><p class="eyebrow reveal">Tin học văn phòng</p><h2 class="headline reveal" style="--d:.08s">Word. Excel.<br>PowerPoint.</h2></div>
       <p class="lead reveal" style="--d:.16s">Hai khu riêng biệt. <b>Office</b> để dùng tự do như Microsoft 365 — tab File, Track Changes, macro, hiệu ứng, video. <b>Luyện tập</b> để làm dự án chấm điểm tự động như bài thi MOS.</p>
     </div>
@@ -179,7 +196,7 @@
   </div>
 </section>
 
-<footer><div class="wrap"><span id="ver">TinHocLab</span><a id="reset">Xoá kết quả đã lưu trên máy này</a></div></footer>
+<footer><div class="wrap"><span id="ver">TinHocLab</span><a id="btnUpdate2">Kiểm tra cập nhật</a><a id="reset">Xoá kết quả đã lưu trên máy này</a></div></footer>
 
 <script src="common.js"></script>
 <script src="ui/motion.js"></script>
@@ -194,7 +211,16 @@
   const words = ['USB-C', 'Lightning', 'FireWire', 'Thunderbolt 5', 'HDMI 2.1', 'DisplayPort', 'VGA', 'DVI', 'RJ45', 'PS/2', 'Đĩa mềm 3½"', 'CD · DVD · Blu-ray', 'SSD NVMe', 'Ổ cứng HDD', 'microSD', 'Micro-USB', 'Mini-USB', 'MagSafe', '12V-2x6', 'SATA', 'Molex', 'Sạc dự phòng', 'Router Wi-Fi 7', 'UPS', 'RS-232', 'Jack 3,5 mm'];
   const fill = (id, arr) => { const h = arr.map((w) => `<span class="chip">${w}</span>`).join(''); document.getElementById(id).innerHTML = h + h; };
   fill('mq1', words.slice(0, 13)); fill('mq2', words.slice(13));
-  if (window.desktop) window.desktop.version().then((v) => (document.getElementById('ver').textContent = 'TinHocLab ' + v));
+  if (window.desktop) window.desktop.version().then((v) => { document.getElementById('ver').textContent = 'TinHocLab ' + v; document.getElementById('heroVer').textContent = 'TinHocLab ' + v; });
+  // Nút cập nhật: kiểm tra phiên bản phần mềm mới + kiến thức mới cho Bách khoa
+  (() => {
+    const b = document.getElementById('btnUpdate'), b2 = document.getElementById('btnUpdate2'), dot = document.getElementById('updDot');
+    if (!window.desktop || !window.desktop.update) { b.style.display = 'none'; b2.style.display = 'none'; return; }
+    const go = () => { b.classList.add('busy'); window.desktop.update.check().finally(() => b.classList.remove('busy')); };
+    b.onclick = go; b2.onclick = go;
+    const mark = (s) => { const on = ['downloading', 'ready', 'manual'].includes(s.phase); dot.className = on ? 'on' : ''; b.title = on ? 'Có phiên bản mới ' + (s.version || '') : 'Kiểm tra phiên bản mới và kiến thức mới'; };
+    window.desktop.update.state().then(mark); window.desktop.update.onState(mark);
+  })();
   document.getElementById('reset').onclick = () => { if (confirm('Xoá toàn bộ kết quả bài tập đã lưu?')) { Progress.reset(); location.reload(); } };
 </script>
 <script type="module" src="ui/story3d.js"></script>

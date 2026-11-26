@@ -17,6 +17,17 @@ Phần mềm chạy hoàn toàn offline, không cần Internet.
 - **Bật nguồn**: chẩn đoán lỗi như ngoài đời thật (quên cáp 24-pin, quên RAM, CPU quá nhiệt, không có ổ khởi động, VGA thiếu nguồn…), có màn hình POST/BIOS.
 - 4 thử thách: máy văn phòng ≤ 15 triệu, máy chơi game ≤ 30 triệu, máy AMD AM5, máy đồ hoạ cao cấp.
 
+### Cập nhật tự động (updater.js)
+- Phần mềm tự kiểm tra GitHub Releases (xonpro147z/IT-Lab) khi mở, mỗi 3 giờ, hoặc khi bấm nút **⟳ Cập nhật** ở trang chủ / menu Tệp → Kiểm tra cập nhật.
+- Windows (bản cài Setup) và Linux (.deb, AppImage): tự tải ngầm, thông báo "Khởi động lại & cập nhật"; nếu để sau thì cài khi tắt phần mềm.
+- macOS và bản Portable: tự tải bộ cài mới vào thư mục Tải xuống, bấm "Mở bộ cài" để cài.
+- Kiến thức Bách khoa: tải các bài .md trong thư mục content/wiki trên GitHub, không cần phát hành phiên bản mới. Xem content/wiki/HUONG-DAN.md.
+
+### Bách khoa Tin học (src/wiki)
+- Kho kiến thức kiểu Wikipedia, 17 bài trong 6 chủ đề: hệ điều hành và lược sử, đơn vị bộ nhớ, lỗi máy tính, đặt lại thiết bị, mạng và Internet, điện toán đám mây, ứng dụng đám mây, trình duyệt, toán tử tìm kiếm, danh tính số, sở hữu trí tuệ và giấy phép phần mềm, Creative Commons, bảo mật, biểu đồ, AI, dùng AI trong học tập.
+- Mục lục, hộp thông tin, liên kết nội bộ, hình minh hoạ SVG, tìm kiếm có/không dấu, câu hỏi kiểm tra cuối bài, theo dõi bài đã đọc.
+- Thêm bài: thêm đối tượng vào src/wiki/articles-*.js (cú pháp ## tiêu đề, - danh sách, | bảng |, > ghi chú, [[id|liên kết]], {{fig:tên|chú thích}}).
+
 ### Luyện gõ phím (src/typing)
 - Đo WPM, raw, độ chính xác, độ ổn định, biểu đồ theo giây – kiểu MonkeyType; lịch sử và kỷ lục lưu trên máy.
 - Chế độ: thời gian (15/30/60/120 giây), số từ, trích dẫn, bài luyện hàng phím (cơ sở, trên, dưới, số, chữ hoa, dấu tiếng Việt).
