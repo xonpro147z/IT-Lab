@@ -207,3 +207,47 @@ body.readonly #ribbon .rpanel:not(#rp-review):not(#rp-view) { opacity: .45; poin
 /* Office themes */
 body.th-dark { --bg: #2b2b2b; } body.th-dark #tabs button { color: #eee; } body.th-dark #status { color: #ccc; } body.th-dark #ribbon { background: #3a3a3a; } body.th-dark .rb { color: #eee; } body.th-dark .grp .glabel { color: #bbb; }
 body.th-white #titlebar { background: #fff; color: #242424; } body.th-white #titlebar .qa { color: #242424; } body.th-white #titlebar .applogo { background: var(--app); color: #fff; }
+
+/* ===== v1.12: sửa bố cục ribbon & thanh tiêu đề ===== */
+/* Thanh tiêu đề: tên tệp + ô tìm kiếm nằm trong luồng, tự co lại, không đè lên Undo/Redo */
+#titlebar .docname { position: static; transform: none; flex: 1 1 auto; min-width: 0; justify-content: center; margin: 0 10px; }
+#titlebar .docname > span { flex: 0 1 auto; min-width: 0; max-width: 300px; }
+#titlebar .search { flex: 0 1 320px; min-width: 120px; width: auto; }
+#titlebar .spacer { flex: 0 0 0; }
+#titlebar .exbtn { white-space: nowrap; }
+@media (max-width: 900px) { #titlebar .autosave { display: none; } #titlebar .docname > span { display: none; } }
+/* Ribbon: bảng đang mở chiếm hết chiều ngang để nhóm Styles co giãn; thanh cuộn mảnh khi quá hẹp */
+#ribbon { scrollbar-width: thin; }
+#ribbon::-webkit-scrollbar { height: 6px; } #ribbon::-webkit-scrollbar-thumb { background: #c8c6c4; border-radius: 3px; }
+.rpanel.on { flex: 1 1 0%; min-width: 0; }
+.grp { flex: none; }
+.grp.grow { flex: 0 1 auto; min-width: 160px; }
+.grp .glabel { overflow: hidden; text-overflow: ellipsis; }
+/* Ô Styles: chữ mẫu canh trái, bị cắt ở mép phải như Word thật; tên style canh giữa */
+.stylebox .rb { text-align: left; align-items: stretch; padding: 4px 6px 3px; overflow: hidden; flex: none; }
+.stylebox .rb > span:first-child { display: block; height: 30px; line-height: 30px; white-space: nowrap; overflow: hidden; text-overflow: clip; max-width: none; text-align: left; }
+.stylebox .rb small { display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: none; }
+#styleGal { max-width: none; width: auto; display: flex; }
+#styleGal .galcells { display: flex; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+#styleGal .galmore { flex: none; width: 20px !important; min-width: 20px; height: 60px; border-left: 1px solid #ededed; align-items: center; justify-content: center; }
+@media (max-width: 1260px) {
+  .grp { padding: 0 3px; }
+  .grp .glabel { padding: 1px 12px 4px; }
+  .rb.big { min-width: 38px; padding: 3px 3px; font-size: 11.5px; }
+  .stylebox .rb { width: 70px; }
+}
+.grp.collapsed > .gbody { display: none; }
+.grp.collapsed > .glabel { visibility: hidden; }
+.rb.gcoll { min-width: 54px; height: 76px; margin-top: 2px; }
+.rb.gcoll .gci { height: 32px; display: grid; place-items: center; }
+.rb.gcoll .gci svg { width: 28px; height: 28px; }
+.grouppop { position: fixed; z-index: 450; background: #fff; border: 1px solid #d1d1d1; border-radius: 8px; box-shadow: 0 8px 22px rgba(0,0,0,.16); padding: 6px 8px; display: flex; }
+.grouppop > .gbody { display: flex; align-items: flex-start; gap: 1px; }
+/* chuyển ngôn ngữ đề bài */
+.langsw { display: inline-flex; background: rgba(127,127,127,.18); border-radius: 980px; padding: 2px; gap: 2px; vertical-align: middle; }
+.langsw button { appearance: none; border: 0; background: none; color: inherit; font: 600 11.5px inherit; font-family: inherit; padding: 3px 10px; border-radius: 980px; cursor: pointer; opacity: .75; }
+.langsw button.on { background: #fff; color: #1f1f1f; opacity: 1; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.tp-head .langsw { margin-left: auto; margin-right: 6px; }
+.tp-head .langsw + .timer { margin-left: 0; }
+#taskpane .tp-head .langsw { margin-left: auto; margin-right: 0; }
+#taskpane .tp-head .langsw ~ .timer { margin-left: 0; }

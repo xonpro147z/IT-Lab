@@ -1,6 +1,6 @@
 {
   "name": "tinhoclab",
-  "version": "1.8.0",
+  "version": "1.12.0",
   "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
   "main": "main.js",
   "scripts": {
@@ -34,6 +34,8 @@
       "main.js",
       "preload.js",
       "updater.js",
+      "ic3main.js",
+      "lan.js",
       "content/**/*",
       "src/**/*",
       "build/icon.png",
@@ -90,11 +92,16 @@
         "deb",
         "AppImage"
       ],
-      "icon": "build/icon.png",
+      "icon": "build/icons",
       "category": "Education",
       "maintainer": "TinHocLab <tinhoclab@example.com>",
       "synopsis": "Phần mềm thực hành Tin học",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "desktop": {
+        "StartupWMClass": "TinHocLab",
+        "Name": "TinHocLab",
+        "Icon": "tinhoclab"
+      }
     },
     "deb": {
       "depends": [

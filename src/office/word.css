@@ -42,3 +42,5 @@
 .page .body .footnotes { border-top: 1px solid #000; width: 35%; margin-top: 24px; padding-top: 4px; font-size: 10pt; }
 .page .body .footnotes div { width: 280%; }
 .page .body .wordart { font-size: 36pt; font-weight: 800; color: #4472c4; text-shadow: 2px 2px 3px rgba(0,0,0,.3); -webkit-text-stroke: 1px #2f528f; }
+/* Show/Hide ¶ */
+#page.showmarks p::after, #page.showmarks h1::after, #page.showmarks h2::after, #page.showmarks h3::after, #page.showmarks h4::after, #page.showmarks li::after, #page.showmarks blockquote::after { content: '¶'; color: #4a86c8; font-weight: 400; font-style: normal; margin-left: 2px; }

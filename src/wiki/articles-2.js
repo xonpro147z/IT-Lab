@@ -10,6 +10,8 @@ export default [
 
 “Đám mây” không ở trên trời. Dữ liệu được lưu trong các **trung tâm dữ liệu** khổng lồ: những toà nhà chứa hàng nghìn máy chủ, có điện dự phòng, hệ thống làm mát và bảo vệ 24/7.
 
+{{photos:dcext,racks|Bên ngoài và bên trong trung tâm dữ liệu: nơi “đám mây” thật sự nằm.}}
+
 {{fig:cloud-flow|Khi em mở Google Drive, thiết bị gửi yêu cầu qua Internet tới máy chủ trong trung tâm dữ liệu.}}
 
 ## Cách hoạt động
@@ -19,6 +21,8 @@ export default [
 4. Kết quả được gửi về và hiển thị trên thiết bị của em. Mọi thiết bị đăng nhập cùng tài khoản đều thấy dữ liệu giống nhau nhờ **đồng bộ**.
 
 Công nghệ cốt lõi là **ảo hoá**: một máy chủ vật lý mạnh được chia thành nhiều *máy ảo*, mỗi máy ảo phục vụ một khách hàng khác nhau.
+
+{{photo:wmservers|Máy chủ của Wikimedia, nơi lưu Wikipedia và các ảnh em đang xem trong Bách khoa này.}}
 
 ## Ba mô hình dịch vụ
 {{fig:cloud-stack|Phần màu xanh dương là việc người dùng phải tự quản lý; phần màu xanh lá do nhà cung cấp lo.}}
@@ -137,6 +141,8 @@ Vì nhiều trình duyệt dùng chung nhân Blink, một trang web thường hi
 Riêng trên máy tính để bàn, Edge đứng thứ hai với khoảng 11%, vì được cài sẵn trên Windows.
 
 ## So sánh các trình duyệt phổ biến
+{{photo:firefox|Trình duyệt Firefox mở trang Wikipedia: thanh tab, thanh địa chỉ và nội dung trang.}}
+
 | Trình duyệt | Hãng | Ưu điểm | Nhược điểm |
 | **Google Chrome** | Google | Nhanh, kho tiện ích lớn nhất, đồng bộ tốt với tài khoản Google, có trên mọi nền tảng | Tốn RAM; thu thập nhiều dữ liệu cho quảng cáo |
 | **Safari** | Apple | Tiết kiệm pin trên máy Apple, chú trọng quyền riêng tư, đồng bộ iCloud | Chỉ có trên thiết bị Apple; ít tiện ích |
@@ -253,6 +259,8 @@ Các kết quả có nhãn **Được tài trợ** / **Sponsored** là quảng c
 **Danh tính kỹ thuật số** (*digital identity*) là tập hợp mọi thông tin gắn với một người trên môi trường số: tên tài khoản, ảnh đại diện, bài đăng, bình luận, lượt thích, lịch sử mua hàng, vị trí… Người khác, kể cả thầy cô, nhà tuyển dụng và trường đại học sau này, có thể dựa vào đó để đánh giá em.
 
 {{fig:footprint|Những nguồn dữ liệu tạo nên danh tính số.}}
+
+{{photo:socialapps|Mỗi ứng dụng mạng xã hội trên điện thoại đều lưu lại dấu chân số của em.}}
 
 ## Dấu chân số
 Mỗi hoạt động trên mạng để lại một **dấu chân số** (*digital footprint*) và rất khó xoá hoàn toàn.

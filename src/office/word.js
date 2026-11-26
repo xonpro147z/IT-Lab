@@ -135,6 +135,28 @@ $('#btnNumbers').addEventListener('click', (e) => {
   if (splitLeft($('#btnNumbers'), e)) { exec('insertOrderedList'); return; }
   dropdown($('#btnNumbers'), `<div class="hd">Numbering Library</div><div class="it" data-v="decimal">1. 2. 3.</div><div class="it" data-v="lower-alpha">a. b. c.</div><div class="it" data-v="upper-alpha">A. B. C.</div><div class="it" data-v="upper-roman">I. II. III.</div><div class="it" data-v="lower-roman">i. ii. iii.</div>`, (v) => listStyle('ol', v));
 });
+// Sort (A→Z / Z→A) các đoạn đang chọn
+$('#btnSort').addEventListener('click', () => dropdown($('#btnSort'), '<div class="it" data-v="asc">Sort A → Z (Ascending)</div><div class="it" data-v="desc">Sort Z → A (Descending)</div>', (v) => {
+  const bl = selectedBlocks().filter((b) => b.parentNode === (selectedBlocks()[0] || {}).parentNode);
+  if (bl.length < 2) return toast('Select two or more paragraphs to sort', 'warn');
+  const parent = bl[0].parentNode, anchor = bl[bl.length - 1].nextSibling;
+  const sorted = bl.slice().sort((a, b) => a.innerText.trim().localeCompare(b.innerText.trim(), undefined, { numeric: true, sensitivity: 'base' }));
+  if (v === 'desc') sorted.reverse();
+  sorted.forEach((b) => parent.insertBefore(b, anchor)); changed();
+}));
+// Show/Hide ¶
+$('#btnMarks').addEventListener('click', () => { const on = page.classList.toggle('showmarks'); $('#btnMarks').classList.toggle('on', on); });
+document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && (e.key === '*' || e.key === '8')) { e.preventDefault(); $('#btnMarks').click(); } });
+// Borders cho đoạn đang chọn
+$('#btnBorders').addEventListener('click', () => dropdown($('#btnBorders'), [['bottom', 'Bottom Border'], ['top', 'Top Border'], ['left', 'Left Border'], ['right', 'Right Border'], ['all', 'Outside Borders'], ['none', 'No Border']].map(([k, n]) => `<div class="it" data-v="${k}">${n}</div>`).join(''), (v) => {
+  selectedBlocks().forEach((b) => {
+    if (v === 'none') { b.style.border = ''; b.style.padding = ''; return; }
+    const line = '1px solid #000';
+    if (v === 'all') b.style.border = line; else b.style['border' + v[0].toUpperCase() + v.slice(1)] = line;
+    b.style.padding = '2px 4px';
+  });
+  changed();
+}));
 $('#btnSpacing').addEventListener('click', () => dropdown($('#btnSpacing'), `${['1.0', '1.15', '1.5', '2.0', '2.5', '3.0'].map((x) => `<div class="it" data-v="${x}">${x}</div>`).join('')}<div class="sep"></div><div class="it" data-v="addB">Add Space Before Paragraph</div><div class="it" data-v="addA">Add Space After Paragraph</div><div class="it" data-v="rmA">Remove Space After Paragraph</div>`, (v) => {
   selectedBlocks().forEach((b) => {
     if (v === 'addB') b.style.marginTop = '12pt'; else if (v === 'addA') b.style.marginBottom = '12pt'; else if (v === 'rmA') b.style.marginBottom = '0';
