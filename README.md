@@ -23,6 +23,14 @@ Phần mềm chạy hoàn toàn offline, không cần Internet.
 - Bàn phím ảo sáng đèn theo phím thật; có thể nhấp chuột để bấm tổ hợp (dùng cho phím mà hệ điều hành thật giành trước như Win, Alt+Tab, Ctrl+Alt+Delete).
 - 119 phím tắt chia 7 nhóm (shortcuts.js), kèm cách bấm trên macOS. Ba chế độ: Tra cứu, Luyện tập (từng bước, tự chuẩn bị tình huống), Kiểm tra (10 câu, lưu điểm).
 
+### Office: hai khu riêng
+- **Khu Office** (`src/office/index.html`): trang khởi động kiểu Microsoft 365, tạo tệp trống/mẫu, mở tệp gần đây. Word/Excel/PowerPoint dùng tự do với tab File đầy đủ (Info › Protect, Save As, Print, Share, Export, Options).
+- **Khu Luyện tập** (`src/office/practice.html`): danh sách dự án chấm điểm (Word 12, Excel 8, PowerPoint 8). Mỗi dự án mở ứng dụng với `?ex=<id>`.
+- Word: Styles (gallery, Modify Style, Create Style, Styles pane), Header/Footer (mẫu dựng sẵn, tab Header & Footer), Page Number (định dạng i/ii, Page X of Y), Table of Contents (Automatic 1/2, Custom, Update), Track Changes (Accept/Reject, Display for Review, Reviewing Pane), Compare/Combine, Restrict Editing.
+- Excel: nhiều trang tính (đổi tên, màu tab, chèn/xoá, Move or Copy, ẩn/hiện), Lock Cell, Protect Sheet/Workbook, Macro (Record/Stop, Run, Ctrl+phím, VBA editor, cảnh báo .xlsm), tab Review và Developer.
+- PowerPoint: Transition (Effect Options, Duration, Sound, Advance After), Animation (Entrance/Emphasis/Exit/Motion Path, Add Animation, Animation Pane, Start/Duration/Delay, Reorder), chèn Video/Audio (Stock hoặc tệp trên máy) + tab Playback, tab Picture Format (Picture Styles, Corrections, Color, Artistic Effects, Transparency, Crop, Crop to Shape, Size, Alt Text).
+- Mã nguồn phần mở rộng: `pro-common.js`, `office-backstage.js`, `word-pro.js`, `excel-pro.js`, `ppt-pro.js`, `exercises-*-pro.js`, `pro.css`.
+
 ### Word
 Phông chữ, cỡ chữ, màu chữ, tô sáng, B/I/U, chỉ số trên/dưới, đổi chữ hoa/thường, sao chép định dạng, dấu đầu dòng, đánh số, căn lề, giãn dòng, tô nền đoạn, Kiểu tiêu đề, Tìm/Thay thế, bảng (thêm/xoá hàng cột, tô màu ô), ảnh (kích thước, bao quanh chữ), hình khối, liên kết, đầu trang/chân trang, ký hiệu, phương trình, hình mờ, màu trang, viền trang, lề, hướng giấy, khổ giấy, chia cột, mục lục tự động (Table of Contents), chú thích cuối trang (Footnote), số trang, đếm từ, bình luận. Xuất ra tệp `.doc` mở được bằng Microsoft Word.
 

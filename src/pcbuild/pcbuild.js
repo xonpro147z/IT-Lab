@@ -1,6 +1,11 @@
 // Phân hệ lắp ráp máy tính 3D
 import * as THREE from 'three';
 import { OrbitControls } from '../vendor/three/OrbitControls.js';
+import { RoomEnvironment } from '../vendor/three/RoomEnvironment.js';
+import { EffectComposer } from '../vendor/three/postprocessing/EffectComposer.js';
+import { RenderPass } from '../vendor/three/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from '../vendor/three/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from '../vendor/three/postprocessing/OutputPass.js';
 import { CATEGORIES, PARTS, partById, CHALLENGES, GUIDE_STEPS } from './catalog.js';
 import * as M from './models.js';
 
@@ -8,7 +13,7 @@ const $ = (s) => document.querySelector(s);
 const fmt = (n) => n.toLocaleString('vi-VN') + 'đ';
 
 // ================= Trạng thái =================
-const S = {
+const S = { glass: true, 
   parts: { case: partById('case-h5') }, // slot -> part
   objs: {},                              // slot -> Object3D
   cat: 'case',
@@ -25,39 +30,59 @@ const BOARD_SLOTS = ['cpu', 'ram', 'm2', 'gpu'];
 
 // ================= Cảnh 3D =================
 const canvas = $('#c3d');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+// Chất lượng đồ hoạ: 'high' (bóng mềm + phát sáng RGB) hoặc 'low' (cho máy yếu)
+let QUALITY = localStorage.getItem('thl.pc.quality') || 'high';
+renderer.setPixelRatio(Math.min(devicePixelRatio, QUALITY === 'high' ? 2 : 1));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.VSMShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
-scene.background = null; // nền sáng lấy từ CSS
-const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 1000);
-const HOME_CAM = { pos: new THREE.Vector3(38, 52, 82), target: new THREE.Vector3(-2, 22, 0) };
+// nền studio sáng (gradient) + môi trường phản chiếu cho kim loại, kính
+scene.background = (() => { const c = document.createElement('canvas'); c.width = 16; c.height = 512; const x = c.getContext('2d'); const gr = x.createLinearGradient(0, 0, 0, 512); gr.addColorStop(0, '#fdfdfe'); gr.addColorStop(0.62, '#eeeff3'); gr.addColorStop(1, '#dcdee4'); x.fillStyle = gr; x.fillRect(0, 0, 16, 512); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.85;
+const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 1000);
+const HOME_CAM = { pos: new THREE.Vector3(40, 50, 84), target: new THREE.Vector3(-1, 22, 0) };
 camera.position.copy(HOME_CAM.pos);
 const controls = new OrbitControls(camera, canvas);
 controls.target.copy(HOME_CAM.target);
 controls.enableDamping = true;
-controls.minDistance = 15; controls.maxDistance = 180;
+controls.minDistance = 12; controls.maxDistance = 180;
 controls.maxPolarAngle = Math.PI * 0.53;
 
-scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3));
-const key = new THREE.DirectionalLight(0xffffff, 2.0);
-key.position.set(40, 80, 60); key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
-Object.assign(key.shadow.camera, { left: -50, right: 50, top: 60, bottom: -20, near: 10, far: 200 });
-key.shadow.bias = -0.0005;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x4a4540, 0.45));
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(45, 85, 70); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 6; key.shadow.blurSamples = 12;
+Object.assign(key.shadow.camera, { left: -45, right: 45, top: 60, bottom: -15, near: 20, far: 220 });
+key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
 scene.add(key);
-const fill = new THREE.DirectionalLight(0x9fc4ff, 0.6); fill.position.set(-60, 30, 40); scene.add(fill);
-const inside = new THREE.PointLight(0xffffff, 380, 70, 1.5); inside.position.set(-4, 34, 16); scene.add(inside);
-const inside2 = new THREE.PointLight(0xcfe0ff, 220, 60, 1.5); inside2.position.set(6, 12, 16); scene.add(inside2);
+const rim = new THREE.DirectionalLight(0xbfd8ff, 1.1); rim.position.set(-70, 40, -40); scene.add(rim);
+const inside = new THREE.PointLight(0xffffff, 110, 60, 1.6); inside.position.set(-4, 34, 9); scene.add(inside);
+const inside2 = new THREE.PointLight(0xe6efff, 70, 50, 1.6); inside2.position.set(6, 14, 9); scene.add(inside2);
 
-// mặt bàn
-// mặt sàn trong suốt chỉ nhận bóng đổ (kiểu ảnh sản phẩm)
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.16 }));
+// mặt sàn chỉ nhận bóng đổ (kiểu ảnh sản phẩm)
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.22 }));
 ground.rotation.x = -Math.PI / 2; ground.position.set(0, -1.95, 0); ground.receiveShadow = true; scene.add(ground);
 
+// hậu kỳ: phát sáng (bloom) cho đèn RGB
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.45, 0.35, 1.0);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+function applyQuality() {
+  renderer.setPixelRatio(Math.min(devicePixelRatio, QUALITY === 'high' ? 2 : 1));
+  renderer.shadowMap.type = QUALITY === 'high' ? THREE.VSMShadowMap : THREE.PCFShadowMap;
+  key.shadow.mapSize.set(QUALITY === 'high' ? 2048 : 1024, QUALITY === 'high' ? 2048 : 1024); key.shadow.map?.dispose(); key.shadow.map = null;
+  bloom.enabled = QUALITY === 'high';
+  const b = document.getElementById('btnQuality'); if (b) b.textContent = 'Đồ hoạ: ' + (QUALITY === 'high' ? 'Cao' : 'Nhẹ');
+  resize();
+}
 const world = new THREE.Group(); scene.add(world);
 const markerGroup = new THREE.Group(); scene.add(markerGroup);
 const cableGroup = new THREE.Group(); scene.add(cableGroup);
@@ -65,6 +90,7 @@ const cableGroup = new THREE.Group(); scene.add(cableGroup);
 function resize() {
   const r = canvas.parentElement.getBoundingClientRect();
   renderer.setSize(r.width, r.height, false);
+  composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(r.width, r.height);
   camera.aspect = r.width / r.height; camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
@@ -133,6 +159,7 @@ function placeCase() {
   if (S.objs.case) world.remove(S.objs.case);
   const m = M.caseModel(S.parts.case);
   setPartData(m, 'case', S.parts.case);
+  if (S.glass === false) m.traverse((o) => { if (o.name === 'glass') o.visible = false; });
   world.add(m); S.objs.case = m;
 }
 
@@ -685,20 +712,23 @@ function loop() {
     const tw = tweens[i]; const t = Math.min(1, (now - tw.t0) / tw.dur);
     tw.fn(t); if (t >= 1) { tweens.splice(i, 1); tw.done && tw.done(); }
   }
-  if (S.powered) world.traverse((o) => { if (o.name === 'rotor') o.rotation.z += dt * 18; if (o.name === 'rgb' && o.material) o.material.emissive.setHSL((now / 4000) % 1, 1, 0.5); });
+  if (S.powered) world.traverse((o) => { if (o.name === 'rotor') o.rotation.z += dt * 14; if (o.name === 'rgb' && o.material) o.material.emissive.setHSL((now / 4000) % 1, 1, 0.5); });
   const pulse = 0.18 + 0.14 * Math.sin(now / 220);
   markers.forEach((m) => { m.material.opacity = pulse; });
   controls.update();
-  renderer.render(scene, camera);
+  if (QUALITY === 'high') composer.render(); else renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
 
 // ================= Khởi tạo =================
+$('#btnQuality') && ($('#btnQuality').onclick = () => { QUALITY = QUALITY === 'high' ? 'low' : 'high'; localStorage.setItem('thl.pc.quality', QUALITY); applyQuality(); });
+$('#btnGlass') && ($('#btnGlass').onclick = () => { S.glass = !S.glass; world.traverse((o) => { if (o.name === 'glass') o.visible = S.glass; }); $('#btnGlass').textContent = 'Kính hông: ' + (S.glass ? 'Bật' : 'Tắt'); });
 placeCase();
+applyQuality();
 resize();
 afterChange();
 loop();
-window.__pc = { S, install, remove, powerOn, partById }; // hỗ trợ kiểm thử
+window.__pc = { camera, controls,  S, install, remove, powerOn, partById }; // hỗ trợ kiểm thử
 
 $('#partSearch').addEventListener('input', (e) => { partQuery = e.target.value; renderParts(); });
 $('#partBrand').addEventListener('change', (e) => { partBrand = e.target.value; renderParts(); });

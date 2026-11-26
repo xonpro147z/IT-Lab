@@ -418,4 +418,4 @@ window.__ppt = { api, runner, get P() { return P; }, selectEl, goSlide, addSlide
 
 loadPres(null);
 new ResizeObserver(fitStage).observe($('#stage'));
-setTimeout(() => fileMenu(0), 50);
+
