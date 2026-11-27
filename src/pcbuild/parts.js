@@ -1,15 +1,31 @@
 // Linh kiện thật của các hãng. Giá (VNĐ) và một số thông số (chiều dài VGA, công suất) chỉ mang tính tham khảo cho học tập.
 const vnd = (n) => n;
+const CASE_STYLE_LABEL = { airflow: 'Lưới thoáng khí', slat: 'Mặt nan chéo + quạt ARGB', mesh_rgb: 'Lưới + quạt ARGB', panorama: 'Bể cá 2 buồng, kính liền góc', touch: 'Bể cá 2 buồng + màn hình cảm ứng', aquarium: 'Bể cá nhiều quạt ARGB', wood: 'Full tower mặt gỗ', smooth: 'Bo cong liền khối', full: 'Full tower 2 buồng cao cấp', budget: 'Kính mặt trước + quạt LED vòng' };
 const mk = (cat, slot, list, specFn) => list.map((p) => ({ cat, slot, ...p, specs: specFn(p) }));
 
 // ===== Vỏ máy =====
 const CASES = mk('case', 'case', [
-  { id: 'case-h5', brand: 'NZXT', name: 'NZXT H5 Flow (2024)', price: vnd(2290000), forms: ['ATX', 'mATX'], maxGpu: 365, maxCooler: 165, maxRad: 280, color: 0x1d1f24, accent: 0x8a5cf6 },
-  { id: 'case-4000d', brand: 'Corsair', name: 'Corsair 4000D Airflow', price: vnd(2390000), forms: ['ATX', 'mATX'], maxGpu: 360, maxCooler: 170, maxRad: 280, color: 0xeeeeee, accent: 0x00c6ff },
-  { id: 'case-o11', brand: 'Lian Li', name: 'Lian Li O11 Dynamic EVO', price: vnd(3990000), forms: ['ATX', 'mATX'], maxGpu: 426, maxCooler: 167, maxRad: 360, color: 0x2a2a2e, accent: 0xff4fa3 },
-  { id: 'case-air903', brand: 'Montech', name: 'Montech AIR 903 MAX', price: vnd(2190000), forms: ['ATX', 'mATX'], maxGpu: 400, maxCooler: 180, maxRad: 360, color: 0x16181c, accent: 0x34d399 },
-  { id: 'case-q300l', brand: 'Cooler Master', name: 'Cooler Master MasterBox Q300L', price: vnd(1090000), forms: ['mATX'], maxGpu: 360, maxCooler: 159, maxRad: 240, color: 0x121212, accent: 0xffffff },
-], (p) => [`Hỗ trợ mainboard ${p.forms.join(', ')}`, `VGA dài tối đa ${p.maxGpu} mm`, `Tản khí cao tối đa ${p.maxCooler} mm`, `Két nước trên nóc tối đa ${p.maxRad} mm`]);
+  { id: 'case-h5', brand: 'NZXT', name: 'NZXT H5 Flow (2024)', price: vnd(2290000), forms: ['ATX', 'mATX'], maxGpu: 365, maxCooler: 165, maxRad: 280, color: 0x1d1f24, accent: 0x8a5cf6, style: 'airflow' },
+  { id: 'case-4000d', brand: 'Corsair', name: 'Corsair 4000D Airflow', price: vnd(2390000), forms: ['ATX', 'mATX'], maxGpu: 360, maxCooler: 170, maxRad: 280, color: 0xeeeeee, accent: 0x00c6ff, style: 'airflow' },
+  { id: 'case-3200d', brand: 'Corsair', name: 'Corsair 3200D RS ARGB Black', price: vnd(1990000), forms: ['ATX', 'mATX'], maxGpu: 400, maxCooler: 170, maxRad: 360, color: 0x121315, accent: 0xff6a00, style: 'slat' },
+  { id: 'case-xtpro', brand: 'Phanteks', name: 'Phanteks XT PRO ULTRA', price: vnd(2090000), forms: ['ATX', 'mATX'], maxGpu: 415, maxCooler: 184, maxRad: 360, color: 0x141416, accent: 0xd946ef, style: 'slat' },
+  { id: 'case-air903', brand: 'Montech', name: 'Montech AIR 903 MAX', price: vnd(2190000), forms: ['ATX', 'mATX'], maxGpu: 400, maxCooler: 180, maxRad: 360, color: 0x16181c, accent: 0x34d399, style: 'airflow' },
+  { id: 'case-x3', brand: 'Montech', name: 'Montech X3 Mesh', price: vnd(1190000), forms: ['ATX', 'mATX'], maxGpu: 305, maxCooler: 160, maxRad: 240, color: 0x111214, accent: 0x22d3ee, style: 'mesh_rgb' },
+  { id: 'case-y70', brand: 'HYTE', name: 'HYTE Y70 Snow White', price: vnd(4990000), forms: ['ATX', 'mATX'], maxGpu: 422, maxCooler: 180, maxRad: 360, color: 0xf2f3f5, accent: null, style: 'panorama' },
+  { id: 'case-y70t', brand: 'HYTE', name: 'HYTE Y70 Touch Infinite Black', price: vnd(9490000), forms: ['ATX', 'mATX'], maxGpu: 422, maxCooler: 180, maxRad: 360, color: 0x141416, accent: 0x60a5fa, style: 'touch' },
+  { id: 'case-o11', brand: 'Lian Li', name: 'Lian Li O11 Dynamic EVO', price: vnd(3990000), forms: ['ATX', 'mATX'], maxGpu: 426, maxCooler: 167, maxRad: 360, color: 0x2a2a2e, accent: 0xff4fa3, style: 'panorama' },
+  { id: 'case-o11mini', brand: 'Lian Li', name: 'Lian Li O11 Dynamic Mini V2', price: vnd(2290000), forms: ['ATX', 'mATX'], maxGpu: 400, maxCooler: 170, maxRad: 360, color: 0x18191b, accent: null, style: 'panorama' },
+  { id: 'case-o11vis', brand: 'Lian Li', name: 'Lian Li O11 Vision Compact White', price: vnd(2990000), forms: ['ATX', 'mATX'], maxGpu: 408, maxCooler: 167, maxRad: 360, color: 0xeef0f2, accent: 0x38bdf8, style: 'panorama' },
+  { id: 'case-h9', brand: 'NZXT', name: 'NZXT H9 Elite White', price: vnd(6490000), forms: ['ATX', 'mATX'], maxGpu: 435, maxCooler: 165, maxRad: 360, color: 0xf4f5f7, accent: 0xa78bfa, style: 'panorama' },
+  { id: 'case-h6', brand: 'NZXT', name: 'NZXT H6 Flow RGB', price: vnd(2690000), forms: ['ATX', 'mATX'], maxGpu: 365, maxCooler: 163, maxRad: 360, color: 0x16171a, accent: 0xf472b6, style: 'aquarium' },
+  { id: 'case-f600', brand: 'FOIFKIN', name: 'FOIFKIN F600 (7 quạt ARGB)', price: vnd(2090000), forms: ['ATX', 'mATX'], maxGpu: 400, maxCooler: 165, maxRad: 360, color: 0x101114, accent: 0x22d3ee, style: 'aquarium' },
+  { id: 'case-x50', brand: 'HYTE', name: 'HYTE X50 White', price: vnd(2590000), forms: ['ATX', 'mATX'], maxGpu: 430, maxCooler: 180, maxRad: 360, color: 0xf3f4f6, accent: null, style: 'smooth' },
+  { id: 'case-northxl', brand: 'Fractal Design', name: 'Fractal Design North XL', price: vnd(3790000), forms: ['ATX', 'mATX'], maxGpu: 413, maxCooler: 185, maxRad: 420, color: 0x18181a, accent: null, style: 'wood' },
+  { id: 'case-maestro', brand: 'MSI', name: 'MSI MEG MAESTRO 900R', price: vnd(17490000), forms: ['ATX', 'mATX'], maxGpu: 440, maxCooler: 190, maxRad: 420, color: 0x1a1a1c, accent: 0xf5c451, style: 'full' },
+  { id: 'case-havn', brand: 'HAVN', name: 'HAVN BF 360 Flow White', price: vnd(5490000), forms: ['ATX', 'mATX'], maxGpu: 410, maxCooler: 180, maxRad: 360, color: 0xeceef0, accent: null, style: 'airflow' },
+  { id: 'case-voguish', brand: 'BGears', name: 'BGears b-Voguish', price: vnd(790000), forms: ['ATX', 'mATX'], maxGpu: 393, maxCooler: 160, maxRad: 240, color: 0x0e0f11, accent: null, style: 'budget' },
+  { id: 'case-q300l', brand: 'Cooler Master', name: 'Cooler Master MasterBox Q300L', price: vnd(1090000), forms: ['mATX'], maxGpu: 360, maxCooler: 159, maxRad: 240, color: 0x121212, accent: 0xffffff, style: 'airflow' },
+], (p) => [`Kiểu: ${CASE_STYLE_LABEL[p.style] || ''}`, `Hỗ trợ mainboard ${p.forms.join(', ')}`, `VGA dài tối đa ${p.maxGpu} mm`, `Tản khí cao tối đa ${p.maxCooler} mm`, `Két nước trên nóc tối đa ${p.maxRad} mm`]);
 
 // ===== Mainboard =====
 const MBS = mk('mb', 'mb', [

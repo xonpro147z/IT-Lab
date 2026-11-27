@@ -1,0 +1,17 @@
+#!/bin/bash
+# Dựng lại mục "Giải phẫu 3D" (pc-anatomy, giấy phép MIT – https://github.com/Yoosseph/pc-anatomy)
+# Cách dùng: bash tools/build-anatomy.sh   (cần Node.js 22+ và mạng để tải mã nguồn)
+set -e
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+TMP=$(mktemp -d)
+git clone --depth 1 https://github.com/Yoosseph/pc-anatomy.git "$TMP/pc-anatomy"
+cd "$TMP/pc-anatomy"
+git apply "$ROOT/tools/anatomy.patch" || echo "Cảnh báo: bản vá không áp dụng hết được (mã gốc đã thay đổi) – kiểm tra lại."
+cp "$ROOT/tools/anatomy-vi.js" public/vi.js
+grep -q 'vi.js' index.html || sed -i.bak 's#<script src="/theme.js"></script>#<script src="/theme.js"></script>\n    <script src="/vi.js" defer></script>#' index.html
+npm install --no-audit --no-fund
+npx vite build --base=./
+rm -rf "$ROOT/src/anatomy" && cp -r dist "$ROOT/src/anatomy"
+rm -f "$ROOT/src/anatomy/"{robots.txt,sitemap.xml,social-preview.png}
+cp LICENSE "$ROOT/src/anatomy/LICENSE-pc-anatomy.txt"
+echo "Xong: src/anatomy"

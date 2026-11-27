@@ -1,0 +1,78 @@
+diff --git a/app/links.ts b/app/links.ts
+index cb85961..5ba5c6d 100644
+--- a/app/links.ts
++++ b/app/links.ts
+@@ -3,7 +3,7 @@
+ /** The project's source, linked from the header byline and the About panel. */
+ export const REPOSITORY = 'https://github.com/Yoosseph/pc-anatomy';
+ /** The written companion to the explorer, served as a static page. */
+-export const GUIDE = '/guide/index.html';
++export const GUIDE = './guide/index.html';
+ /** The section of the guide that explains browser hardware acceleration. */
+ export const GUIDE_ACCELERATION = GUIDE + '#smoother-3d';
+ /** A new public issue: where the feedback form sends people when it is not
+diff --git a/app/main.tsx b/app/main.tsx
+index 5096596..f94fb8b 100644
+--- a/app/main.tsx
++++ b/app/main.tsx
+@@ -1,6 +1,6 @@
+ import React from 'react';
+ import {createRoot} from 'react-dom/client';
+-import {Analytics} from '@vercel/analytics/react';
++
+ import Home from './page';
+ import './globals.css';
+-createRoot(document.getElementById('root')!).render(<React.StrictMode><Home/><Analytics/></React.StrictMode>);
++createRoot(document.getElementById('root')!).render(<React.StrictMode><Home/></React.StrictMode>);
+diff --git a/app/performance-tip.tsx b/app/performance-tip.tsx
+index ad1aab4..52afbc8 100644
+--- a/app/performance-tip.tsx
++++ b/app/performance-tip.tsx
+@@ -59,7 +59,7 @@ export default function PerformanceTip({ ready }: { ready: boolean }) {
+           </span>
+         </output>
+         <a
+-          href="/guide/index.html#smoother-3d"
++          href="./guide/index.html#smoother-3d"
+           target="_blank"
+           rel="noreferrer"
+         >
+diff --git a/index.html b/index.html
+index 7821b60..83872d6 100644
+--- a/index.html
++++ b/index.html
+@@ -4,6 +4,7 @@
+     <meta charset="UTF-8" />
+     <link rel="stylesheet" href="/theme.css" />
+     <script src="/theme.js"></script>
++    <script src="/vi.js" defer></script>
+     <meta
+       name="viewport"
+       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+@@ -154,7 +155,7 @@
+           references.
+         </p>
+         <p>
+-          <a href="/guide/index.html" style="color: #a1d9e2"
++          <a href="./guide/index.html" style="color: #a1d9e2"
+             >Learn how PC components work</a
+           >
+           ·
+diff --git a/lib/stage-runtime.ts b/lib/stage-runtime.ts
+index 321e516..4fcfc78 100644
+--- a/lib/stage-runtime.ts
++++ b/lib/stage-runtime.ts
+@@ -15,8 +15,11 @@ export function createStageRuntime(
+     alpha: true,
+     powerPreference: 'high-performance',
+   });
+-  renderer.setPixelRatio(Math.min(devicePixelRatio, compact ? 1.5 : 2));
+-  renderer.shadowMap.enabled = true;
++  // TinHocLab: máy không có card đồ hoạ (dựng hình bằng phần mềm) thì tắt bóng đổ cho nhẹ và tránh lỗi shader
++  let software = false;
++  try { const gl = renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); software = /swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER))); } catch { software = false; }
++  renderer.setPixelRatio(software ? 1 : Math.min(devicePixelRatio, compact ? 1.5 : 2));
++  renderer.shadowMap.enabled = !software;
+   renderer.shadowMap.type = T.PCFShadowMap;
+   // Both stages switch `autoUpdate` off once shadows have faded out, which
+   // is every frame on a diagram and on a disassembled model. A stage that

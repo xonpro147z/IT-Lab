@@ -206,77 +206,153 @@ function glassMat(tint = 0x9fb2c4) {
   return m;
 }
 const noPick = (m) => { m.raycast = () => {}; return m; };
+// Kiểu vỏ (theo các dòng vỏ phổ biến). Phần bên trong (khay mainboard, khoang nguồn) giữ nguyên toạ độ để mọi linh kiện lắp đúng chỗ.
+//  front: hex | slat | tri | glass | wood | smooth | glassrgb      dual: thêm khoang sau (vỏ 2 buồng)      tall: cao thêm (cm)
+//  pillarless: bỏ cột góc trước (kính liền 2 mặt)      bottomFans/topFans/frontFans: số quạt      screen: màn hình cảm ứng      legs: rubber | rail | post
+export const CASE_STYLES = {
+  airflow:  { label: 'Lưới thoáng khí (Airflow)', front: 'hex', frontFans: 3 },
+  slat:     { label: 'Mặt trước nan chéo + quạt ARGB', front: 'slat', frontFans: 3, rgbFans: true },
+  mesh_rgb: { label: 'Lưới tam giác + quạt ARGB', front: 'tri', frontFans: 3, rgbFans: true },
+  panorama: { label: 'Bể cá 2 buồng, kính liền góc', front: 'glass', dual: 8, pillarless: true, frontFans: 0, bottomFans: 3, topFans: 3, legs: 'rail' },
+  touch:    { label: 'Bể cá 2 buồng + màn hình cảm ứng 2.5K', front: 'glass', dual: 8, pillarless: true, frontFans: 0, bottomFans: 3, topFans: 3, screen: true, legs: 'rail' },
+  aquarium: { label: 'Bể cá 7 quạt ARGB', front: 'glass', dual: 6, pillarless: true, frontFans: 3, bottomFans: 3, rgbFans: true, legs: 'rail' },
+  wood:     { label: 'Full tower mặt gỗ óc chó', front: 'wood', tall: 5, frontFans: 3, legs: 'post' },
+  smooth:   { label: 'Vỏ bo cong liền khối', front: 'smooth', frontFans: 3, bottomFans: 0, legs: 'rail' },
+  full:     { label: 'Full tower 2 buồng cao cấp', front: 'glass', dual: 9, pillarless: true, tall: 8, frontFans: 0, bottomFans: 3, topFans: 3, legs: 'post' },
+  budget:   { label: 'Kính cường lực mặt trước + quạt vòng LED', front: 'glassrgb', frontFans: 3, rgbFans: true },
+};
+function woodTex(light = false) {
+  return cachedTex('wood' + light, () => textTexture((ctx, W, H) => {
+    ctx.fillStyle = light ? '#c79a64' : '#5b3a22'; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 260; i++) { // vân gỗ chạy dọc
+      const x = Math.random() * W; ctx.strokeStyle = `rgba(${light ? '90,55,25' : '25,12,5'},${0.06 + Math.random() * 0.12})`; ctx.lineWidth = 0.6 + Math.random() * 2.2;
+      ctx.beginPath(); ctx.moveTo(x, 0); for (let y = 0; y <= H; y += 32) ctx.lineTo(x + Math.sin(y / 70 + i) * 3, y); ctx.stroke();
+    }
+  }, 256, 1024));
+}
+function screenTex(on) {
+  return cachedTex('hyteScreen' + on, () => textTexture((ctx, W, H) => {
+    const gr = ctx.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, on ? '#1d2b64' : '#06070a'); gr.addColorStop(1, on ? '#0b0f1e' : '#030304'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+    if (!on) return;
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 110px Segoe UI, Arial'; ctx.fillText('10:09', W / 2, 190); ctx.font = '38px Segoe UI'; ctx.fillStyle = '#9fb6ff'; ctx.fillText('TinHocLab', W / 2, 245);
+    const g = (y, t, v, c) => { ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(40, y, W - 80, 150); ctx.fillStyle = '#cfd8ff'; ctx.font = '32px Segoe UI'; ctx.textAlign = 'left'; ctx.fillText(t, 64, y + 48); ctx.fillStyle = c; ctx.font = 'bold 70px Segoe UI'; ctx.fillText(v, 64, y + 125); ctx.fillRect(W - 210, y + 110, 150 * Math.random() + 20, 12); };
+    g(330, 'CPU', '42°C', '#5eead4'); g(510, 'GPU', '38°C', '#fca5a5'); g(690, 'FAN', '920 RPM', '#fde68a');
+    for (let i = 0; i < 6; i++) { ctx.fillStyle = `hsl(${i * 55},90%,60%)`; ctx.beginPath(); ctx.arc(80 + i * 72, 940, 24, 0, 7); ctx.fill(); }
+  }, 512, 1024));
+}
 export function caseModel(part) {
   part = { name: '', ...part };
+  const st = { front: 'hex', dual: 0, tall: 0, frontFans: 3, bottomFans: 0, topFans: 0, legs: 'rubber', ...(CASE_STYLES[part.style] || (/o11/.test(part.id) ? CASE_STYLES.panorama : CASE_STYLES.airflow)) };
   const g = new THREE.Group();
   const c = part.color, lt = light(c);
+  const T = 47.4 + st.tall; // chiều cao thân
+  const zb = -11.2 - st.dual; // mặt sau (vỏ 2 buồng sâu hơn)
+  const D = 11.4 - zb, zc = (11.4 + zb) / 2; // độ sâu thân
   const shell = mat(c, { metalness: 0.55, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.4 });
   const inner = mat(lt ? 0xe9ecef : 0x1d2024, { metalness: 0.45, roughness: 0.6, roughnessMap: grain() });
   const darkHole = mat(lt ? 0x9aa1a8 : 0x0a0b0c, { roughness: 0.9 });
-  const o11 = /o11/.test(part.id);
-  // ---- khay mainboard + vách sau (đặc) ----
+  const fanOpt = { rgb: part.accent ?? null, frame: lt ? 0xf2f2f2 : 0x15171a, blade: lt ? 0xf5f5f5 : 0x1d1f24 };
+  if (st.rgbFans && fanOpt.rgb === null) fanOpt.rgb = 0x8a5cf6;
+  // ---- khay mainboard + vách sau ----
   g.add(box(44.2, 46, 0.35, inner, 0, 23, -10.75));
-  g.add(box(45, 47.4, 0.3, shell, 0, 23, -11.2, 0.2));
-  // lỗ đi dây bọc cao su trên khay
+  g.add(box(45, T, 0.3, shell, 0, T / 2 - 0.7, zb, 0.2));
   const grom = RUBBER();
   [[5.6, 37, 1.3, 5.5], [5.6, 27, 1.3, 5.5], [5.6, 17.5, 1.3, 4.5], [-16, 12.2, 7, 1.2], [-4, 12.2, 5, 1.2]].forEach(([x, y, w, h]) => { g.add(box(w, h, 0.3, grom, x, y, -10.5, Math.min(w, h) / 2 - 0.05)); g.add(box(w - 0.5, h - 0.5, 0.05, mat(0x050505), x, y, -10.33, Math.min(w, h) / 2 - 0.3)); });
-  // lỗ CPU cut-out phía sau socket
   g.add(box(12, 11, 0.05, darkHole, -11, 36.5, -10.56, 0.6));
-  // ---- nóc, đáy (lưới), mặt trước, mặt sau ----
-  g.add(box(45, 0.6, 22.4, shell, 0, 46.6, 0, 0.25));
-  const top = perforated(30, 15, lt ? 0xdfe3e8 : 0x111316, 'round', [9, 4.5]); top.rotation.x = -Math.PI / 2; top.position.set(-4, 46.92, -0.5); g.add(top);
-  g.add(box(45, 0.6, 22.4, shell, 0, -0.3, 0, 0.25));
-  // mặt trước: khung + lưới (hoặc kính với O11)
-  g.add(box(0.8, 47.4, 22.4, shell, 23, 23, 0, 0.25).translateX(0));
-  if (o11) {
-    const fg = noPick(new THREE.Mesh(new THREE.PlaneGeometry(21.6, 46.4), glassMat())); fg.rotation.y = Math.PI / 2; fg.position.set(23.45, 23.2, 0); fg.name = 'glass'; g.add(fg);
-  } else {
-    const fm = perforated(20.6, 45, lt ? 0xe7eaee : 0x0f1012, 'hex', [11, 24], { metalness: 0.3, roughness: 0.6 }); fm.rotation.y = Math.PI / 2; fm.position.set(23.45, 23.2, 0); g.add(fm);
-    g.add(box(0.3, 46, 0.6, shell, 23.45, 23.2, 10.6), box(0.3, 46, 0.6, shell, 23.45, 23.2, -10.6));
+  if (st.dual) { // khoang sau: chứa dây, nhìn thấy qua kính trước
+    g.add(box(0.3, T - 1.4, st.dual - 0.6, inner, 22.2, T / 2 - 0.7, -11.2 - st.dual / 2));
   }
-  // mặt sau: tấm thép có ô I/O, quạt sau dạng tổ ong, khe PCIe thông gió
+  // ---- nóc, đáy ----
+  const topY = T - 0.8;
+  const rTop = st.front === 'smooth' ? 0.3 : 0.25;
+  g.add(box(45, 0.6, D, shell, 0, topY, zc, rTop));
+  const top = perforated(30, Math.min(D - 7, 15), lt ? 0xdfe3e8 : 0x111316, 'round', [9, 4.5]); top.rotation.x = -Math.PI / 2; top.position.set(-4, topY + 0.32, zc - 0.5); g.add(top);
+  g.add(box(45, 0.6, D, shell, 0, -0.3, zc, 0.25));
+  // ---- mặt trước ----
+  const fx = 23;
+  if (st.front === 'glass' || st.front === 'glassrgb') {
+    g.add(box(0.8, 1.2, D, shell, fx, T - 1.4, zc), box(0.8, 1.2, D, shell, fx, 0.6, zc));
+    const fg = noPick(new THREE.Mesh(new THREE.PlaneGeometry(D - 0.4, T - 3), glassMat(st.front === 'glassrgb' ? 0x2a2d33 : 0x9fb2c4)));
+    if (st.front === 'glassrgb') { fg.material = fg.material.clone(); fg.material.opacity = 0.32; }
+    fg.rotation.y = Math.PI / 2; fg.position.set(23.45, T / 2 - 0.7, zc); fg.name = 'glass'; g.add(fg);
+    if (!st.pillarless) g.add(box(0.8, T - 1.4, 0.8, shell, fx, T / 2 - 0.7, 11.0));
+  } else if (st.front === 'wood') {
+    g.add(box(0.8, T, D, shell, fx, T / 2 - 0.7, zc, 0.25));
+    const fm = perforated(D - 2, T - 2.4, 0x0f1012, 'round', [8, 22]); fm.rotation.y = Math.PI / 2; fm.position.set(23.42, T / 2 - 0.7, zc); g.add(fm);
+    const wm = new THREE.MeshStandardMaterial({ map: woodTex(lt), roughness: 0.62, metalness: 0 });
+    for (let i = 0; i < 12; i++) { const s = box(0.9, T - 1.4, 1.05, wm, 24.0, T / 2 - 0.7, zb + 1.6 + i * ((D - 3.2) / 11), 0.2); g.add(s); }
+  } else if (st.front === 'smooth') {
+    // mặt trước liền khối bo cong, khe gió 2 bên
+    const sm = mat(c, { metalness: 0.15, roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.2 });
+    g.add(box(2.6, T, D - 5.2, sm, 22.9, T / 2 - 0.7, zc, 1.25));
+    [zc - D / 2 + 1.4, zc + D / 2 - 1.4].forEach((z) => { const v = perforated(2.2, T - 3, lt ? 0xd5d8dc : 0x0e0f11, 'round', [1, 26]); v.rotation.y = Math.PI / 2; v.position.set(23.6, T / 2 - 0.7, z); g.add(v); g.add(box(1.6, T - 2, 0.25, sm, 22.5, T / 2 - 0.7, z + (z < zc ? -1.2 : 1.2), 0.1)); });
+    g.add(label(10, 1.4, simpleText([{ t: (part.brand || '').toUpperCase(), font: 'bold 64px Segoe UI, Arial', color: lt ? '#9aa0a6' : '#cfd3d8' }], {}, 512, 80), 24.22, 4, zc, [0, Math.PI / 2, 0]));
+  } else {
+    g.add(box(0.8, T, D, shell, fx, T / 2 - 0.7, zc, 0.25));
+    const fm = perforated(D - 1.8, T - 2.4, lt ? 0xe7eaee : 0x0f1012, 'hex', st.front === 'tri' ? [8, 18] : [11, 24], { metalness: 0.3, roughness: 0.6 }); fm.rotation.y = Math.PI / 2; fm.position.set(23.45, T / 2 - 0.7, zc); g.add(fm);
+    g.add(box(0.3, T - 1.4, 0.6, shell, 23.45, T / 2 - 0.7, zc + D / 2 - 0.8), box(0.3, T - 1.4, 0.6, shell, 23.45, T / 2 - 0.7, zc - D / 2 + 0.8));
+    if (st.front === 'slat') { // nan chéo kiểu Corsair 3200D / Phanteks XT
+      const sm = mat(c, { metalness: 0.4, roughness: 0.45 });
+      for (let i = 0; i < 16; i++) { const s = box(0.5, 4.2, 0.35, sm, 23.85, 2.5 + i * ((T - 5) / 15), zc, 0.1); s.rotation.x = 0.5; s.scale.y = 1; const s2 = s.clone(); s.position.z = zc - D / 4; s2.position.z = zc + D / 4; s2.rotation.x = -0.5; g.add(s, s2); }
+    }
+    if (st.front === 'tri') { // khung tam giác nhô ra (kiểu Montech X3)
+      const sm = mat(c, { metalness: 0.4, roughness: 0.45 });
+      for (let i = 0; i < 5; i++) { const y = 5 + i * ((T - 10) / 4); g.add(box(0.6, 0.45, D - 3, sm, 23.9, y, zc, 0.1)); }
+    }
+  }
+  // ---- mặt sau ----
   const back = mat(c, { metalness: 0.6, roughness: 0.45 });
-  g.add(box(0.5, 9, 22.4, back, -22.45, 42.2, 0), box(0.5, 13, 9.6, back, -22.45, 31.5, -6.2), box(0.5, 21, 22.4, back, -22.45, 10.5, 0));
+  g.add(box(0.5, 9, D, back, -22.45, 42.2, zc), box(0.5, 13, 9.6, back, -22.45, 31.5, -6.2), box(0.5, 21, D, back, -22.45, 10.5, zc));
+  if (st.dual) g.add(box(0.5, 13, st.dual + 1.4, back, -22.45, 31.5, -11.2 - st.dual / 2 + 0.2));
+  if (st.tall) g.add(box(0.5, st.tall, D, back, -22.45, 46.4 + st.tall / 2, zc));
   const rh = perforated(13, 13, lt ? 0xd9dde1 : 0x121315, 'hex', [6, 6]); rh.rotation.y = -Math.PI / 2; rh.position.set(-22.72, 37.5, 4.2); g.add(rh);
-  // nắp khe PCIe (7 khe, có lỗ thông gió)
   const slotTex = cachedTex('slotvent', () => textTexture((ctx, W, H) => { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#000'; for (let x = 10; x < W - 10; x += 16) ctx.fillRect(x, 8, 8, H - 16); }, 256, 32, { srgb: false }));
   for (let i = 0; i < 7; i++) { const p = new THREE.Mesh(new THREE.PlaneGeometry(11.5, 1.5), new THREE.MeshStandardMaterial({ color: lt ? 0xd4d8dc : 0x1b1c1f, metalness: 0.7, roughness: 0.4, alphaMap: slotTex, alphaTest: 0.5, side: THREE.DoubleSide })); p.rotation.y = -Math.PI / 2; p.position.set(-22.3, 28.4 - i * 2.03, 2.8); g.add(p); }
   g.add(box(0.35, 15, 0.8, back, -22.4, 22.4, -3.4));
-  // ô I/O mặt sau
   g.add(box(0.1, 10.2, 2.6, mat(0x050505), -22.72, 38.6, -8.0));
-  // ---- khung trước kính ----
+  // ---- khung + kính hông ----
   const edge = mat(c, { metalness: 0.6, roughness: 0.35 });
-  g.add(box(45, 0.7, 0.7, edge, 0, 46.3, 11.0), box(45, 0.7, 0.7, edge, 0, -0.1, 11.0), box(0.7, 47, 0.7, edge, 22.9, 23, 11.0), box(0.7, 47, 0.7, edge, -22.4, 23, 11.0));
-  // kính cường lực bên hông (không chặn chuột)
-  const gl = noPick(new THREE.Mesh(new THREE.PlaneGeometry(44.6, 46.6), glassMat())); gl.position.set(0.2, 23.1, 11.42); gl.name = 'glass'; g.add(gl);
-  const glFrame = noPick(new THREE.Mesh(new THREE.PlaneGeometry(44.6, 46.6), new THREE.MeshBasicMaterial({ map: cachedTex('glassedge', () => textTexture((ctx, W, H) => { ctx.clearRect(0, 0, W, H); ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.lineWidth = 14; ctx.strokeRect(0, 0, W, H); }, 512, 512)), transparent: true, depthWrite: false })));
-  glFrame.position.set(0.2, 23.1, 11.44); glFrame.name = 'glass'; g.add(glFrame);
-  // ---- tấm che nguồn (PSU shroud) có lỗ thông gió và logo ----
+  g.add(box(45, 0.7, 0.7, edge, 0, T - 1.1, 11.0), box(45, 0.7, 0.7, edge, 0, -0.1, 11.0), box(0.7, T - 0.4, 0.7, edge, -22.4, T / 2 - 0.7, 11.0));
+  if (!st.pillarless) g.add(box(0.7, T - 0.4, 0.7, edge, 22.9, T / 2 - 0.7, 11.0));
+  const gl = noPick(new THREE.Mesh(new THREE.PlaneGeometry(44.6, T - 0.8), glassMat())); gl.position.set(0.2, T / 2 - 0.7, 11.42); gl.name = 'glass'; g.add(gl);
+  const glFrame = noPick(new THREE.Mesh(new THREE.PlaneGeometry(44.6, T - 0.8), new THREE.MeshBasicMaterial({ map: cachedTex('glassedge' + (st.pillarless ? 'p' : ''), () => textTexture((ctx, W, H) => { ctx.clearRect(0, 0, W, H); ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.lineWidth = 14; if (st.pillarless) { ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(0, 0); ctx.lineTo(0, H); ctx.lineTo(W, H); ctx.stroke(); } else ctx.strokeRect(0, 0, W, H); }, 512, 512)), transparent: true, depthWrite: false })));
+  glFrame.position.set(0.2, T / 2 - 0.7, 11.44); glFrame.name = 'glass'; g.add(glFrame);
+  // ---- tấm che nguồn ----
   const shroud = mat(lt ? 0xe4e7ea : 0x18191c, { metalness: 0.5, roughness: 0.5 });
   g.add(box(29, 0.35, 20.4, shroud, -7.6, 10.2, 0.4));
   const sf = perforated(28.6, 9.6, lt ? 0xe4e7ea : 0x18191c, 'round', [16, 5.4], { metalness: 0.5, roughness: 0.5 }); sf.position.set(-7.6, 5.2, 10.6); g.add(sf);
   g.add(box(0.35, 10, 20.4, shroud, 6.9, 5.1, 0.4));
   g.add(label(8, 1.6, simpleText([{ t: (part.brand || part.name.split(' ')[0]).toUpperCase(), font: 'bold 72px Segoe UI, Arial', color: lt ? '#40444a' : '#e8e8e8' }], {}, 512, 100), -7.6, 10.39, 6.8, [-Math.PI / 2, 0, 0]));
-  // lỗ cáp trên shroud (chỗ cáp nguồn đi lên)
   [[-2, 6.5], [0.5, 1.5], [-12, 4]].forEach(([x, z]) => g.add(box(4.2, 0.1, 2.2, mat(0x050505), x, 10.39, z, 0.5)));
-  // ---- nút nguồn, cổng USB trên nóc ----
-  const btn = cyl(0.9, 0.5, mat(0x222326, { metalness: 0.7, roughness: 0.3 }), 18.5, 47.1, 7.5); btn.name = 'powerButton';
+  // ---- nút nguồn, cổng USB ----
+  const btn = cyl(0.9, 0.5, mat(0x222326, { metalness: 0.7, roughness: 0.3 }), 18.5, topY + 0.5, 7.5); btn.name = 'powerButton';
   const led = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.1, 8, 40), new THREE.MeshStandardMaterial({ color: 0x9adfff, emissive: 0x000000 }));
-  led.rotation.x = Math.PI / 2; led.position.set(18.5, 47.36, 7.5); led.name = 'powerLed';
+  led.rotation.x = Math.PI / 2; led.position.set(18.5, topY + 0.76, 7.5); led.name = 'powerLed';
   g.add(btn, led);
-  g.add(box(1.2, 0.2, 0.5, mat(0x0a0a0a), 15.8, 46.96, 7.5, 0.1), box(0.9, 0.2, 0.35, mat(0x0a0a0a), 14.2, 46.96, 7.5, 0.15), cyl(0.2, 0.1, mat(0x0a0a0a), 12.8, 46.95, 7.5, 'y', 12));
-  // chân đế
-  [[-19, -8], [-19, 8], [19, -8], [19, 8]].forEach(([x, z]) => g.add(box(5, 1.2, 2.4, RUBBER(), x, -1.25, z, 0.5)));
-  // ---- quạt trước (hút) và quạt sau (thổi) ----
-  const ac = part.accent ?? null;
-  [36.5, 23.3].concat(o11 ? [] : [10.2]).forEach((y) => { const f = fan(12, { rgb: ac, frame: lt ? 0xf2f2f2 : 0x15171a, blade: lt ? 0xf5f5f5 : 0x1d1f24 }); f.rotation.y = -Math.PI / 2; f.position.set(21.0, y, -0.5); g.add(f); });
-  const rf = fan(12, { rgb: ac, frame: lt ? 0xf2f2f2 : 0x15171a, blade: lt ? 0xf5f5f5 : 0x1d1f24 }); rf.rotation.y = Math.PI / 2; rf.position.set(-21.0, 37.5, 4.2); g.add(rf);
-  // ---- lồng ổ cứng phía trước dưới (trong shroud) ----
+  g.add(box(1.2, 0.2, 0.5, mat(0x0a0a0a), 15.8, topY + 0.36, 7.5, 0.1), box(0.9, 0.2, 0.35, mat(0x0a0a0a), 14.2, topY + 0.36, 7.5, 0.15), cyl(0.2, 0.1, mat(0x0a0a0a), 12.8, topY + 0.35, 7.5, 'y', 12));
+  // ---- chân đế ----
+  if (st.legs === 'rail') [zb + 2, 9.4].forEach((z) => g.add(box(42, 1.2, 1.8, mat(lt ? 0xd8dbdf : 0x111214, { metalness: 0.6, roughness: 0.35 }), 0, -1.25, z, 0.4)));
+  else if (st.legs === 'post') [[-19, zb + 3], [-19, 8.5], [19, zb + 3], [19, 8.5]].forEach(([x, z]) => g.add(cyl(0.9, 1.2, mat(st.front === 'wood' ? 0x5b3a22 : 0x2a2b2e, { metalness: st.front === 'wood' ? 0 : 0.7, roughness: 0.4, ...(st.front === 'wood' ? { map: woodTex(lt) } : {}) }), x, -1.25, z, 'y', 20)));
+  else [[-19, zb + 3.2], [-19, 8], [19, zb + 3.2], [19, 8]].forEach(([x, z]) => g.add(box(5, 1.2, 2.4, RUBBER(), x, -1.25, z, 0.5)));
+  // ---- quạt ----
+  const F = (rx, ry, x, y, z) => { const f = fan(12, fanOpt); f.rotation.set(rx, ry, 0); f.position.set(x, y, z); g.add(f); };
+  [36.5, 23.3, 10.2].slice(0, st.frontFans).forEach((y) => F(0, -Math.PI / 2, 21.0, y, -0.5));
+  F(0, Math.PI / 2, -21.0, 37.5, 4.2); // quạt sau
+  if (st.bottomFans) [-14, -1.5, 11].slice(0, st.bottomFans).forEach((x) => F(-Math.PI / 2, 0, x, 11.75, 0.5)); // quạt đáy hút lên
+  if (st.topFans) [-12, 1, 14].slice(0, st.topFans).forEach((x) => F(Math.PI / 2, 0, x, topY - 1.4, 0.5));
+  // vòng LED nổi trên mặt kính trước (vỏ giá rẻ)
+  if (st.front === 'glassrgb') [36.5, 23.3, 10.2].forEach((y, i) => { const r = new THREE.Mesh(new THREE.TorusGeometry(5.4, 0.22, 10, 60), new THREE.MeshStandardMaterial({ color: 0x3a3a3e, emissive: [0xff2d55, 0x34c759, 0x0a84ff][i], emissiveIntensity: 0.35 })); r.rotation.y = Math.PI / 2; r.position.set(22.4, y, -0.5); r.name = 'rgb'; g.add(r); });
+  // ---- màn hình cảm ứng (HYTE Y70 Touch) ở mặt trước buồng sau ----
+  if (st.screen) {
+    const sc = new THREE.Mesh(new THREE.PlaneGeometry(st.dual - 1, T - 4), new THREE.MeshStandardMaterial({ map: screenTex(true), emissive: 0xffffff, emissiveMap: screenTex(true), emissiveIntensity: 0.55, roughness: 0.2 }));
+    sc.rotation.y = Math.PI / 2; sc.position.set(23.5, T / 2 - 0.7, -11.2 - st.dual / 2 + 0.2); g.add(sc);
+  }
+  // ---- lồng ổ cứng ----
   const cage = mat(lt ? 0xd0d5da : 0x2b2e33, { metalness: 0.65, roughness: 0.4 });
   g.add(box(13.4, 9, 0.3, cage, 13.2, 4.8, -7.6), box(13.4, 9, 0.3, cage, 13.2, 4.8, 3.9), box(13.4, 0.3, 11.8, cage, 13.2, 9.2, -1.85));
   g.add(box(13.4, 0.2, 0.8, cage, 13.2, 3.4, -7.1), box(13.4, 0.2, 0.8, cage, 13.2, 3.4, 3.4));
-  // dải LED trang trí (nếu vỏ có màu nhấn)
-  if (ac !== null) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.25, 42, 0.25), new THREE.MeshStandardMaterial({ color: 0x3a3a3e, emissive: ac, emissiveIntensity: 0.25 })); st.position.set(22.3, 24, 10.3); st.name = 'rgb'; g.add(st); }
+  if (part.accent != null) { const sl = new THREE.Mesh(new THREE.BoxGeometry(0.25, T - 5.4, 0.25), new THREE.MeshStandardMaterial({ color: 0x3a3a3e, emissive: part.accent, emissiveIntensity: 0.25 })); sl.position.set(22.3, T / 2, 10.3); sl.name = 'rgb'; g.add(sl); }
+  g.userData.style = st;
   return g;
 }
 

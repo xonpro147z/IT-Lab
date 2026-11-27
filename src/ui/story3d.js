@@ -21,16 +21,21 @@ const camera = new THREE.PerspectiveCamera(32, 1, 0.5, 800);
 
 const H = 30.5, W = 24.4;
 const rig = new THREE.Group(); scene.add(rig);
-const board = motherboardModel({ form: 'ATX', color: 0x101114, accent: 0xe11d48, label: 'ROG STRIX', chipset: 'X870E' });
+const board = motherboardModel({ form: 'ATX', socket: 'AM5', color: 0x101114, accent: 0xe11d48, label: 'ROG STRIX', chipset: 'X870E' });
+// điểm lắp theo đúng ảnh mainboard đang dùng (mỗi mẫu bo có vị trí socket/khe RAM/PCIe riêng)
+const A = (k) => (board.userData.anchors?.[k] || BOARD_ANCHORS[k]).clone();
 board.position.set(-W / 2, H / 2, 0); rig.add(board);
 const parts = [];
 function addPart(obj, anchor, from, range) { obj.position.copy(anchor); board.add(obj); parts.push({ obj, home: anchor.clone(), from, range }); }
-addPart(cpuModel({ brand: 'amd', name: 'AMD Ryzen 7 9800X3D' }), BOARD_ANCHORS.cpu, new THREE.Vector3(-6, 10, 40), [0.14, 0.3]);
-addPart(coolerModel({ type: 'tower', label: 'TINHOCLAB' }), BOARD_ANCHORS.cpu, new THREE.Vector3(0, 6, 70), [0.32, 0.48]);
-addPart(ramModel({ type: 'DDR5', size: 32, mhz: 6000, color: 0xe5e7eb, rgb: true, label: 'DDR5' }), BOARD_ANCHORS.ram, new THREE.Vector3(14, 4, 50), [0.5, 0.62]);
-addPart(m2Model({ size: 1000 }), BOARD_ANCHORS.m2, new THREE.Vector3(-14, -6, 45), [0.56, 0.68]);
-addPart(gpuModel({ brand: 'nvidia', maker: 'TinHocLab', name: 'GeForce RTX 5080', length: 330, fans: 3, thick: 6, pcie: 1, h16: true, color: 0x18191c }), BOARD_ANCHORS.gpu, new THREE.Vector3(10, -24, 60), [0.7, 0.88]);
+addPart(cpuModel({ brand: 'amd', name: 'AMD Ryzen 7 9800X3D' }), A('cpu'), new THREE.Vector3(-6, 10, 40), [0.14, 0.3]);
+addPart(coolerModel({ type: 'tower', label: 'TINHOCLAB' }), A('cpu'), new THREE.Vector3(0, 6, 70), [0.32, 0.48]);
+addPart(ramModel({ type: 'DDR5', size: 32, mhz: 6000, color: 0xe5e7eb, rgb: true, label: 'DDR5' }), A('ram'), new THREE.Vector3(14, 4, 50), [0.5, 0.62]);
+{ const pitch = board.userData.ramPitch; const ram = parts[parts.length - 1].obj; if (pitch) ram.children.forEach((c, i) => { c.position.x = (i ? 1 : -1) * pitch; }); }
+addPart(m2Model({ size: 1000 }), A('m2'), new THREE.Vector3(-14, -6, 45), [0.56, 0.68]);
+addPart(gpuModel({ brand: 'nvidia', maker: 'TinHocLab', name: 'GeForce RTX 5080', length: 330, fans: 3, thick: 6, pcie: 1, h16: true, color: 0x18191c }), A('gpu'), new THREE.Vector3(10, -24, 60), [0.7, 0.88]);
 
+// ảnh linh kiện tải xong thì vẽ lại khung hình
+THREE.DefaultLoadingManager.onLoad = () => { lastP = -1; };
 function resize() { lastW = 0; const r = canvas.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.fov = camera.aspect < 1.2 ? 42 : 32; camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
 const ease = (t) => (t < 0 ? 0 : t > 1 ? 1 : 1 - Math.pow(1 - t, 3));

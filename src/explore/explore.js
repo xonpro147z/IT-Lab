@@ -38,7 +38,7 @@ const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(1, 2, 1.
 const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 5000);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 1.2;
-let current = null, shadow = null, home = null;
+let current = null, shadow = null, home = null, sway = 0, swayOn = true;
 // bóng mờ dưới vật thể
 const shadowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(0,0,0,.28)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
 
@@ -61,14 +61,23 @@ function show3D(it) {
   const sphereR = size.length() / 2;
   const vf = (camera.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
   const dist = (sphereR / Math.sin(Math.min(vf, hf) / 2)) * 1.12;
-  home = new THREE.Vector3(0.35, 0.38, 0.86).normalize().multiplyScalar(dist);
+  // hiện vật dựng từ ảnh chụp thật: nhìn chính diện, chỉ lắc nhẹ nếu ảnh chụp xiên
+  const ph = obj.userData.photo; sway = ph ? ph.sway : 0;
+  controls.autoRotate = swayOn && !(ph && sway);
+  controls.minAzimuthAngle = ph && sway ? -sway : -Infinity; controls.maxAzimuthAngle = ph && sway ? sway : Infinity;
+  home = (ph ? new THREE.Vector3(0.1, 0.16, 1) : new THREE.Vector3(0.35, 0.38, 0.86)).normalize().multiplyScalar(ph ? dist * 0.92 : dist);
   camera.near = R / 100; camera.far = R * 100; camera.updateProjectionMatrix();
   controls.minDistance = R * 0.3; controls.maxDistance = dist * 3;
   camera.position.copy(home); controls.target.set(0, 0, 0); controls.update();
-  $('#vcap').textContent = it.cat === 'port' && !['sata', 'molex', 'atx24', 'pcie8', '12vhpwr'].includes(it.id) ? '◀ Đầu cắm (phích) · Cổng trên thiết bị ▶' : '';
+  $('#vcap').textContent = ph ? '📷 Ảnh chụp sản phẩm thật, dựng thành khối 3D · Ảnh: ' + (ph.credit || '') + ' (Wikimedia Commons)' : it.cat === 'port' && !['sata', 'molex', 'atx24', 'pcie8', '12vhpwr'].includes(it.id) ? '◀ Đầu cắm (phích) · Cổng trên thiết bị ▶' : '';
 }
-function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); }
-$('#btnRotate').onclick = () => { controls.autoRotate = !controls.autoRotate; $('#btnRotate').textContent = 'Tự xoay: ' + (controls.autoRotate ? 'Bật' : 'Tắt'); };
+function loop() {
+  // vật dựng từ ảnh chụp xiên: lắc qua lại thay vì xoay tròn
+  if (sway && current) { controls.autoRotate = false; if (swayOn) current.rotation.y = Math.sin(performance.now() / 1400) * sway * 0.8; }
+  else if (current) current.rotation.y = 0;
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
+}
+$('#btnRotate').onclick = () => { swayOn = !swayOn; controls.autoRotate = !controls.autoRotate; $('#btnRotate').textContent = 'Tự xoay: ' + (controls.autoRotate ? 'Bật' : 'Tắt'); };
 $('#btnReset').onclick = () => { if (home) { camera.position.copy(home); controls.target.set(0, 0, 0); } };
 
 // ---------- Danh sách & tìm kiếm ----------
