@@ -88,8 +88,8 @@ type Ctx = {
 export type Status = 'seated' | 'moving' | 'loose' | 'out';
 export type ViewName = 'overview' | 'side' | 'rear' | 'top' | 'socket' | 'ram' | 'gpu' | 'psu' | 'storage' | 'selected';
 const VIEWS: Record<ViewName, { focus: string[] | null; dir: V3; pad: number }> = {
-  overview: { focus: null, dir: [0.7, 0.55, 1.2], pad: 0.85 },
-  side: { focus: null, dir: [0.02, 0.06, 1], pad: 0.8 },
+  overview: { focus: null, dir: [0.7, 0.55, 1.2], pad: 1.0 },
+  side: { focus: null, dir: [0.02, 0.06, 1], pad: 0.95 },
   rear: { focus: null, dir: [-1, 0.14, 0.3], pad: 0.85 },
   top: { focus: null, dir: [0.05, 1, 0.3], pad: 0.85 },
   socket: { focus: ['processor', 'cpucooler'], dir: [0.35, 0.3, 1], pad: 1.5 },

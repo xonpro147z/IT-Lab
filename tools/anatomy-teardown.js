@@ -236,11 +236,19 @@
   addEventListener('td:takeover', () => caption(''));
   addEventListener('resize', drawLabels);
 
+  // phần màn hình bị bảng phải và thanh công cụ che: tâm hình dời vào vùng còn trống
+  function fitInset() {
+    const t = td(), bar = $('#tdBar'); if (!t || !bar) return;
+    const top = Math.max(0, Math.round(bar.getBoundingClientRect().bottom - 76 + 8));
+    if (t.inset.right === 320 && t.inset.top === top) return;
+    t.inset.right = 320; t.inset.top = top; t.touch(); t.setView(t.view || 'overview');
+  }
+  addEventListener('resize', () => document.body.classList.contains('td') && fitInset());
   window.__tdUI = {
     open() {
       build(); document.body.classList.add('td');
       const t = td(); if (!t) return;
-      t.inset.right = 320; t.inset.top = 64;
+      fitInset();
       t.setActive(true); list = t.list(); sel = null; render(); syncBar();
       $('#tdBar [data-ex]').value = 0;
     },
