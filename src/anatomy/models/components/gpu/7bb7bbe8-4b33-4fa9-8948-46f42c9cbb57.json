@@ -1,0 +1,158 @@
+{
+  "sku": "7bb7bbe8-4b33-4fa9-8948-46f42c9cbb57",
+  "category": "gpu",
+  "opendbCategory": "GPU",
+  "manufacturer": "ASUS",
+  "productName": "ASUS Dual GeForce RTX 4060 V2 OC Edition 8GB GDDR6",
+  "partNumbers": [
+    "DUAL-RTX4060-O8G-V2",
+    "90YV0JC4-M0NB00",
+    "90YV0JC4-M0NA00"
+  ],
+  "dimensions": {
+    "x": 205.8,
+    "y": 40.74,
+    "z": 131.15,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "length": {
+      "value": 202,
+      "source": "opendb",
+      "ref": "length"
+    },
+    "thickness": {
+      "value": 40.64,
+      "source": "opendb",
+      "ref": "total_slot_width × 20.32 mm (PCI-SIG CEM (0.8 inch))"
+    },
+    "pcbHeight": {
+      "value": 111.15,
+      "source": "standard",
+      "ref": "PCI-SIG CEM (full-height)"
+    },
+    "shroudHeight": {
+      "value": 123.15,
+      "source": "estimate",
+      "ref": "vỏ tản nhiệt thường nhô quá bo PCIe full-height ≈ 10–15 mm"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [
+        "BLACK",
+        "GREY"
+      ],
+      "source": "opendb",
+      "ref": "color"
+    },
+    "lighting": {
+      "value": [
+        "None"
+      ],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "slots": {
+      "value": 2,
+      "source": "opendb",
+      "ref": "total_slot_width"
+    },
+    "cooling": {
+      "value": "2 Fans",
+      "source": "opendb",
+      "ref": "cooling"
+    },
+    "fans": {
+      "value": 2,
+      "source": "opendb",
+      "ref": "cooling"
+    },
+    "blower": {
+      "value": false,
+      "source": "opendb",
+      "ref": "cooling"
+    },
+    "vram": {
+      "value": 4,
+      "source": "opendb",
+      "ref": "memory_bus / 32 bit mỗi chip GDDR"
+    },
+    "power": {
+      "value": {
+        "pin8": 1,
+        "pin6": 0,
+        "hpwr": 0
+      },
+      "source": "opendb",
+      "ref": "power_connectors"
+    },
+    "btf": {
+      "value": false,
+      "source": "opendb",
+      "ref": "metadata.name (\"BTF\": đầu nguồn ở mép cắm)"
+    },
+    "backplate": {
+      "value": true,
+      "source": "estimate",
+      "ref": "card nhiều quạt hiện nay đều có tấm lưng"
+    },
+    "chipset": {
+      "value": "GeForce RTX 4060",
+      "source": "opendb",
+      "ref": "chipset"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "shroudHeight",
+      "value": 123.15,
+      "rule": "vỏ tản nhiệt thường nhô quá bo PCIe full-height ≈ 10–15 mm"
+    },
+    {
+      "key": "backplate",
+      "value": true,
+      "rule": "card nhiều quạt hiện nay đều có tấm lưng"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:50.926Z",
+  "specHash": "1be4b4f7",
+  "meshes": [
+    "GPU_PCB",
+    "GPU_PCIe_Fingers",
+    "GPU_Substrate",
+    "GPU_Die",
+    "GPU_VRAM_01",
+    "GPU_VRAM_02",
+    "GPU_VRAM_03",
+    "GPU_VRAM_04",
+    "GPU_VRM_Chokes",
+    "GPU_Power_8pin_1",
+    "GPU_Heatsink_Fins",
+    "GPU_Coldplate",
+    "GPU_Heatpipe_01",
+    "GPU_Heatpipe_02",
+    "GPU_Heatpipe_03",
+    "GPU_Heatpipe_04",
+    "GPU_Shroud_Cover",
+    "GPU_Shroud_Rim_Inner",
+    "GPU_Shroud_Rim_Outer",
+    "GPU_Shroud_Accent",
+    "GPU_Fan_01_Hub",
+    "GPU_Fan_01_Label",
+    "GPU_Fan_01_Blades",
+    "GPU_Fan_02_Hub",
+    "GPU_Fan_02_Label",
+    "GPU_Fan_02_Blades",
+    "GPU_Backplate",
+    "GPU_Bracket",
+    "GPU_IO_Port_1",
+    "GPU_IO_Port_2",
+    "GPU_IO_Port_3",
+    "GPU_IO_Port_4"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

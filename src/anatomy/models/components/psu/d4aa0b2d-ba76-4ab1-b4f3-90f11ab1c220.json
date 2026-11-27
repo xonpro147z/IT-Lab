@@ -1,0 +1,125 @@
+{
+  "sku": "d4aa0b2d-ba76-4ab1-b4f3-90f11ab1c220",
+  "category": "psu",
+  "opendbCategory": "PSU",
+  "manufacturer": "Corsair",
+  "productName": "Corsair RM850x (2024) Black ATX 850W Fully Modular",
+  "partNumbers": [
+    "CP-9020270-NA",
+    "CP-9020270-EU",
+    "CP-9020270-AU",
+    "CP-9020270-UK"
+  ],
+  "dimensions": {
+    "x": 164.6,
+    "y": 87.4,
+    "z": 150.11,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "width": {
+      "value": 150,
+      "source": "standard",
+      "ref": "ATX12V Design Guide (150 × 86 mm)"
+    },
+    "height": {
+      "value": 86,
+      "source": "standard",
+      "ref": "ATX12V Design Guide"
+    },
+    "length": {
+      "value": 160,
+      "source": "opendb",
+      "ref": "length"
+    },
+    "fan": {
+      "value": 135,
+      "source": "estimate",
+      "ref": "quạt nguồn ATX thường 120–140 mm, SFX 92 mm"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [
+        "BLACK"
+      ],
+      "source": "opendb",
+      "ref": "color"
+    },
+    "lighting": {
+      "value": [],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "formFactor": {
+      "value": "ATX",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "modular": {
+      "value": "Full",
+      "source": "opendb",
+      "ref": "modular"
+    },
+    "connectors": {
+      "value": {
+        "atx_24_pin": 1,
+        "eps_8_pin": 0,
+        "pcie_12vhpwr": 0,
+        "pcie_6_plus_2_pin": 0,
+        "sata": 8,
+        "molex_4_pin": 0,
+        "floppy_4_pin": 0
+      },
+      "source": "opendb",
+      "ref": "connectors"
+    },
+    "fanless": {
+      "value": false,
+      "source": "opendb",
+      "ref": "fanless"
+    },
+    "wattage": {
+      "value": 850,
+      "source": "opendb",
+      "ref": "wattage"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "fan",
+      "value": 135,
+      "rule": "quạt nguồn ATX thường 120–140 mm, SFX 92 mm"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:51.359Z",
+  "specHash": "0143cdec",
+  "meshes": [
+    "PSU_Cover_Top",
+    "PSU_Cover_Side_L",
+    "PSU_Cover_Side_R",
+    "PSU_Label",
+    "PSU_Housing_Bottom",
+    "PSU_Fan_Hub",
+    "PSU_Fan_Label",
+    "PSU_Fan_Blades",
+    "PSU_FanGrille",
+    "PSU_RearVent",
+    "PSU_ACInlet",
+    "PSU_Switch",
+    "PSU_FrontPlate",
+    "PSU_Connector_ATX24_A",
+    "PSU_Connector_ATX24_B",
+    "PSU_Connector_Peripheral_1",
+    "PSU_Connector_Peripheral_2",
+    "PSU_PCB",
+    "PSU_Transformer",
+    "PSU_Capacitor_1",
+    "PSU_Capacitor_2",
+    "PSU_Heatsink"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

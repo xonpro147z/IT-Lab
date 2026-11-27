@@ -1,0 +1,107 @@
+{
+  "sku": "9834e59d-4f80-495f-bb60-288e6c60aac1",
+  "category": "cooler",
+  "opendbCategory": "CPUCooler",
+  "manufacturer": "ARCTIC",
+  "productName": "ARCTIC Liquid Freezer III 360 A-RGB 48.82 CFM Water 360mm Black",
+  "partNumbers": [],
+  "dimensions": {
+    "x": 396,
+    "y": 248.5,
+    "z": 126,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "fanSize": {
+      "value": 120,
+      "source": "opendb",
+      "ref": "fan_size"
+    },
+    "fanHoles": {
+      "value": 105,
+      "source": "standard",
+      "ref": "Cỡ quạt 120 mm (lỗ vít 105 mm)"
+    },
+    "radiator": {
+      "value": 360,
+      "source": "opendb",
+      "ref": "radiator_size"
+    },
+    "radThickness": {
+      "value": 27,
+      "source": "estimate",
+      "ref": "két tản nước thường dày 27–38 mm → 27 mm"
+    },
+    "pumpHeight": {
+      "value": 68.5,
+      "source": "opendb",
+      "ref": "height"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [
+        "BLACK"
+      ],
+      "source": "opendb",
+      "ref": "color"
+    },
+    "lighting": {
+      "value": [
+        "ARGB"
+      ],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "water": {
+      "value": true,
+      "source": "opendb",
+      "ref": "water_cooled"
+    },
+    "fans": {
+      "value": 3,
+      "source": "opendb",
+      "ref": "fan_quantity"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "radThickness",
+      "value": 27,
+      "rule": "két tản nước thường dày 27–38 mm → 27 mm"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:52.178Z",
+  "specHash": "78e3930b",
+  "meshes": [
+    "AIO_Pump_ColdPlate",
+    "AIO_Pump_Housing",
+    "AIO_Pump_Cap",
+    "AIO_Pump_RGBRing",
+    "AIO_Radiator_Core",
+    "AIO_Radiator_Fins",
+    "AIO_Radiator_Tank_A",
+    "AIO_Radiator_Tank_B",
+    "AIO_Fan_01_Frame",
+    "AIO_Fan_01_RGBRing",
+    "AIO_Fan_01_Hub",
+    "AIO_Fan_01_Label",
+    "AIO_Fan_01_Blades",
+    "AIO_Fan_02_Frame",
+    "AIO_Fan_02_RGBRing",
+    "AIO_Fan_02_Hub",
+    "AIO_Fan_02_Label",
+    "AIO_Fan_02_Blades",
+    "AIO_Fan_03_Frame",
+    "AIO_Fan_03_RGBRing",
+    "AIO_Fan_03_Hub",
+    "AIO_Fan_03_Label",
+    "AIO_Fan_03_Blades",
+    "AIO_Tube_01",
+    "AIO_Tube_02"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

@@ -13,13 +13,18 @@ cd "$TMP/pc-anatomy"
 git checkout -q "$PCA_REV"
 git apply "$ROOT/tools/anatomy.patch"
 # Mã riêng của TinHocLab (tháo lắp 3D…) nằm ở tools/anatomy-thl, bản vá chỉ giữ các điểm móc nối.
-mkdir -p lib/thl && cp "$ROOT"/tools/anatomy-thl/*.ts lib/thl/
+mkdir -p lib/thl && cp -r "$ROOT"/tools/anatomy-thl/. lib/thl/
 cp "$ROOT/tools/anatomy-vi.js" public/vi.js
 cp "$ROOT/tools/anatomy-asm.js" public/asm.js
 cp "$ROOT/tools/anatomy-teardown.js" public/teardown.js
 grep -q 'asm.js' index.html || sed -i.bak 's#<script src="/theme.js"></script>#<script src="/theme.js"></script>\n    <script src="/vi.js" defer></script>\n    <script src="/asm.js" defer></script>#' index.html
 grep -q 'teardown.js' index.html || sed -i.bak 's#    <script src="/asm.js" defer></script>#    <script src="/asm.js" defer></script>\n    <script src="/teardown.js" defer></script>#' index.html
 npm install --no-audit --no-fund
+# Thư viện mô hình linh kiện (P4): sinh GLB từ OpenDB vào tools/model-library (có bộ nhớ đệm: chỉ sinh lại SKU
+# có thông số đổi hoặc khi GENERATOR_VERSION đổi), rồi chép vào public/models/components để đóng gói kèm ứng dụng.
+node --experimental-strip-types --no-warnings lib/thl/procgen/cli.ts "$ROOT/tools/opendb" "$ROOT/tools/model-library/components"
+mkdir -p public/models && rm -rf public/models/components && cp -r "$ROOT/tools/model-library/components" public/models/components
+cp "$ROOT/tools/opendb/NOTICE-OpenDB.md" public/models/components/
 npx vite build --base=./
 rm -rf "$ROOT/src/anatomy" && cp -r dist "$ROOT/src/anatomy"
 rm -f "$ROOT/src/anatomy/"{robots.txt,sitemap.xml,social-preview.png}
