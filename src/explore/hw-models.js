@@ -1,6 +1,6 @@
 // Mô hình 3D dựng bằng code cho phân hệ Khám phá phần cứng
 import * as THREE from 'three';
-import { SHAPES } from './photo/shapes.js';
+import { REAL_MODELS } from './hw-real.js';
 import { box, cyl, mat, textTexture, label, simpleText, fan, caseModel, motherboardModel, cpuModel, coolerModel, ramModel, gpuModel, psuModel, hddModel, ssd25Model, m2Model } from '../pcbuild/models.js';
 
 const METAL = () => mat(0xc3c8ce, { metalness: 0.9, roughness: 0.25 });
@@ -536,57 +536,6 @@ M.scanner = () => {
 };
 M.tablet = () => M.phone(true);
 
-// ---------- Mô hình từ ảnh chụp sản phẩm thật (tách nền + dựng khối theo đường viền) ----------
-const PHOTO_BASE = new URL('./photo/', import.meta.url).href;
-const photoLoader = new THREE.TextureLoader();
-const photoTexCache = new Map();
-function photoTex(name) {
-  if (!photoTexCache.has(name)) { const t = photoLoader.load(PHOTO_BASE + name + '.webp'); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; photoTexCache.set(name, t); }
-  return photoTexCache.get(name);
-}
-// key: tên ảnh; width: bề ngang thật (mm); depth: độ dày (mm); back: ảnh mặt sau (nếu có); side: màu cạnh; sway: chỉ xoay nhẹ (ảnh chụp xiên)
-function photoPiece(key, { width, depth = 2, back = null, side = 0x2b2d31, sway = 0 } = {}) {
-  const S = SHAPES[key]; const H = (width * S.h) / S.w;
-  const shape = new THREE.Shape(S.poly.map(([x, y]) => new THREE.Vector2(x, 1 - y)));
-  const g = new THREE.Group();
-  const front = new THREE.MeshStandardMaterial({ map: photoTex(key), alphaTest: 0.5, roughness: 0.55, metalness: 0.1, side: THREE.FrontSide });
-  const fm = new THREE.Mesh(new THREE.ShapeGeometry(shape), front);
-  const backGeo = new THREE.ShapeGeometry(shape);
-  if (back) { const uv = backGeo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, 1 - uv.getX(i)); }
-  const bm = new THREE.Mesh(backGeo, back ? new THREE.MeshStandardMaterial({ map: photoTex(back), alphaTest: 0.5, roughness: 0.6, side: THREE.BackSide }) : new THREE.MeshStandardMaterial({ map: photoTex(key), color: 0x6b6f76, roughness: 0.7, side: THREE.BackSide }));
-  const sideGeo = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false, curveSegments: 1 });
-  const sm = new THREE.Mesh(sideGeo, [new THREE.MeshBasicMaterial({ visible: false }), new THREE.MeshStandardMaterial({ color: side, roughness: 0.6, metalness: 0.2 })]);
-  const k = new THREE.Group();
-  fm.position.z = depth / 2 + 0.001; bm.position.z = -depth / 2 - 0.001;
-  sm.scale.z = depth; sm.position.z = -depth / 2;
-  k.add(fm, bm, sm);
-  [fm, bm, sm].forEach((m) => { m.castShadow = true; });
-  k.scale.set(width, H, 1); k.position.set(-width / 2, -H / 2, 0);
-  fm.scale.z = bm.scale.z = 1;
-  g.add(k);
-  g.userData.photo = { sway, credit: PHOTO_CREDIT[key] };
-  return g;
-}
-const PHOTO_CREDIT = {"sd": "Dinkun Chen, CC BY-SA 4.0 · thẻ microSD: User5515, CC0 · mặt sau: CC BY 2.5", "usbstick": "DJDunsie, CC BY 3.0", "nic": "Dmitry Nosachev, CC BY-SA 4.0", "sound": "Papperskorgen, phạm vi công cộng", "sodimm": "ITEagle Europe – Sebastiaan Broekhoven, CC BY-SA 4.0", "cmos": "JanEhlebrecht, CC BY-SA 4.0", "dp": "Belkin + Abisys, CC BY-SA 3.0", "hdmi": "D-Kuru, CC BY-SA 3.0 AT", "vga": "Swift.Hg, CC BY-SA 3.0", "usbc": "Tomato86, CC BY-SA 4.0", "usb3b": "Anıl Öztaş, CC BY-SA 4.0", "usbminib": "Anıl Öztaş, CC BY-SA 4.0", "rj45": "Gutza, Mike1024, phạm vi công cộng", "jack": "Anıl Öztaş, CC BY-SA 4.0", "pcie8": "D-Kuru, CC BY-SA 3.0 AT"};
-// Các hiện vật dùng ảnh thật (Wikimedia Commons – xem photo/CREDITS.md)
-const PHOTO_MODELS = {
-  sdcard: () => { const g = new THREE.Group(); const a = photoPiece('sd', { width: 24, depth: 2.1, back: 'sd_back', side: 0xd9dcdf }); a.position.x = -9; const b = photoPiece('microsd', { width: 11, depth: 1, side: 0x1b1c1f }); b.position.set(13, -8.5, 0); g.add(a, b); g.userData.photo = { sway: 0, credit: PHOTO_CREDIT.sd }; return g; },
-  flash: () => photoPiece('usbstick', { width: 60, depth: 9, side: 0x22b7d8, sway: 0.5 }),
-  nic: () => photoPiece('nic', { width: 125, depth: 6, side: 0x1f6b3a, sway: 0.45 }),
-  soundcard: () => photoPiece('sound', { width: 175, depth: 3, side: 0x1f6b3a }),
-  sodimm: () => photoPiece('sodimm', { width: 69.6, depth: 2.6, side: 0x1f6b3a }),
-  cmos: () => photoPiece('cmos', { width: 20, depth: 1.5, side: 0xb8bcc2, sway: 0.5 }),
-  dp: () => photoPiece('dp', { width: 62, depth: 4, side: 0x9aa0a6, sway: 0.45 }),
-  hdmi: () => photoPiece('hdmi', { width: 40, depth: 4, side: 0x151515, sway: 0.45 }),
-  vga: () => photoPiece('vga', { width: 60, depth: 5, side: 0x3b6fc4, sway: 0.45 }),
-  usbC: () => photoPiece('usbc', { width: 36, depth: 3, side: 0x3a3a3a, sway: 0.45 }),
-  usbB: () => photoPiece('usb3b', { width: 34, depth: 4, side: 0xa8adb3, sway: 0.45 }),
-  miniUSB: () => photoPiece('usbminib', { width: 26, depth: 3, side: 0x151515, sway: 0.45 }),
-  rj45: () => photoPiece('rj45', { width: 26, depth: 4, side: 0xd5dde3, sway: 0.45 }),
-  audio: () => photoPiece('jack', { width: 62, depth: 1.5, side: 0xb02020, sway: 0.4 }),
-  pcie8: () => photoPiece('pcie8', { width: 38, depth: 4, side: 0x1b1c1f, sway: 0.4 }),
-};
-
 // ---------- Bảng tra cứu mô hình ----------
 export const MODELS = {
   ...Object.fromEntries(Object.entries({
@@ -608,7 +557,7 @@ export const MODELS = {
   aio: () => coolerModel({ type: 'aio', rad: 240 }),
   fan: () => fan(12, { rgb: 0x8b5cf6 }),
   pccase: () => caseModel({ color: 0x1d1f24, accent: 0x00c6ff }),
-  ...PHOTO_MODELS,
+  ...REAL_MODELS,
 };
 // Dựng mô hình cho linh kiện thật trong kho lắp ráp
 export function modelForPart(p) {

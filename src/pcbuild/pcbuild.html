@@ -2,60 +2,18 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
-<title>Lắp ráp máy tính 3D – TinHocLab</title>
-<link rel="stylesheet" href="../common.css">
-<link rel="stylesheet" href="../ui/apple.css">
-<link rel="stylesheet" href="pcbuild.css">
-<script type="importmap">{ "imports": { "three": "../vendor/three/three.module.js" } }</script>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'">
+<title>Lắp ráp máy tính – TinHocLab</title>
+<style>body{background:#0d1112;color:#a1d9e2;font:15px system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}</style>
 </head>
-<body class="apple">
-<div id="top">
-  <button class="tb" data-nav="../index.html">‹ TinHocLab</button>
-  <div class="title">Lắp ráp máy tính</div>
-  <div class="seg" id="modeSeg">
-    <button data-mode="free" class="on">Lắp tự do</button>
-    <button data-mode="guided">Hướng dẫn từng bước</button>
-  </div>
-  <button class="tb" id="btnChallenge">Thử thách</button>
-  <button class="tb" id="btnExam">🎓 Bài thi</button>
-  <a class="tb" href="../anatomy/index.html" style="text-decoration:none">🔬 Giải phẫu 3D</a>
-  <div class="spacer"></div>
-  <button class="tb" id="btnGlass">Kính hông: Bật</button><button class="tb" id="btnQuality">Đồ hoạ: Cao</button><button class="tb" id="btnView">Đổi góc nhìn</button>
-  <button class="tb" id="btnReset">Làm lại</button>
-</div>
-<div id="layout">
-  <aside id="left">
-    <div id="cats"></div>
-    <div id="catInfo"></div>
-    <div id="partFilter"><input id="partSearch" placeholder="Tìm linh kiện — 4060, Samsung, DDR5…"><div class="pfrow"><select id="partBrand"></select><span id="partCount"></span></div></div>
-    <div id="parts"></div>
-  </aside>
-  <div id="view">
-    <canvas id="c3d"></canvas>
-    <div id="guide" hidden></div>
-    <div id="challengeBox" hidden></div>
-    <div id="hint">Kéo để xoay · Cuộn để phóng to · Chuột phải vào linh kiện để tháo</div>
-    <div id="tooltip" hidden></div>
-    <div id="ctxMenu" hidden></div>
-    <div id="detail" hidden></div>
-    <div id="monitor" hidden><div class="bezel"><div class="screen" id="screen"></div><div class="mlabel">MONITOR</div></div><button class="btn" id="btnCloseMon">Đóng màn hình</button></div>
-  </div>
-  <aside id="right">
-    <h3>Cấu hình</h3>
-    <div id="buildList"></div>
-    <div class="sum">
-      <div><span>Tổng chi phí</span><b id="total">0đ</b></div>
-      <div><span>Điện năng ước tính</span><b id="power">0 W</b></div>
-      <div class="pbar"><span id="pbar"></span></div>
-    </div>
-    <h4>Kiểm tra tương thích</h4>
-    <div id="checks"></div>
-    <button id="btnPower">Bật nguồn</button>
-  </aside>
-</div>
-<script src="../common.js"></script>
-<script src="../ui/motion.js"></script>
-<script type="module" src="pcbuild.js"></script>
+<body>
+<p>Đang mở phòng lắp ráp…</p>
+<script>
+// Phòng lắp ráp dùng mô hình 3D của PC Anatomy (src/anatomy) kèm chế độ lắp ráp, bài thi của TinHocLab.
+// #anatomy → mở thẳng chế độ khám phá giải phẫu; #exam → mở bài thi.
+var h = location.hash;
+var mode = /^#anatomy/.test(h) ? 'explore' : /^#exam/.test(h) ? 'exam' : 'practice';
+location.replace('../anatomy/index.html?scale=pc&asm=' + mode);
+</script>
 </body>
 </html>

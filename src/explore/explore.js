@@ -69,7 +69,7 @@ function show3D(it) {
   camera.near = R / 100; camera.far = R * 100; camera.updateProjectionMatrix();
   controls.minDistance = R * 0.3; controls.maxDistance = dist * 3;
   camera.position.copy(home); controls.target.set(0, 0, 0); controls.update();
-  $('#vcap').textContent = ph ? '📷 Ảnh chụp sản phẩm thật, dựng thành khối 3D · Ảnh: ' + (ph.credit || '') + ' (Wikimedia Commons)' : it.cat === 'port' && !['sata', 'molex', 'atx24', 'pcie8', '12vhpwr'].includes(it.id) ? '◀ Đầu cắm (phích) · Cổng trên thiết bị ▶' : '';
+  $('#vcap').textContent = it.cat === 'port' && !['sata', 'molex', 'atx24', 'pcie8', '12vhpwr'].includes(it.id) ? '◀ Đầu cắm (phích) · Cổng trên thiết bị ▶' : '';
 }
 function loop() {
   // vật dựng từ ảnh chụp xiên: lắc qua lại thay vì xoay tròn

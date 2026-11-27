@@ -38,18 +38,19 @@ index ad1aab4..52afbc8 100644
            rel="noreferrer"
          >
 diff --git a/index.html b/index.html
-index 7821b60..83872d6 100644
+index 7821b60..0dee192 100644
 --- a/index.html
 +++ b/index.html
-@@ -4,6 +4,7 @@
+@@ -4,6 +4,8 @@
      <meta charset="UTF-8" />
      <link rel="stylesheet" href="/theme.css" />
      <script src="/theme.js"></script>
 +    <script src="/vi.js" defer></script>
++    <script src="/asm.js" defer></script>
      <meta
        name="viewport"
        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-@@ -154,7 +155,7 @@
+@@ -154,7 +156,7 @@
            references.
          </p>
          <p>
@@ -58,6 +59,384 @@ index 7821b60..83872d6 100644
              >Learn how PC components work</a
            >
            ·
+diff --git a/lib/assembly-mode.ts b/lib/assembly-mode.ts
+new file mode 100644
+index 0000000..e0708de
+--- /dev/null
++++ b/lib/assembly-mode.ts
+@@ -0,0 +1,92 @@
++/**
++ * TinHocLab – chế độ lắp ráp.
++ *
++ * Ở cấp độ cả bộ máy ('pc'), mỗi linh kiện có độ "tháo" riêng: 0 là đã lắp vào thùng,
++ * 1 là đang nằm trên khay bên cạnh. Giao diện (public/asm.js) quyết định linh kiện nào
++ * đã lắp; ở đây chỉ lo chuyển động và vị trí.
++ */
++import * as T from 'three';
++import type { Piece } from './models.ts';
++
++type Layout = () => void;
++export const asm = {
++  active: false,
++  /** Concepts already in the tower. Everything else waits on the tray. */
++  installed: new Set<string>(),
++  /** Concepts that stay in the case from the start (chassis, fans...); never on the tray. */
++  preinstalled: new Set<string>(),
++  /** Per-piece current disassembly value while pieces fly in or out. */
++  anim: new Map<Piece, number>(),
++  /** Where the tray sits, beside the tower. */
++  offset: new T.Vector3(),
++  pieces: [] as Piece[],
++  dirty: true,
++  wake: (() => {}) as () => void,
++  refit: (() => {}) as () => void,
++  layout: (() => {}) as Layout,
++  relayout: (() => {}) as Layout,
++  /** Concepts that exist in the current tower, for the UI. */
++  concepts(): string[] {
++    return [...new Set(this.pieces.map((p) => p.concept))];
++  },
++  setActive(on: boolean) {
++    this.active = on;
++    this.anim.clear();
++    this.dirty = true;
++    this.relayout();
++    this.refit();
++    this.wake();
++  },
++  install(concept: string, on = true) {
++    // Start the flight from where the piece is now: on the tray when installing.
++    for (const p of this.pieces)
++      if (p.concept === concept && !this.anim.has(p)) this.anim.set(p, on ? 1 : 0);
++    if (on) this.installed.add(concept);
++    else this.installed.delete(concept);
++    this.dirty = true;
++    this.wake();
++  },
++  reset(preinstalled: string[]) {
++    this.installed = new Set(preinstalled);
++    this.preinstalled = new Set(preinstalled);
++    this.anim.clear();
++    this.dirty = true;
++    this.relayout();
++    this.refit();
++    this.wake();
++  },
++};
++(globalThis as unknown as { __asm: typeof asm }).__asm = asm;
++
++const target = (piece: Piece) => (asm.installed.has(piece.concept) ? 0 : 1);
++
++/** The disassembly value one piece is posed at. */
++export function asmValue(piece: Piece, level: string, value: number) {
++  if (!asm.active || level !== 'pc') return value;
++  return asm.anim.get(piece) ?? target(piece);
++}
++
++/** Extra shift for a piece's tray position. */
++export function asmShift(level: string) {
++  return asm.active && level === 'pc' ? asm.offset : null;
++}
++
++/** Advance the flights; true while anything is still moving. */
++export function asmTick(dt: number) {
++  if (!asm.active) return false;
++  let moving = asm.dirty;
++  asm.dirty = false;
++  const step = Math.min(1, dt / 1.1);
++  for (const p of asm.pieces) {
++    const goal = target(p);
++    const now = asm.anim.get(p) ?? goal;
++    if (now === goal) {
++      asm.anim.set(p, goal);
++      continue;
++    }
++    const next = goal > now ? Math.min(goal, now + step) : Math.max(goal, now - step);
++    asm.anim.set(p, next);
++    moving = true;
++  }
++  return moving;
++}
+diff --git a/lib/machine.ts b/lib/machine.ts
+index b2a6bb9..6c400dc 100644
+--- a/lib/machine.ts
++++ b/lib/machine.ts
+@@ -134,18 +134,28 @@ function buildMotherboardAssembly(tools: ModelTools) {
+   const group = new T.Group();
+   group.add(board);
+   group.updateMatrixWorld(true);
++  // Lift a marked sub-assembly off the board, keeping its place in the board's frame.
++  const lift = (o: T.Object3D) => {
++    const placed = o.matrixWorld.clone();
++    o.removeFromParent();
++    placed.decompose(o.position, o.quaternion, o.scale);
++    const part = new T.Group();
++    part.add(o);
++    return part;
++  };
+   const marked: T.Object3D[] = [];
++  // TinHocLab: RAM and the M.2 drive come off the board too, so they can be installed one by one.
++  const extra: { concept: string; object: T.Group }[] = [];
++  const towerParts: T.Object3D[] = [];
+   board.traverse((o) => {
+     if (o.userData.processor) marked.push(o);
++    else if (o.userData.towerPart) towerParts.push(o);
+   });
++  for (const o of towerParts) extra.push({ concept: o.userData.towerPart as string, object: lift(o) });
+   const [cpu] = marked;
+-  if (!cpu) return { board: group, processor: null };
+-  const placed = cpu.matrixWorld.clone();
+-  cpu.removeFromParent();
+-  placed.decompose(cpu.position, cpu.quaternion, cpu.scale);
+-  const processor = new T.Group();
+-  processor.add(cpu);
+-  return { board: group, processor };
++  if (!cpu) return { board: group, processor: null, extra };
++  const processor = lift(cpu);
++  return { board: group, processor, extra };
+ }
+ 
+ /**
+@@ -704,8 +714,10 @@ export function buildMachine(tools: ModelTools, root: T.Group) {
+   );
+ 
+   // ── Motherboard ─────────────────────────────────────────────────────────
+-  const { board: motherboard, processor } = buildMotherboardAssembly(tools);
++  const { board: motherboard, processor, extra } = buildMotherboardAssembly(tools);
+   add('motherboard', motherboard, [BOARD_X, BOARD_Y, BOARD_Z], [0, 0, -3.2]);
++  for (const { concept, object } of extra)
++    add(concept, object, [BOARD_X, BOARD_Y, BOARD_Z], concept === 'ram' ? [0, 0.4, 1.6] : [0, -0.3, 1.3]);
+   // Coming apart, the processor rises out of the socket between the board,
+   // which falls back to the tray, and the cooler, which lifts off above it.
+   if (processor)
+diff --git a/lib/mainboard.ts b/lib/mainboard.ts
+index 02e1848..f56c6d2 100644
+--- a/lib/mainboard.ts
++++ b/lib/mainboard.ts
+@@ -642,6 +642,8 @@ export function buildMotherboard(
+       ),
+     );
+     ram.add(dimm);
++    // TinHocLab: đánh dấu để thùng máy tách RAM thành linh kiện riêng (chế độ lắp ráp)
++    ram.userData.towerPart = 'ram';
+     // Contact edge seated at the slot floor, 4 mm above the board.
+     add('ram', ram, x, 4 + MODULE.height / 2, -58, [0, 2.2, 0]);
+   }
+@@ -823,6 +825,7 @@ export function buildMotherboard(
+     put(drive, pcb(vector(80, 1, 22), 'storage'));
+     for (const chipX of [-24, 0, 24])
+       put(drive, block(15, 1.4, 15, material('#1d2023', 0.12)), chipX, 1.2, 0);
++    drive.userData.towerPart = 'nvme';
+     add('nvme', drive, x, 4.5, z, [0, 1.8, 0]);
+     const cover = new T.Group();
+     // Underside 7.2 mm including bevel; flash tops 6.4 mm.
+diff --git a/lib/model-stage.ts b/lib/model-stage.ts
+index 5d9ca43..79dd946 100644
+--- a/lib/model-stage.ts
++++ b/lib/model-stage.ts
+@@ -1,3 +1,4 @@
++import { asmShift, asmValue } from './assembly-mode.ts';
+ import * as T from 'three';
+ import { byId } from './manifest.ts';
+ import { isPhysical, levels, type LevelId } from './levels.ts';
+@@ -93,6 +94,7 @@ export function pieceDestination(
+   position: T.Vector3,
+   inventoryTarget: T.Vector3,
+ ) {
++  value = asmValue(piece, level, value);
+   const entry = byId[piece.concept];
+   const stage = entry.opensFirst
+     ? smoothstep(0, 0.2, value)
+@@ -113,6 +115,8 @@ export function pieceDestination(
+       piece.lieCenter ?? piece.center,
+       -(piece.inventoryScale ?? 1),
+     );
++  const shift = asmShift(level);
++  if (shift) inventoryTarget.add(shift);
+   position.lerp(inventoryTarget, grid);
+   return {
+     position,
+@@ -128,6 +132,7 @@ export function applyPiecePose(
+   scratch: ModelStageScratch,
+   scaleMultiplier = 1,
+ ) {
++  value = asmValue(piece, level, value);
+   const destination = pieceDestination(
+     piece,
+     level,
+@@ -205,7 +210,12 @@ export function posedModelBounds(
+       scratch.position,
+       scratch.inventoryTarget,
+     );
+-    const posture = piecePosture(piece, grid, scratch.extent, scratch.centre);
++    const posture = piecePosture(
++      piece,
++      laidOutAmount(asmValue(piece, level, value)),
++      scratch.extent,
++      scratch.centre,
++    );
+     scratch.half.copy(posture.extent).multiplyScalar(destination.scale * 0.52);
+     target.expandByPoint(
+       scratch.point
+diff --git a/lib/scene.ts b/lib/scene.ts
+index 2d2d3c1..4f52e47 100644
+--- a/lib/scene.ts
++++ b/lib/scene.ts
+@@ -17,6 +17,7 @@ import { towerKey } from './desktop-build.ts';
+ import type { ExplorerState, Selection } from './explorer-state.ts';
+ import { isPhysical, levels } from './levels.ts';
+ import { smoothstep } from './layout';
++import { asm, asmTick, asmValue } from './assembly-mode.ts';
+ import {
+   ModelPoseCache,
+   createModelShelf,
+@@ -130,6 +131,23 @@ export function createViewer(
+   const stageScratch = new ModelStageScratch();
+   let poses = new ModelPoseCache(model, state.level),
+     cancelAcceleration = scheduleRaycastAcceleration(model.root);
++  // TinHocLab – chế độ lắp ráp: khay linh kiện đặt bên phải thùng máy.
++  const asmLayout = () => {
++    asm.pieces = model.pieces;
++    if (state.level !== 'pc') return;
++    const was = asm.active;
++    asm.active = false;
++    const a = posedModelBounds(model, state.level, 0, new T.Box3());
++    const tray = model.pieces.filter((p) => p.visible && !asm.preinstalled.has(p.concept));
++    const b = posedModelBounds(model, state.level, 1, new T.Box3(), undefined, tray.length ? tray : model.pieces);
++    asm.active = was;
++    asm.offset.set(
++      a.max.x - b.min.x + (a.max.x - a.min.x) * 0.15,
++      a.min.y - b.min.y,
++      (a.min.z + a.max.z - b.min.z - b.max.z) / 2,
++    );
++  };
++  asm.layout = asmLayout;
+   /** The view the pointer was last resolved against. */
+   const hoverView = new T.Matrix4();
+   const shelf = createModelShelf(shelfLimit());
+@@ -174,16 +192,20 @@ export function createViewer(
+     // slider. The packing only depends on which pieces are on stage and on the
+     // shape of the viewport, so it is redone when one of those changes and not
+     // sixty times a second while the parts are in flight.
+-    const aspect = host.clientWidth / host.clientHeight;
++    // Chế độ lắp ráp: khay chỉ xếp những linh kiện chưa có sẵn trong thùng, xếp gọn gần vuông.
++    const asmOn = asm.active && state.level === 'pc';
++    const trayPieces = asmOn ? visible.filter((p) => !asm.preinstalled.has(p.concept)) : visible;
++    const aspect = asmOn ? 1.1 : host.clientWidth / host.clientHeight;
+     const signature =
++      (asmOn ? 'asm|' : '') +
+       state.level +
+       '|' +
+       aspect.toFixed(3) +
+       '|' +
+-      visible.map((p) => p.key).join(',');
++      trayPieces.map((p) => p.key).join(',');
+     if (signature !== layoutSignature) {
+       layoutSignature = signature;
+-      prepareModelInventory(model, state.level, aspect, visible);
++      prepareModelInventory(model, state.level, aspect, trayPieces);
+     }
+     for (const p of model.pieces) p.visible = shown(p);
+     for (const child of model.root.children)
+@@ -205,6 +227,7 @@ export function createViewer(
+     );
+     loop.wake();
+     autoCamera = true;
++    asmLayout();
+   }
+   /**
+    * How far the parts have settled onto the shelves, 0 to 1.
+@@ -259,8 +282,9 @@ export function createViewer(
+     // A selected part needs breathing room inside the smaller stage left by
+     // the detail panel. The old 0.8 multiplier cropped focused parts at every
+     // edge, even though the ordinary whole-model fit looked intentional.
+-    const padding =
+-      cameraProfile?.padding && !focus
++    const padding = asm.active && state.level === 'pc' && !focus
++      ? 0.6
++      : cameraProfile?.padding && !focus
+         ? cameraProfile.padding
+         : focus
+           ? 1.16
+@@ -299,7 +323,7 @@ export function createViewer(
+     // each blade turns, which made the hover outline breathe in and out even
+     // though the fan itself never changed size.
+     const s = p.object.scale.x;
+-    const { extent, centre } = posture(p, laidOutAmount(amount));
++    const { extent, centre } = posture(p, laidOutAmount(asmValue(p, state.level, amount)));
+     target.setFromCenterAndSize(
+       boxCenter.copy(p.object.position).addScaledVector(centre, s),
+       boxSize.copy(extent).multiplyScalar(s).addScalar(0.018),
+@@ -405,6 +429,10 @@ export function createViewer(
+     key.shadow.intensity = shadowFade;
+     renderer.shadowMap.autoUpdate = shadowFade > 0.002;
+ 
++    if (asm.active && state.level === 'pc' && asmTick(dt)) {
++      poses.invalidate();
++      changed = true;
++    }
+     const poseChanged = poses.update(
+       amount,
+       dive
+@@ -528,14 +556,14 @@ export function createViewer(
+       isPhysical(state.level) &&
+       !dive &&
+       !state.isolated &&
+-      amount >= LABELS_FROM &&
+-      state.explode >= 100
++      ((asm.active && state.level === 'pc') || (amount >= LABELS_FROM && state.explode >= 100))
+     ) {
+       const w = host.clientWidth,
+         h = host.clientHeight;
+       const candidates: LabelCandidate[] = [];
+       for (const p of model.pieces) {
+         if (!p.visible) continue;
++        if (asm.active && state.level === 'pc' && asmValue(p, 'pc', 0) < 0.97) continue;
+         boxFor(p, labelBox);
+         labelBox.getCenter(projected).project(camera);
+         if (projected.z > 1) continue;
+@@ -567,6 +595,16 @@ export function createViewer(
+     render,
+   );
+   const wake = loop.wake;
++  asm.wake = wake;
++  asm.relayout = () => {
++    refresh();
++    asmLayout();
++  };
++  asm.refit = () => {
++    fitDirty = true;
++    autoCamera = true;
++    wake();
++  };
+   const resize = () => {
+     const w = host.clientWidth,
+       h = host.clientHeight;
+@@ -623,6 +661,16 @@ export function createViewer(
+     )
+       return;
+     const p = hit(e, e.pointerType === 'touch' ? TOUCH_AIM : MOUSE_AIM);
++    if (asm.active && state.level === 'pc') {
++      // Chế độ lắp ráp: bấm vào linh kiện là chọn để lắp, không mở vào bên trong.
++      window.dispatchEvent(
++        new CustomEvent('asm:pick', {
++          detail: p ? { concept: p.concept, instance: p.instance, onTray: asmValue(p, 'pc', 0) > 0.5 } : null,
++        }),
++      );
++      wake();
++      return;
++    }
+     callbacks.select(
+       p ? { concept: p.concept, instance: p.instance } : null,
+       tapIntent(e.pointerType, p, state.selection),
+@@ -733,6 +781,7 @@ export function createViewer(
+       powerRoutes = visiblePowerRoutes(state);
+       const priorAuto = autoCamera;
+       refresh();
++      asmLayout();
+       autoCamera = cameraChange || priorAuto;
+       wake();
+     },
 diff --git a/lib/stage-runtime.ts b/lib/stage-runtime.ts
 index 321e516..4fcfc78 100644
 --- a/lib/stage-runtime.ts

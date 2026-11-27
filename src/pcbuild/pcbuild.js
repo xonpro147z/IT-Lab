@@ -477,10 +477,10 @@ canvas.addEventListener('contextmenu', (e) => {
   if (!slot || slot === 'case' || !S.parts[slot]) return;
   const menu = $('#ctxMenu');
   const r = canvas.getBoundingClientRect();
-  menu.innerHTML = `<div data-a="rm">🔧 Tháo "${escapeHtml(S.parts[slot].name)}"</div><div data-a="info">ℹ️ Thông tin linh kiện</div>`;
+  menu.innerHTML = `<div data-a="rm">🔧 Tháo "${escapeHtml(S.parts[slot].name)}"</div><div data-a="info">ℹ️ Thông tin linh kiện</div><div data-a="anat">🔬 Xem bên trong (giải phẫu 3D)</div>`;
   menu.style.left = (e.clientX - r.left) + 'px'; menu.style.top = (e.clientY - r.top) + 'px';
   menu.hidden = false;
-  menu.onclick = (ev) => { const a = ev.target.dataset.a; menu.hidden = true; if (a === 'rm') remove(slot); if (a === 'info') showDetail(S.parts[slot]); };
+  menu.onclick = (ev) => { const a = ev.target.dataset.a; menu.hidden = true; if (a === 'rm') remove(slot); if (a === 'info') showDetail(S.parts[slot]); if (a === 'anat') openAnatomy(anatomyScale(S.parts[slot])); };
 });
 let hoverT = 0;
 canvas.addEventListener('pointermove', (e) => {
@@ -559,12 +559,13 @@ function showDetail(part, err) {
   else if (part.slot !== 'case') msg = `<div class="msg">➜ Bấm vào vùng <b style="color:#34c759">phát sáng màu xanh</b> trong khung 3D, hoặc bấm nút "Lắp vào".</div>`;
   d.innerHTML = `<h4>${escapeHtml(part.name)}</h4><ul>${part.specs.map((s) => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
     ${part.price ? `<div style="color:#ffd166;font-weight:600">${fmt(part.price)}</div>` : ''}${msg}
-    <div class="act">${inst ? (part.slot !== 'case' ? '<button class="pbtn ghost" data-a="rm">Tháo ra</button>' : '') : `<button class="pbtn" data-a="in" ${chk !== true ? 'disabled style="opacity:.5"' : ''}>${part.slot === 'case' ? 'Chọn vỏ này' : part.cable ? 'Cắm cáp' : 'Lắp vào'}</button>`}<button class="pbtn ghost" data-a="x">Đóng</button></div>`;
+    <div class="act">${inst ? (part.slot !== 'case' ? '<button class="pbtn ghost" data-a="rm">Tháo ra</button>' : '') : `<button class="pbtn" data-a="in" ${chk !== true ? 'disabled style="opacity:.5"' : ''}>${part.slot === 'case' ? 'Chọn vỏ này' : part.cable ? 'Cắm cáp' : 'Lắp vào'}</button>`}<button class="pbtn anat" data-a="anat">🔬 Xem bên trong</button><button class="pbtn ghost" data-a="x">Đóng</button></div>`;
   d.hidden = false;
   d.querySelectorAll('button').forEach((b) => b.onclick = () => {
     const a = b.dataset.a;
     if (a === 'in') install(part);
     if (a === 'rm') remove(part.slot);
+    if (a === 'anat') { d.hidden = true; openAnatomy(anatomyScale(part)); }
     if (a === 'x') { d.hidden = true; clearMarkers(); S.selected = null; renderParts(); }
   });
 }
@@ -867,8 +868,41 @@ $('#credits').onclick = (e) => {
     <p style="font-size:12px;color:#888">Chi tiết đường dẫn ảnh gốc: tệp src/pcbuild/tex/CREDITS.md trong mã nguồn.</p>`);
 };
 
+// ================= Giải phẫu 3D (PC Anatomy) ngay trong phòng lắp ráp =================
+// Mỗi nhóm linh kiện mở đúng cấp độ tương ứng bên giải phẫu (đi sâu tới chip, nhân, ô nhớ...)
+function anatomyScale(part) {
+  if (!part) return 'pc';
+  switch (part.cat) {
+    case 'mb': return 'motherboard';
+    case 'cpu': return part.brand === 'intel' ? 'corei9' : 'ryzen';
+    case 'ram': return /DDR4/i.test(part.type || part.name) ? 'ddr4' : 'dimm';
+    case 'gpu': return /radeon|amd/i.test(part.brand + ' ' + part.name) ? 'rx9070' : /arc|intel/i.test(part.brand + ' ' + part.name) ? 'arcb580' : /5060 ?ti/i.test(part.name) ? 'rtx5060ti' : /5060/.test(part.name) ? 'rtx5060' : 'card';
+    case 'psu': return 'psu1000';
+    case 'cooler': return part.type === 'aio' ? 'liquid' : 'cooler';
+    case 'storage': return part.kind === 'm2' ? 'nvme' : 'ssd';
+    default: return 'pc';
+  }
+}
+const ANAT_NAME = { pc: 'cả bộ máy', motherboard: 'bo mạch chủ', ryzen: 'CPU AMD Ryzen', corei9: 'CPU Intel Core', ddr4: 'RAM DDR4', dimm: 'RAM DDR5', rx9070: 'card AMD Radeon', arcb580: 'card Intel Arc', rtx5060ti: 'card RTX 5060 Ti', rtx5060: 'card RTX 5060', card: 'card NVIDIA RTX', psu1000: 'bộ nguồn', liquid: 'tản nhiệt nước', cooler: 'tản nhiệt khí', nvme: 'SSD NVMe', ssd: 'SSD SATA' };
+let anatPrevMode = 'free';
+function openAnatomy(scale = 'pc') {
+  if (S.exam) { toast('Đang làm bài thi – nộp bài hoặc huỷ bài thi trước khi xem giải phẫu.', 'warn', 3500); return; }
+  if (S.mode !== 'anatomy') anatPrevMode = S.mode;
+  const fr = $('#anatomyFrame');
+  const url = '../anatomy/index.html?scale=' + encodeURIComponent(scale);
+  if (fr.dataset.scale !== scale) { fr.src = url; fr.dataset.scale = scale; }
+  document.body.classList.add('anat'); $('#anatomyView').hidden = false;
+  S.mode = 'anatomy';
+  document.querySelectorAll('#modeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === 'anatomy'));
+  powerOff(); $('#ctxMenu').hidden = true;
+  if (scale !== 'pc') toast('Đang mở phần giải phẫu: ' + (ANAT_NAME[scale] || scale) + '. Bấm "Lắp tự do" để quay lại lắp ráp.', 'info', 4000);
+}
+function closeAnatomy() { document.body.classList.remove('anat'); $('#anatomyView').hidden = true; resize(); }
+
 // ================= Thanh công cụ =================
 function setMode(m) {
+  if (m === 'anatomy') { openAnatomy('pc'); return; }
+  if (S.mode === 'anatomy') closeAnatomy();
   S.mode = m;
   document.querySelectorAll('#modeSeg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
   renderGuide.last = null;
@@ -876,6 +910,7 @@ function setMode(m) {
 }
 document.querySelectorAll('#modeSeg button').forEach((b) => b.onclick = () => {
   if (S.exam) { toast('Đang làm bài thi – hãy nộp bài hoặc huỷ bài thi trước.', 'warn', 3500); return; }
+  if (b.dataset.mode === 'anatomy') { openAnatomy('pc'); return; }
   if (b.dataset.mode === 'guided' && Object.keys(S.parts).length > 1 && !confirm('Chuyển sang chế độ hướng dẫn sẽ bắt đầu lại từ đầu. Tiếp tục?')) return;
   if (b.dataset.mode === 'guided') resetBuild();
   setMode(b.dataset.mode);
@@ -910,6 +945,7 @@ function loop() {
   if (S.powered) world.traverse((o) => { if (o.name === 'rotor') o.rotation.z += dt * 14; if (o.name === 'rgb' && o.material) o.material.emissive.setHSL((now / 4000) % 1, 1, 0.5); });
   const pulse = 0.18 + 0.14 * Math.sin(now / 220);
   markers.forEach((m) => { m.material.opacity = pulse; });
+  if (S.mode === 'anatomy') { requestAnimationFrame(loop); return; } // đang xem giải phẫu: dừng vẽ cảnh lắp ráp cho nhẹ máy
   controls.update();
   if (QUALITY === 'high') composer.render(); else renderer.render(scene, camera);
   probeFps(now);
@@ -924,8 +960,11 @@ applyQuality();
 resize();
 afterChange();
 loop();
-window.__pc = { camera, controls,  S, install, remove, powerOn, partById }; // hỗ trợ kiểm thử
+window.__pc = { camera, controls,  S, install, remove, powerOn, partById, openAnatomy, anatomyScale }; // hỗ trợ kiểm thử
 
 $('#partSearch').addEventListener('input', (e) => { partQuery = e.target.value; renderParts(); });
 $('#partBrand').addEventListener('change', (e) => { partBrand = e.target.value; renderParts(); });
 renderFilter();
+
+// mở thẳng chế độ giải phẫu từ trang chủ: pcbuild.html#anatomy hoặc #anatomy=motherboard
+if (/^#anatomy/.test(location.hash)) openAnatomy(location.hash.split('=')[1] || 'pc');

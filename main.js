@@ -40,6 +40,7 @@ function createWindow() {
   win.webContents.on('did-start-navigation', (_e, _url, _inPlace, isMain) => { if (isMain) setCapture(false); });
   // Liên kết web (http/https) luôn mở bằng trình duyệt hệ thống, không mở trong cửa sổ ứng dụng
   win.webContents.on('will-navigate', (e, url) => { if (/^https?:/.test(url)) { e.preventDefault(); shell.openExternal(url); } });
+  win.webContents.on('will-frame-navigate', (e) => { if (/^https?:/.test(e.url)) { e.preventDefault(); shell.openExternal(e.url); } });
   // Mở liên kết ngoài bằng trình duyệt hệ thống
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:/.test(url)) shell.openExternal(url);
