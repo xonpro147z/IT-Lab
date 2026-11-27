@@ -88,6 +88,7 @@
       A('Đặt kính vào ray và vặn vít giữ'),
     ], wrong: [A('Đóng kính rồi mới kiểm tra dây', 'Kiểm tra dây trước, nếu không sẽ phải tháo kính ra lại.')] },
   };
+  window.__thlSteps = STEPS; // dùng lại trong chế độ Tháo lắp 3D (teardown.js)
   const ORDER = ['ioshield', 'motherboard', 'processor', 'ram', 'nvme', 'cpucooler', 'psu', 'graphicscard', 'ssd', 'psucable', 'sidepanel'];
   const EXAM_MIN = 20;
   let S = { mode: 'practice', steps: [], pre: [], done: new Set(), mistakes: [], exam: null, booted: false };
@@ -134,6 +135,7 @@
   .asmModal input{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:9px 11px;border-radius:10px;border:1px solid #ccc;font:inherit}
   .asmModal .screen{background:linear-gradient(135deg,#1e6bff,#4fc3ff);color:#fff;border-radius:12px;padding:40px 20px;text-align:center;font-size:40px;font-weight:700}`;
   document.head.appendChild(css);
+  window.__thlToast = (t, k) => toast(t, k);
   function toast(t, k = '') {
     let el = $('#asmToast'); if (!el) { el = document.createElement('div'); el.id = 'asmToast'; document.body.appendChild(el); }
     el.className = k; el.textContent = t; el.style.opacity = 1; clearTimeout(toast.t); toast.t = setTimeout(() => (el.style.opacity = 0), 3800);
@@ -150,19 +152,19 @@
     const p = $('#asmPanel'); if (!p) return;
     const sug = S.mode === 'practice' ? nextSuggest() : null;
     const left = S.exam ? Math.max(0, EXAM_MIN * 60 - Math.round((Date.now() - S.exam.t0) / 1000)) : 0;
-    p.querySelector('.bd').innerHTML = (S.mode === 'explore' ? `<p class="note">Đang ở chế độ khám phá: bấm vào linh kiện để đi sâu vào bên trong, kéo thanh "Tháo rời" để xem máy tách ra. Bấm "Luyện lắp" hoặc "Bài thi" để quay lại lắp ráp.</p>` :
+    p.querySelector('.bd').innerHTML = (S.mode === 'teardown' ? `<p class="note">Đang ở chế độ tháo lắp 3D: kéo linh kiện để tháo, thả đúng chỗ để lắp lại. Bảng bên phải có góc nhìn, X-quang, mặt cắt và hướng dẫn.</p>` : S.mode === 'explore' ? `<p class="note">Đang ở chế độ khám phá: bấm vào linh kiện để đi sâu vào bên trong, kéo thanh "Tháo rời" để xem máy tách ra. Bấm "Luyện lắp" hoặc "Bài thi" để quay lại lắp ráp.</p>` :
       (S.exam ? `<div class="exam">🎓 <b>${esc(S.exam.name)}</b> · ${esc(S.exam.cls)}<br>⏱ <b id="asmT">${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}</b> · Lỗi: <b>${S.mistakes.length}</b></div>` :
         `<p class="note">Bấm vào linh kiện trên khay (bên phải thùng máy) để lắp. Lắp đúng trình tự và làm đúng thao tác. Ô viền vàng là gợi ý bước tiếp theo.</p>`) +
       `<ol>${S.steps.map((c) => `<li class="${S.done.has(c) ? 'done' : c === sug ? 'next' : ''}"><span class="i">${S.done.has(c) ? '✓' : c === sug ? '➜' : '•'}</span>${esc(name(c))}</li>`).join('')}</ol>
       ${S.done.size === S.steps.length ? `<button class="btn go" data-a="boot">⚡ Bật nguồn</button>` : ''}
       ${S.exam ? `<button class="btn pri" data-a="submit">📨 Nộp bài</button>` : `<button class="btn" data-a="reset">↺ Làm lại từ đầu</button>`}`);
-    p.classList.toggle('mini', S.mode === 'explore');
+    p.classList.toggle('mini', S.mode === 'explore' || S.mode === 'teardown');
     p.querySelectorAll('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.m === S.mode));
     p.querySelectorAll('.bd [data-a]').forEach((b) => (b.onclick = () => ({ boot, submit: () => submitExam(false), reset: () => restart() })[b.dataset.a]()));
   }
   function buildPanel() {
     const p = document.createElement('div'); p.id = 'asmPanel';
-    p.innerHTML = `<div class="hd"><h2>🔧 Phòng lắp ráp</h2><div class="tabs"><button data-m="practice">Luyện lắp</button><button data-m="exam">🎓 Bài thi</button><button data-m="explore">🔬 Khám phá</button></div></div><div class="bd"></div>`;
+    p.innerHTML = `<div class="hd"><h2>🔧 Phòng lắp ráp</h2><div class="tabs"><button data-m="practice">Luyện lắp</button><button data-m="exam">🎓 Bài thi</button><button data-m="explore">🔬 Khám phá</button><button data-m="teardown">🛠 Tháo lắp 3D</button></div></div><div class="bd"></div>`;
     document.body.appendChild(p);
     p.querySelectorAll('.tabs button').forEach((b) => (b.onclick = () => setMode(b.dataset.m)));
   }
@@ -179,8 +181,10 @@
   function setMode(m) {
     if (S.exam && m !== 'exam') { toast('Đang làm bài thi – hãy nộp bài trước.', 'err'); return; }
     const asm = window.__asm;
+    if (m !== 'teardown' && document.body.classList.contains('td')) window.__tdUI?.close();
     if (m === 'explore') { S.mode = m; asm.setActive(false); document.body.classList.remove('asm'); render(); return; }
     if (new URLSearchParams(location.search).get('scale') !== 'pc' && !asm.pieces.some((p) => p.concept === 'motherboard')) { location.search = '?scale=pc&asm=' + m; return; }
+    if (m === 'teardown') { S.mode = m; asm.setActive(false); document.body.classList.remove('asm'); window.__tdUI?.open(); render(); return; }
     document.body.classList.add('asm');
     if (m === 'exam') { startExam(); return; }
     S.mode = m; restart(); asm.setActive(true);
@@ -286,7 +290,7 @@
     const asm = window.__asm;
     if (!asm || !asm.pieces.some((p) => p.concept === 'motherboard')) { setTimeout(boot0, 300); return; }
     buildPanel();
-    setMode(want === 'exam' ? 'exam' : want === 'explore' ? 'explore' : 'practice');
+    setMode(want === 'exam' ? 'exam' : want === 'explore' ? 'explore' : want === 'teardown' ? 'teardown' : 'practice');
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot0, 500)); else setTimeout(boot0, 500);
 })();

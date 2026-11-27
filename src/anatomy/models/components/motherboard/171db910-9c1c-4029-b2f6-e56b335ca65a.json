@@ -1,0 +1,154 @@
+{
+  "sku": "171db910-9c1c-4029-b2f6-e56b335ca65a",
+  "category": "motherboard",
+  "opendbCategory": "Motherboard",
+  "manufacturer": "ASRock",
+  "productName": "ASRock B760M-H2/M.2 DDR5 Micro ATX",
+  "partNumbers": [],
+  "dimensions": {
+    "x": 250,
+    "y": 244,
+    "z": 33.6,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "height": {
+      "value": 244,
+      "source": "standard",
+      "ref": "microATX 1.2 (244 × 244 mm)"
+    },
+    "depth": {
+      "value": 244,
+      "source": "standard",
+      "ref": "microATX 1.2"
+    },
+    "pcb": {
+      "value": 1.6,
+      "source": "estimate",
+      "ref": "bo mạch chủ ≈ 1.6 mm"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [
+        "BLACK",
+        "GREY"
+      ],
+      "source": "opendb",
+      "ref": "color"
+    },
+    "lighting": {
+      "value": [
+        "None"
+      ],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "formFactor": {
+      "value": "Micro ATX",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "socket": {
+      "value": "LGA 1700",
+      "source": "opendb",
+      "ref": "socket"
+    },
+    "dimms": {
+      "value": 2,
+      "source": "opendb",
+      "ref": "memory.slots"
+    },
+    "pcie": {
+      "value": [
+        {
+          "lanes": 16,
+          "gen": "4.0"
+        },
+        {
+          "lanes": 1,
+          "gen": "3.0"
+        },
+        {
+          "lanes": 1,
+          "gen": "3.0"
+        }
+      ],
+      "source": "opendb",
+      "ref": "pcie_slots"
+    },
+    "m2": {
+      "value": 3,
+      "source": "opendb",
+      "ref": "m2_slots"
+    },
+    "ports": {
+      "value": 6,
+      "source": "opendb",
+      "ref": "back_panel_ports"
+    },
+    "wifi": {
+      "value": false,
+      "source": "opendb",
+      "ref": "wireless_networking"
+    },
+    "layout": {
+      "value": "ATX",
+      "source": "estimate",
+      "ref": "vị trí socket, khe RAM, khe PCIe theo bố cục ATX thông dụng (không có toạ độ trong OpenDB)"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "pcb",
+      "value": 1.6,
+      "rule": "bo mạch chủ ≈ 1.6 mm"
+    },
+    {
+      "key": "layout",
+      "value": "ATX",
+      "rule": "vị trí socket, khe RAM, khe PCIe theo bố cục ATX thông dụng (không có toạ độ trong OpenDB)"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:51.162Z",
+  "specHash": "de300c2a",
+  "meshes": [
+    "MB_PCB",
+    "MB_Socket_Base",
+    "MB_Socket_LoadPlate",
+    "MB_Socket_Lever",
+    "MB_Socket_Pin1_Mark",
+    "MB_VRM_Chokes",
+    "MB_VRM_Heatsink_Top",
+    "MB_VRM_Heatsink_Rear",
+    "MB_DIMM_Slot_01",
+    "MB_DIMM_Latch_01",
+    "MB_DIMM_Slot_02",
+    "MB_DIMM_Latch_02",
+    "MB_PCIe_Slot_01_x16",
+    "MB_PCIe_Slot_02_x1",
+    "MB_PCIe_Slot_03_x1",
+    "MB_M2_Slot_01",
+    "MB_M2_Heatsink_01",
+    "MB_M2_Slot_02",
+    "MB_M2_Heatsink_02",
+    "MB_Chipset_Heatsink",
+    "MB_IO_Cover",
+    "MB_IO_Port_01",
+    "MB_IO_Port_02",
+    "MB_IO_Port_03",
+    "MB_IO_Port_04",
+    "MB_IO_Port_05",
+    "MB_IO_Port_06",
+    "MB_ATX24",
+    "MB_EPS8",
+    "MB_SATA_1",
+    "MB_SATA_2",
+    "MB_SATA_3",
+    "MB_SATA_4"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

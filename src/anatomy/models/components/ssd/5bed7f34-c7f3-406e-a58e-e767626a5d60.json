@@ -1,0 +1,89 @@
+{
+  "sku": "5bed7f34-c7f3-406e-a58e-e767626a5d60",
+  "category": "ssd",
+  "opendbCategory": "Storage",
+  "manufacturer": "Samsung",
+  "productName": "Samsung 870 Evo 1TB 2.5\" SSD SATA",
+  "partNumbers": [
+    "MZ-77E1T0B",
+    "AM",
+    "EU",
+    "MZ-77E1T0BW",
+    "MZ-77E1T0B/AM",
+    "MZ-77E1T0B/EU"
+  ],
+  "dimensions": {
+    "x": 101.95,
+    "y": 7.1,
+    "z": 69.85,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "length": {
+      "value": 100.45,
+      "source": "standard",
+      "ref": "SFF-8201"
+    },
+    "width": {
+      "value": 69.85,
+      "source": "standard",
+      "ref": "SFF-8201"
+    },
+    "height": {
+      "value": 7,
+      "source": "standard",
+      "ref": "SFF-8201 (cấp 7 mm)"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [],
+      "source": "estimate",
+      "ref": "không có màu trong OpenDB → màu trung tính"
+    },
+    "lighting": {
+      "value": [],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "formFactor": {
+      "value": "2.5\"",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "kind": {
+      "value": "sata25",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "capacity": {
+      "value": 1000,
+      "source": "opendb",
+      "ref": "capacity"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "color",
+      "value": [],
+      "rule": "không có màu trong OpenDB → màu trung tính"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:50.865Z",
+  "specHash": "bd094391",
+  "meshes": [
+    "SSD_Shell_Bottom",
+    "SSD_Shell_Top",
+    "SSD_Label",
+    "SSD_PCB",
+    "SSD_Controller",
+    "SSD_NAND_01",
+    "SSD_NAND_02",
+    "SSD_SATA_Data",
+    "SSD_SATA_Power"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}
