@@ -149,3 +149,10 @@ Tệp bài làm được lưu với đuôi `.thw` (Word), `.thx` (Excel), `.thp`
 
 - v1.12.1: đóng gói phông Roboto Mono (OFL) để chữ tiếng Việt có hai dấu (ế, ố, ồ…) hiển thị đúng trên Linux; vẽ lại tay mèo (liền thân, thon dần, đệm chân, bóng chạm phím); sửa lỗi phải bấm Space 2 lần khi dùng bộ gõ ibus/fcitx trên Linux.
 - v1.12.2: tay mèo liền với thân (cùng lớp màu, bo tròn ở vai, viền mờ dần), bàn tay cùng màu với chỗ nó nằm.
+
+### macOS: báo “TinHocLab bị hỏng và không thể mở”
+Ứng dụng chưa được ký bởi tài khoản Apple Developer nên macOS chặn ứng dụng tải từ Internet. Sau khi kéo TinHocLab vào thư mục Applications, mở Terminal và chạy một lần:
+```
+xattr -cr /Applications/TinHocLab.app
+```
+Từ v1.12.2 ứng dụng được ký ad-hoc; nếu macOS báo “không thể xác minh nhà phát triển”, vào Cài đặt hệ thống › Quyền riêng tư & Bảo mật › bấm “Vẫn mở”.

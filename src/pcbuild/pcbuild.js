@@ -6,7 +6,7 @@ import { EffectComposer } from '../vendor/three/postprocessing/EffectComposer.js
 import { RenderPass } from '../vendor/three/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from '../vendor/three/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from '../vendor/three/postprocessing/OutputPass.js';
-import { CATEGORIES, PARTS, partById, CHALLENGES, GUIDE_STEPS } from './catalog.js';
+import { CATEGORIES, PARTS, partById, CHALLENGES, GUIDE_STEPS, actionsFor } from './catalog.js';
 import * as M from './models.js';
 
 const $ = (s) => document.querySelector(s);
@@ -31,8 +31,22 @@ const BOARD_SLOTS = ['cpu', 'ram', 'm2', 'gpu'];
 // ================= Cảnh 3D =================
 const canvas = $('#c3d');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-// Chất lượng đồ hoạ: 'high' (bóng mềm + phát sáng RGB) hoặc 'low' (cho máy yếu)
-let QUALITY = localStorage.getItem('thl.pc.quality') || 'high';
+// Chất lượng đồ hoạ: 'auto' (tự chọn theo card đồ hoạ + đo FPS), 'high', 'medium', 'low'
+const QNAME = { high: 'Cao', medium: 'Vừa', low: 'Nhẹ' };
+let QSET = localStorage.getItem('thl.pc.quality') || 'auto';
+if (!['auto', 'high', 'medium', 'low'].includes(QSET)) QSET = 'auto';
+function detectQuality() {
+  try {
+    const gl = renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const r = String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)).toLowerCase();
+    if (/swiftshader|llvmpipe|softpipe|software|microsoft basic/.test(r)) return 'low';
+    if (/intel\(r\)? (hd|uhd) graphics [2-6]\d\d\b|hd graphics( \d{4})?$|gma|mali-[gt][0-7]\d\b|adreno \(tm\) [1-5]/.test(r)) return 'low';
+    if (/intel|uhd|iris|radeon\(tm\) graphics|radeon graphics|vega \d+ graphics|apple m1$|mali|adreno|powervr/.test(r)) return 'medium';
+    return 'high';
+  } catch { return 'medium'; }
+}
+let QUALITY = QSET === 'auto' ? detectQuality() : QSET;
+M.TEX_OPTS.small = QUALITY === 'low'; M.TEX_OPTS.aniso = QUALITY === 'high' ? 8 : QUALITY === 'medium' ? 4 : 2;
 renderer.setPixelRatio(Math.min(devicePixelRatio, QUALITY === 'high' ? 2 : 1));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.VSMShadowMap;
@@ -76,12 +90,29 @@ const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.45, 0.35, 1.0);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 function applyQuality() {
-  renderer.setPixelRatio(Math.min(devicePixelRatio, QUALITY === 'high' ? 2 : 1));
-  renderer.shadowMap.type = QUALITY === 'high' ? THREE.VSMShadowMap : THREE.PCFShadowMap;
-  key.shadow.mapSize.set(QUALITY === 'high' ? 2048 : 1024, QUALITY === 'high' ? 2048 : 1024); key.shadow.map?.dispose(); key.shadow.map = null;
-  bloom.enabled = QUALITY === 'high';
-  const b = document.getElementById('btnQuality'); if (b) b.textContent = 'Đồ hoạ: ' + (QUALITY === 'high' ? 'Cao' : 'Nhẹ');
+  const hi = QUALITY === 'high', lo = QUALITY === 'low';
+  renderer.setPixelRatio(Math.min(devicePixelRatio, hi ? 2 : lo ? 0.85 : 1));
+  renderer.shadowMap.type = hi ? THREE.VSMShadowMap : THREE.PCFShadowMap;
+  key.castShadow = !lo; inside.intensity = lo ? 140 : 110; inside2.visible = !lo;
+  key.shadow.mapSize.set(hi ? 2048 : 1024, hi ? 2048 : 1024); key.shadow.map?.dispose(); key.shadow.map = null;
+  scene.environmentIntensity = lo ? 0.7 : 0.85;
+  bloom.enabled = hi;
+  const b = document.getElementById('btnQuality'); if (b) b.textContent = 'Đồ hoạ: ' + (QSET === 'auto' ? 'Tự động (' + QNAME[QUALITY] + ')' : QNAME[QUALITY]);
+  fpsProbe = { t0: 0, n: 0 };
   resize();
+}
+// Tự hạ mức đồ hoạ nếu máy chạy không mượt (chỉ ở chế độ Tự động)
+let fpsProbe = { t0: 0, n: 0 };
+function probeFps(now) {
+  if (QSET !== 'auto' || QUALITY === 'low' || document.hidden) return;
+  if (!fpsProbe.t0) { fpsProbe = { t0: now, n: 0 }; return; }
+  fpsProbe.n++;
+  const dt = now - fpsProbe.t0;
+  if (dt > 4000) {
+    const fps = (fpsProbe.n * 1000) / dt;
+    if (fps < 24) { QUALITY = QUALITY === 'high' ? 'medium' : 'low'; applyQuality(); }
+    else fpsProbe = { t0: now, n: 0 };
+  }
 }
 const world = new THREE.Group(); scene.add(world);
 const markerGroup = new THREE.Group(); scene.add(markerGroup);
@@ -108,17 +139,19 @@ function buildModel(slot, part) {
     case 'storage': return part.kind === 'm2' ? M.m2Model(part) : part.kind === 'ssd25' ? M.ssd25Model(part) : M.hddModel(part);
   }
 }
+// Điểm cắm theo mẫu mainboard đang lắp (mỗi ảnh mainboard có bố cục riêng)
+function A(k) { const a = S.objs.mb?.userData.anchors; const v = a?.[k] ?? M.BOARD_ANCHORS[k]; return (typeof v === 'function' ? v(S.parts.mb?.form) : v).clone(); }
 // Vị trí và đối tượng cha của từng khe
 function slotPlacement(slot) {
   const board = S.objs.mb;
   switch (slot) {
     case 'case': return { parent: world, pos: new THREE.Vector3() };
     case 'mb': return { parent: world, pos: M.BOARD_ORIGIN.clone() };
-    case 'cpu': return { parent: board, pos: M.BOARD_ANCHORS.cpu.clone() };
-    case 'cooler': return { parent: board, pos: M.BOARD_ANCHORS.cpu.clone() };
-    case 'ram': return { parent: board, pos: M.BOARD_ANCHORS.ram.clone() };
-    case 'm2': return { parent: board, pos: M.BOARD_ANCHORS.m2.clone() };
-    case 'gpu': return { parent: board, pos: M.BOARD_ANCHORS.gpu.clone() };
+    case 'cpu': return { parent: board, pos: A('cpu').clone() };
+    case 'cooler': return { parent: board, pos: A('cpu').clone() };
+    case 'ram': return { parent: board, pos: A('ram').clone() };
+    case 'm2': return { parent: board, pos: A('m2').clone() };
+    case 'gpu': return { parent: board, pos: A('gpu').clone() };
     case 'psu': return { parent: world, pos: M.PSU_POS.clone() };
     case 'hdd': return { parent: world, pos: M.HDD_POS.clone() };
   }
@@ -143,9 +176,9 @@ function slotMarkerBox(slot, part) {
 function cableTargetBox(slot) {
   const b = S.objs.mb;
   switch (slot) {
-    case 'c-24pin': return { parent: b, center: M.BOARD_ANCHORS['c-24pin'], size: [1.8, 6, 1.6] };
-    case 'c-cpu8': return { parent: b, center: M.BOARD_ANCHORS['c-cpu8'], size: [2.8, 1.8, 1.6] };
-    case 'c-fp': return { parent: b, center: M.BOARD_ANCHORS['c-fp'](S.parts.mb.form), size: [2.4, 1.4, 1.4] };
+    case 'c-24pin': return { parent: b, center: A('c-24pin'), size: [1.8, 6, 1.6] };
+    case 'c-cpu8': return { parent: b, center: A('c-cpu8'), size: [2.8, 1.8, 1.6] };
+    case 'c-fp': return { parent: b, center: A('c-fp'), size: [2.4, 1.4, 1.4] };
     case 'c-pcie': return { parent: S.objs.gpu, center: S.objs.gpu.userData.powerAnchor, size: [S.parts.gpu.pcie * 2 + 0.8, 1.6, 1.4] };
     case 'c-sata': return { parent: S.objs.hdd, center: S.objs.hdd.userData.port || M.HDD_PORT, size: [1, 1.8, 3.8] };
   }
@@ -172,6 +205,9 @@ function attach(slot, part, animate = true) {
   const pl = slotPlacement(slot);
   const obj = buildModel(slot, part);
   setPartData(obj, slot, part);
+  // khoảng cách giữa các khe RAM khác nhau theo từng mainboard
+  const pitch = S.objs.mb?.userData.ramPitch;
+  if (slot === 'ram' && pitch) obj.children.forEach((c, i) => { c.position.x = (i ? 1 : -1) * pitch; });
   pl.parent.add(obj);
   S.objs[slot] = obj;
   const end = pl.pos.clone();
@@ -198,11 +234,11 @@ function rebuildCables() {
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   const W = (obj, v) => obj.localToWorld(v.clone());
   if (S.parts['c-24pin'] && board) {
-    const T = W(board, M.BOARD_ANCHORS['c-24pin']);
+    const T = W(board, A('c-24pin'));
     cableGroup.add(M.cableMesh([P0, V(0, 11, 4), V(5.5, 16, -2), V(5.6, T.y - 4, -6), V(T.x + 1.6, T.y, T.z + 0.8), V(T.x + 0.3, T.y, T.z)], 0.55, 0x15161a));
   }
   if (S.parts['c-cpu8'] && board) {
-    const T = W(board, M.BOARD_ANCHORS['c-cpu8']);
+    const T = W(board, A('c-cpu8'));
     cableGroup.add(M.cableMesh([P0, V(-2, 11, 5), V(6.5, 20, -3), V(6.5, 42, -7), V(-4, 45.4, -8), V(T.x, T.y + 1.4, T.z + 0.4), V(T.x, T.y + 0.3, T.z)], 0.35, 0x15161a));
   }
   if (S.parts['c-pcie'] && S.objs.gpu) {
@@ -211,12 +247,12 @@ function rebuildCables() {
   }
   if (S.parts['c-sata'] && S.objs.hdd && board) {
     const T = W(S.objs.hdd, S.objs.hdd.userData.port || M.HDD_PORT);
-    const B = W(board, M.BOARD_ANCHORS['c-sata-mb']);
+    const B = W(board, A('c-sata-mb'));
     cableGroup.add(M.cableMesh([P0, V(1, 7, 6), V(T.x - 1.5, T.y + 0.5, T.z + 1.5), V(T.x - 0.2, T.y + 0.4, T.z + 0.6)], 0.25, 0x222222));
     cableGroup.add(M.cableMesh([V(T.x - 0.2, T.y - 0.4, T.z - 0.6), V(T.x - 2, T.y, T.z - 2), V(4.5, 14, -4), V(B.x + 1.2, B.y, B.z + 0.5), V(B.x + 0.3, B.y, B.z)], 0.18, 0xc62828));
   }
   if (S.parts['c-fp'] && board) {
-    const T = W(board, M.BOARD_ANCHORS['c-fp'](S.parts.mb.form));
+    const T = W(board, A('c-fp'));
     cableGroup.add(M.cableMesh([V(21.5, 45.5, 6), V(19.5, 40, 6), V(18.5, 14, -3), V(T.x + 3, T.y - 1.2, T.z + 1), V(T.x, T.y - 0.3, T.z)], 0.15, 0x3a6ea5));
   }
   cableGroup.traverse((o) => { o.userData.slot = 'cable'; });
@@ -280,11 +316,19 @@ function guideAllows(part) {
   return ok || `Bước hiện tại: "${st.title}". Hãy làm theo thứ tự hướng dẫn.`;
 }
 
-function install(part) {
+function install(part, opts = {}) {
   const g = guideAllows(part);
   if (g !== true) { toast(g, 'warn', 3500); return false; }
   const r = canInstall(part);
-  if (r !== true) { toast(r, 'err', 4200); showDetail(part, r); return false; }
+  if (r !== true) {
+    if (S.exam && isCompatErr(part)) S.exam.rejects.push(`Chọn linh kiện không tương thích: ${part.name} – ${r}`);
+    toast(r, 'err', 4200); showDetail(part, r); return false;
+  }
+  // chế độ hướng dẫn / thi: phải làm đúng các thao tác lắp trước khi linh kiện được lắp vào
+  if (!opts.procDone && part.slot !== 'case' && (S.mode === 'guided' || S.exam) && actionsFor(part.slot, part)) {
+    runProcedure(part).then((ok) => ok && install(part, { procDone: true }));
+    return false;
+  }
   powerOff();
   if (part.slot === 'case') {
     S.parts.case = part; placeCase(); afterChange();
@@ -298,6 +342,49 @@ function install(part) {
   S.selected = null;
   afterChange();
   return true;
+}
+
+function isCompatErr(part) {
+  if (part.cable || part.slot === 'case' || S.parts[part.slot] || hostReady(part.slot) !== true) return false;
+  return validate({ ...S.parts, [part.slot]: part }).some((e) => e.level === 'err' && e.slots.includes(part.slot));
+}
+
+// ================= Thao tác lắp chi tiết (luyện tập + chấm thi) =================
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function runProcedure(part) {
+  return new Promise((resolve) => {
+    const A = actionsFor(part.slot, part); const exam = !!S.exam;
+    const items = shuffle([...A.steps.map((a, i) => ({ ...a, ok: true, i })), ...A.wrong.map((a) => ({ ...a, ok: false }))]);
+    let next = 0;
+    const bg = document.createElement('div'); bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal proc"><h3>🔧 ${escapeHtml(A.title)}</h3><div class="psub">${escapeHtml(part.name)}</div>
+      <p class="pnote">${exam ? 'Chọn các thao tác <b>đúng</b> theo <b>đúng thứ tự</b>. Có thao tác sai lẫn vào – chọn sai hoặc sai thứ tự sẽ bị trừ điểm.' : 'Bấm lần lượt các thao tác theo đúng thứ tự thực tế. Cẩn thận: có vài thao tác <b>sai</b> lẫn vào!'}</p>
+      <ol class="pdone"></ol><div class="popts">${items.map((it, k) => `<button class="popt" data-k="${k}">${escapeHtml(it.t)}</button>`).join('')}</div>
+      <div class="pmsg"></div><div class="actions">${exam ? '' : '<button class="btn" data-a="hint">💡 Gợi ý</button>'}<button class="btn" data-a="cancel">Để sau</button></div></div>`;
+    document.body.appendChild(bg);
+    const msg = (t, k) => { const m = bg.querySelector('.pmsg'); m.className = 'pmsg ' + k; m.innerHTML = t; };
+    const miss = (t) => { if (S.exam) S.exam.mistakes.push(`${A.title}: ${t}`); };
+    bg.querySelectorAll('.popt').forEach((b) => b.onclick = () => {
+      const it = items[+b.dataset.k];
+      bg.querySelectorAll('.popt.hint').forEach((x) => x.classList.remove('hint'));
+      if (it.ok && it.i === next) {
+        next++; b.remove();
+        bg.querySelector('.pdone').insertAdjacentHTML('beforeend', `<li>${escapeHtml(it.t)}</li>`);
+        msg('✓ Đúng', 'ok');
+        if (next === A.steps.length) { setTimeout(() => { bg.remove(); resolve(true); }, 380); }
+      } else if (it.ok) {
+        msg(exam ? '✗ Sai thứ tự.' : '✗ Chưa đến bước này – còn thao tác khác phải làm trước.', 'err'); b.classList.add('shake'); setTimeout(() => b.classList.remove('shake'), 400);
+        miss(`làm sai thứ tự – “${it.t}”`);
+      } else {
+        b.disabled = true; b.classList.add('bad');
+        msg(exam ? '✗ Thao tác sai.' : `✗ Sai: ${escapeHtml(it.why)}`, 'err');
+        miss(`thao tác sai – “${it.t}”`);
+      }
+    });
+    const hint = bg.querySelector('[data-a=hint]');
+    if (hint) hint.onclick = () => { const k = items.findIndex((it) => it.ok && it.i === next); bg.querySelector(`.popt[data-k="${k}"]`)?.classList.add('hint'); };
+    bg.querySelector('[data-a=cancel]').onclick = () => { bg.remove(); resolve(false); };
+  });
 }
 
 function dependents(slot) {
@@ -626,6 +713,7 @@ $('#btnCloseMon').onclick = () => { $('#monitor').hidden = true; bootTimer.forEa
 $('#btnPower').onclick = powerOn;
 
 function showResult(ok, d) {
+  if (S.exam && !ok) S.exam.badBoots.push('Bật nguồn khi máy chưa hoàn chỉnh – ' + (d.why || ''));
   if (!ok) {
     modal(`<h3>❌ Máy chưa khởi động được</h3><p><b>Hiện tượng:</b> ${escapeHtml(d.msg || 'Màn hình báo không tìm thấy ổ khởi động.')}</p><p><b>Nguyên nhân:</b> ${escapeHtml(d.why)}</p><p style="color:#666">Hãy kiểm tra lại cấu hình rồi bấm Bật nguồn lần nữa.</p>`);
     return;
@@ -655,6 +743,7 @@ function modal(html) {
 // ================= Thử thách =================
 function renderChallenge() {
   const box = $('#challengeBox');
+  if (S.exam) { renderExam(); return; }
   if (!S.challenge) { box.hidden = true; return; }
   const ch = CHALLENGES.find((c) => c.id === S.challenge);
   const res = ch.check(buildFacts(S.bootOk));
@@ -663,6 +752,7 @@ function renderChallenge() {
   $('#chQuit').onclick = (e) => { e.preventDefault(); S.challenge = null; renderChallenge(); };
 }
 $('#btnChallenge').onclick = () => {
+  if (S.exam) { toast('Đang làm bài thi – hãy nộp bài hoặc huỷ bài thi trước.', 'warn', 3500); return; }
   const bg = modal(`<h3>🏆 Chọn thử thách</h3><p>Hoàn thành yêu cầu rồi bấm <b>Bật nguồn</b> để được chấm điểm.</p>${CHALLENGES.map((c) => {
     const r = Progress.get('pc', c.id);
     return `<div class="chl" data-id="${c.id}"><span class="st">${r ? (r.score === r.max ? '✔ Đã hoàn thành' : `${r.score}/${r.max}`) : ''}</span><b>${escapeHtml(c.title)}</b><div style="font-size:13px;color:#555;margin-top:4px">${escapeHtml(c.desc)}</div></div>`;
@@ -673,6 +763,110 @@ $('#btnChallenge').onclick = () => {
   });
 };
 
+// ================= Bài thi lắp ráp có chấm điểm (gửi kết quả về máy giáo viên qua mạng LAN) =================
+const EXAM_MIN = 25;
+const EXAMS = [
+  { id: 'basic', title: 'Lắp máy hoàn chỉnh', desc: 'Lắp đủ linh kiện, cắm đủ dây, không có cảnh báo tương thích và khởi động thành công.',
+    check: (b) => [[b.booted, 'Khởi động thành công'], [b.warnings === 0, 'Không có cảnh báo tương thích']] },
+  ...CHALLENGES,
+];
+const studentStore = { get() { try { return JSON.parse(localStorage.getItem('thl.pc.student')) || null; } catch { return null; } }, set(v) { try { localStorage.setItem('thl.pc.student', JSON.stringify(v)); } catch {} } };
+function lastIc3Profile() { try { const p = Object.values(JSON.parse(localStorage.getItem('thl.ic3.profiles')) || {}); p.sort((a, b) => (b.lastLogin || 0) - (a.lastLogin || 0)); return p[0] ? { name: p[0].name, cls: p[0].class } : null; } catch { return null; } }
+$('#btnExam').onclick = () => {
+  if (S.exam) { submitExam(); return; }
+  const me = studentStore.get() || lastIc3Profile() || { name: '', cls: '' };
+  const bg = modal(`<h3>🎓 Bài thi lắp ráp máy tính</h3>
+    <p style="color:#555;margin-top:-4px">Thời gian ${EXAM_MIN} phút. Không có hướng dẫn từng bước; mỗi linh kiện phải làm đúng các thao tác lắp. Điểm bị trừ khi chọn linh kiện không tương thích, làm sai thao tác, bật nguồn khi máy chưa xong hoặc không đạt yêu cầu đề.</p>
+    <div class="exf"><label>Họ và tên<input id="exName" value="${escapeHtml(me.name || '')}" placeholder="Nguyễn Văn A"></label><label>Lớp<input id="exCls" value="${escapeHtml(me.cls || '')}" placeholder="10A1"></label></div>
+    <div style="font-weight:600;margin:10px 0 2px">Chọn đề</div>
+    ${EXAMS.map((c, i) => `<div class="chl" data-id="${c.id}"><b>Đề ${i + 1}: ${escapeHtml(c.title)}</b><div style="font-size:13px;color:#555;margin-top:4px">${escapeHtml(c.desc)}</div></div>`).join('')}
+    <div class="pmsg err" id="exErr"></div>`);
+  bg.querySelector('.actions button').textContent = 'Huỷ';
+  bg.querySelectorAll('.chl').forEach((el) => el.onclick = () => {
+    const name = bg.querySelector('#exName').value.trim().replace(/\s+/g, ' '), cls = bg.querySelector('#exCls').value.trim().toUpperCase();
+    if (!name || !cls) { bg.querySelector('#exErr').textContent = 'Nhập họ tên và lớp trước khi chọn đề.'; return; }
+    studentStore.set({ name, cls });
+    bg.remove(); resetBuild(); S.challenge = null; setMode('free');
+    S.exam = { id: el.dataset.id, name, cls, t0: Date.now(), mistakes: [], rejects: [], badBoots: [] };
+    $('#btnExam').textContent = '📨 Nộp bài';
+    try { window.desktop?.ic3?.hello?.({ name, class: cls, activity: 'Đang thi lắp ráp PC' })?.catch?.(() => {}); } catch {}
+    afterChange();
+    toast('Bắt đầu bài thi – chúc em làm tốt!', 'info');
+  });
+};
+function examScore() {
+  const E = S.exam, ch = EXAMS.find((c) => c.id === E.id);
+  const crit = ch.check(buildFacts(S.bootOk));
+  const secs = Math.round((Date.now() - E.t0) / 1000);
+  const ded = [];
+  if (E.mistakes.length) ded.push([E.mistakes.length * 4, `${E.mistakes.length} thao tác sai × 4`]);
+  if (E.rejects.length) ded.push([E.rejects.length * 5, `${E.rejects.length} lần chọn linh kiện không tương thích × 5`]);
+  if (E.badBoots.length) ded.push([E.badBoots.length * 5, `${E.badBoots.length} lần bật nguồn khi máy chưa xong × 5`]);
+  crit.forEach(([ok, t]) => { if (!ok) ded.push([/Khởi động/.test(t) ? 30 : 15, 'Chưa đạt: ' + t]); });
+  if (secs > EXAM_MIN * 60) ded.push([10, 'Quá thời gian']);
+  const score = Math.max(0, 100 - ded.reduce((a, [d]) => a + d, 0));
+  return { ch, crit, secs, ded, score };
+}
+function renderExam() {
+  const box = $('#challengeBox'); const E = S.exam; if (!E) return;
+  const { ch, crit, score } = examScore();
+  const left = Math.max(0, EXAM_MIN * 60 - Math.round((Date.now() - E.t0) / 1000));
+  box.hidden = false;
+  box.innerHTML = `<h4>🎓 ${escapeHtml(ch.title)}</h4><div style="display:flex;gap:14px;margin:4px 0 6px"><span>⏱ <b id="exT">${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}</b></span><span>Lỗi: <b>${E.mistakes.length + E.rejects.length + E.badBoots.length}</b></span><span>Điểm tạm: <b>${(score / 10).toFixed(1)}</b></span></div>
+    <div style="color:#555">${escapeHtml(ch.desc)}</div><ul style="margin:6px 0 0">${crit.map(([ok, t]) => `<li>${ok ? '✅' : '⬜'} ${escapeHtml(t)}</li>`).join('')}</ul>
+    <button class="pbtn" id="exSubmit" style="margin-top:8px">📨 Nộp bài</button> <a href="#" id="exQuit" style="font-size:12px;margin-left:8px">Huỷ bài thi</a>`;
+  $('#exSubmit').onclick = () => submitExam();
+  $('#exQuit').onclick = (e) => { e.preventDefault(); if (confirm('Huỷ bài thi? Kết quả sẽ không được lưu.')) endExam(); };
+}
+function endExam() { S.exam = null; $('#btnExam').textContent = '🎓 Bài thi'; afterChange(); }
+setInterval(() => {
+  if (!S.exam) return;
+  const left = EXAM_MIN * 60 - Math.round((Date.now() - S.exam.t0) / 1000);
+  const el = $('#exT'); if (el) el.textContent = `${String(Math.floor(Math.max(0, left) / 60)).padStart(2, '0')}:${String(Math.max(0, left) % 60).padStart(2, '0')}`;
+  if (left <= 0 && !S.exam.auto) { S.exam.auto = true; toast('Hết giờ! Bài được nộp tự động.', 'warn', 4000); submitExam(true); }
+}, 1000);
+async function submitExam(auto = false) {
+  const E = S.exam; if (!E) return;
+  if (!auto && !confirm('Nộp bài và kết thúc bài thi?')) return;
+  const { ch, crit, secs, ded, score } = examScore();
+  const errors = [...E.rejects, ...E.badBoots, ...E.mistakes];
+  const rec = { name: E.name, class: E.cls, school: '', level: 0, testId: 'pc-' + ch.id, testTitle: 'Lắp ráp PC: ' + ch.title, mode: 'pcbuild',
+    score: score * 10, correct: crit.filter(([ok]) => ok).length, total: crit.length, duration: secs, xp: Math.round(score / 2), wrong: errors, at: Date.now(),
+    domains: {}, qids: [] };
+  let sent = null;
+  try { sent = window.desktop?.ic3?.submit ? await window.desktop.ic3.submit(rec) : null; } catch { sent = null; }
+  try { Progress.record('pc', 'exam-' + ch.id, score, 100); } catch {}
+  S.exam = null; $('#btnExam').textContent = '🎓 Bài thi'; $('#monitor').hidden = true; bootTimer.forEach(clearTimeout);
+  const g = score / 10;
+  modal(`<h3>${g >= 5 ? '🎉' : '📋'} Kết quả bài thi: ${g.toFixed(1)} / 10</h3>
+    <p style="color:#555;margin-top:-6px">${escapeHtml(E.name)} · ${escapeHtml(E.cls)} · ${escapeHtml(ch.title)} · ${Math.floor(secs / 60)} phút ${secs % 60} giây</p>
+    <ul style="margin:6px 0 10px">${crit.map(([ok, t]) => `<li>${ok ? '✅' : '❌'} ${escapeHtml(t)}</li>`).join('')}</ul>
+    ${ded.length ? `<b>Bị trừ điểm</b><ul class="exded">${ded.map(([d, t]) => `<li><span>−${d}</span> ${escapeHtml(t)}</li>`).join('')}</ul>` : '<p>✅ Không bị trừ điểm nào. Xuất sắc!</p>'}
+    ${errors.length ? `<details><summary>Chi tiết ${errors.length} lỗi</summary><ol style="font-size:13px">${errors.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ol></details>` : ''}
+    <p class="pmsg ${sent && sent.sent ? 'ok' : ''}">${!sent ? 'Không gửi được kết quả (máy này không có kết nối lớp học).' : sent.sent ? '📨 Đã gửi kết quả về máy giáo viên.' : '⏳ Chưa thấy máy giáo viên – kết quả đã được lưu và sẽ tự gửi khi kết nối được.'}</p>`);
+  afterChange();
+}
+
+// ================= Nguồn ảnh (giấy phép CC – bắt buộc ghi công tác giả) =================
+const CREDITS = [
+  ['Mainboard ASUS ROG STRIX Z690-A, socket LGA1700', 'Jacek Halicki', 'CC BY-SA 4.0'],
+  ['Mainboard ASUS ROG Strix Z390-F', 'PantheraLeo1359531', 'CC BY 4.0'],
+  ['Mainboard MSI B550 Tomahawk', 'Michael Wolf', 'CC BY-SA 3.0'],
+  ['Mainboard ASRock AB350M Pro4', 'Ilya Plekhanov', 'CC BY-SA 4.0'],
+  ['Socket AMD AM5', 'CristoCalis', 'CC BY-SA 4.0'],
+  ['CPU Intel Core i5-13600K', '4300streetcar', 'CC BY 4.0'],
+  ['CPU AMD Ryzen 7 3700X', 'Smial', 'Free Art License 1.3'],
+  ['RAM DDR4, DDR5; SSD Samsung 870 QVO, Corsair MP400; bộ nguồn be quiet! Straight Power 12', 'PantheraLeo1359531', 'CC BY 4.0'],
+  ['Ổ cứng Seagate Barracuda 500GB', 'Adryan R. Villanueva', 'CC BY-SA 4.0'],
+];
+$('#hint').insertAdjacentHTML('beforeend', ' · <a href="#" id="credits" style="color:inherit">Nguồn ảnh linh kiện</a>');
+$('#credits').onclick = (e) => {
+  e.preventDefault();
+  modal(`<h3>📷 Nguồn ảnh linh kiện</h3><p style="color:#555;margin-top:-4px">Bề mặt các linh kiện dùng ảnh chụp thật từ Wikimedia Commons (đã nắn phẳng, cắt đúng kích thước thật). Ảnh là <b>mẫu đại diện</b> cho từng loại – logo trên ảnh có thể khác mẫu đang chọn; socket CPU luôn được thay đúng loại.</p>
+    <table class="crd">${CREDITS.map(([w, a, l]) => `<tr><td>${escapeHtml(w)}</td><td>${escapeHtml(a)}</td><td>${escapeHtml(l)}</td></tr>`).join('')}</table>
+    <p style="font-size:12px;color:#888">Chi tiết đường dẫn ảnh gốc: tệp src/pcbuild/tex/CREDITS.md trong mã nguồn.</p>`);
+};
+
 // ================= Thanh công cụ =================
 function setMode(m) {
   S.mode = m;
@@ -681,6 +875,7 @@ function setMode(m) {
   afterChange();
 }
 document.querySelectorAll('#modeSeg button').forEach((b) => b.onclick = () => {
+  if (S.exam) { toast('Đang làm bài thi – hãy nộp bài hoặc huỷ bài thi trước.', 'warn', 3500); return; }
   if (b.dataset.mode === 'guided' && Object.keys(S.parts).length > 1 && !confirm('Chuyển sang chế độ hướng dẫn sẽ bắt đầu lại từ đầu. Tiếp tục?')) return;
   if (b.dataset.mode === 'guided') resetBuild();
   setMode(b.dataset.mode);
@@ -717,11 +912,12 @@ function loop() {
   markers.forEach((m) => { m.material.opacity = pulse; });
   controls.update();
   if (QUALITY === 'high') composer.render(); else renderer.render(scene, camera);
+  probeFps(now);
   requestAnimationFrame(loop);
 }
 
 // ================= Khởi tạo =================
-$('#btnQuality') && ($('#btnQuality').onclick = () => { QUALITY = QUALITY === 'high' ? 'low' : 'high'; localStorage.setItem('thl.pc.quality', QUALITY); applyQuality(); });
+$('#btnQuality') && ($('#btnQuality').onclick = () => { const order = ['auto', 'high', 'medium', 'low']; QSET = order[(order.indexOf(QSET) + 1) % 4]; localStorage.setItem('thl.pc.quality', QSET); QUALITY = QSET === 'auto' ? detectQuality() : QSET; applyQuality(); });
 $('#btnGlass') && ($('#btnGlass').onclick = () => { S.glass = !S.glass; world.traverse((o) => { if (o.name === 'glass') o.visible = S.glass; }); $('#btnGlass').textContent = 'Kính hông: ' + (S.glass ? 'Bật' : 'Tắt'); });
 placeCase();
 applyQuality();

@@ -32,7 +32,7 @@ async function loadCustomQs() { try { const L = await T.lib(); for (const st of 
 const fmtT = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}'${String(s % 60).padStart(2, '0')}"`;
 const dstr = (t) => new Date(t).toLocaleString('vi-VN');
 const iso = (d) => d.toISOString().slice(0, 10);
-const MODE = { exam: 'Kiểm tra', practice: 'Luyện tập', review: 'Ôn câu sai', challenge: 'Thử thách 60s' };
+const MODE = { exam: 'Kiểm tra', practice: 'Luyện tập', review: 'Ôn câu sai', challenge: 'Thử thách 60s', pcbuild: 'Thi lắp ráp PC' };
 
 let info = null, results = [], tab = 'results', newIds = new Set();
 const F = { cls: '', level: '', test: '', mode: '', from: iso(new Date(Date.now() - 6 * 864e5)), to: iso(new Date()), min: 0, best: false, q: '' };
@@ -180,12 +180,13 @@ function exportCsv(r) {
 }
 function detail(x) {
   const d = document.createElement('div'); d.className = 'ic3-modal detail';
-  const wrong = (x.wrong || []).map((id) => QBY[id]).filter(Boolean);
+  const pc = x.mode === 'pcbuild';
+  const wrong = pc ? [] : (x.wrong || []).map((id) => QBY[id]).filter(Boolean);
   d.innerHTML = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">${esc(x.name)} · ${esc(x.class)}</h3><button class="btn sm ghost" data-x>Đóng</button></div>
     <p class="muted">${esc(x.testTitle)} · ${MODE[x.mode] || ''} · ${dstr(x.at)} · máy ${esc(x.ip)}</p>
-    <div class="sumrow"><div class="card sum"><b>${x.score}</b><span>điểm /1000</span></div><div class="card sum"><b>${x.correct}/${x.total}</b><span>câu đúng</span></div><div class="card sum"><b>${fmtT(x.duration)}</b><span>thời gian</span></div><div class="card sum"><b>+${x.xp}</b><span>XP</span></div></div>
+    <div class="sumrow"><div class="card sum"><b>${x.score}</b><span>điểm /1000</span></div><div class="card sum"><b>${x.correct}/${x.total}</b><span>${pc ? 'tiêu chí đạt' : 'câu đúng'}</span></div><div class="card sum"><b>${fmtT(x.duration)}</b><span>thời gian</span></div><div class="card sum"><b>+${x.xp}</b><span>XP</span></div></div>
     <div class="bars">${DOMS.map((n, i) => x.domains[i + 1] ? (() => { const [c, t] = x.domains[i + 1]; const p = Math.round((c / t) * 100); return `<div class="br"><span>${i + 1}. ${n}</span><div class="bt"><i style="width:${p}%;background:${p > 80 ? '#34c759' : p > 50 ? '#ffcc00' : '#ff3b30'}"></i></div><b>${c}/${t}</b></div>`; })() : '').join('')}</div>
-    ${wrong.length ? `<h4>Câu làm sai (${wrong.length})</h4><ol style="font-size:14px;line-height:1.6">${wrong.map((q) => `<li>${esc(q.q)} <span class="muted">– ${q._set ? esc(q._set) : `CĐ${q.d}, ${q.id[0] === '1' ? 'Level 1' : 'Level 2'}`}</span></li>`).join('')}</ol>` : '<p>✅ Không có câu sai.</p>'}
+    ${pc ? ((x.wrong || []).length ? `<h4>Lỗi trong khi lắp (${x.wrong.length})</h4><ol style="font-size:14px;line-height:1.6">${x.wrong.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>` : '<p>✅ Không mắc lỗi nào.</p>') : wrong.length ? `<h4>Câu làm sai (${wrong.length})</h4><ol style="font-size:14px;line-height:1.6">${wrong.map((q) => `<li>${esc(q.q)} <span class="muted">– ${q._set ? esc(q._set) : `CĐ${q.d}, ${q.id[0] === '1' ? 'Level 1' : 'Level 2'}`}</span></li>`).join('')}</ol>` : '<p>✅ Không có câu sai.</p>'}
     <div style="margin-top:14px"><button class="btn sm ghost" data-del style="color:#d70015">Xoá kết quả này</button></div></div>`;
   document.body.appendChild(d);
   d.onclick = (e) => { if (e.target === d || e.target.closest('[data-x]')) d.remove(); };

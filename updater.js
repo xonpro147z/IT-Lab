@@ -62,9 +62,12 @@ function pickAsset(assets) {
 async function manualCheck() {
   set({ phase: 'checking', error: null });
   const rel = await getJSON(`https://api.github.com/repos/${OWNER}/${REPO}/releases/latest`);
-  const ver = String(rel.tag_name || '').replace(/^v/, '');
-  if (!ver || cmp(ver, app.getVersion()) <= 0) return set({ phase: 'latest', version: null });
+  // số phiên bản lấy từ TÊN TỆP cài đặt (vd TinHocLab-1.12.2-arm64.dmg), không tin tên release:
+  // nếu release đặt tên mới mà tệp bên trong vẫn cũ thì không báo cập nhật lặp lại
   const asset = pickAsset(rel.assets || []);
+  const fromFile = asset && (String(asset.name).match(/-(\d+\.\d+\.\d+)[-.]/) || [])[1];
+  const ver = fromFile || String(rel.tag_name || '').replace(/^v/, '');
+  if (!ver || cmp(ver, app.getVersion()) <= 0) return set({ phase: 'latest', version: null });
   set({ phase: 'downloading', version: ver, notes: notesOf(rel.body), url: rel.html_url, percent: 0 });
   if (!asset) return set({ phase: 'manual', file: null });
   const dest = path.join(app.getPath('downloads'), asset.name);
@@ -88,7 +91,7 @@ async function download(url, dest, total) {
 async function checkApp(manual) {
   S.manual = manual;
   if (!app.isPackaged) { // chạy thử khi phát triển: chỉ kiểm tra, không tải
-    try { const rel = await getJSON(`https://api.github.com/repos/${OWNER}/${REPO}/releases/latest`); const v = String(rel.tag_name || '').replace(/^v/, ''); set(cmp(v, app.getVersion()) > 0 ? { phase: 'manual', version: v, url: rel.html_url, file: null, notes: notesOf(rel.body) } : { phase: 'latest' }); } catch (e) { set({ phase: 'error', error: String(e.message || e) }); }
+    try { const rel = await getJSON(`https://api.github.com/repos/${OWNER}/${REPO}/releases/latest`); const a = pickAsset(rel.assets || []); const v = (a && (String(a.name).match(/-(\d+\.\d+\.\d+)[-.]/) || [])[1]) || String(rel.tag_name || '').replace(/^v/, ''); set(cmp(v, app.getVersion()) > 0 ? { phase: 'manual', version: v, url: rel.html_url, file: null, notes: notesOf(rel.body) } : { phase: 'latest' }); } catch (e) { set({ phase: 'error', error: String(e.message || e) }); }
     return;
   }
   if (canAutoInstall()) { S.mode = 'auto'; try { await autoUpdater.checkForUpdates(); } catch { /* chuyển sang tải thủ công trong sự kiện error */ } }

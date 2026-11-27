@@ -47,6 +47,52 @@ const RUBBER = () => mat(0x0c0c0d, { metalness: 0, roughness: 0.9 });
 const PCB = (c) => mat(c, { metalness: 0.15, roughness: 0.5 });
 function emissive(color, k = 0.25) { return new THREE.MeshStandardMaterial({ color: 0x111111, emissive: color, emissiveIntensity: k, roughness: 0.4 }); }
 
+// ======================= Ảnh chụp thật (texture) =======================
+// Ảnh linh kiện thật (Wikimedia Commons, giấy phép CC – xem tex/CREDITS.md)
+const TEX_BASE = new URL('./tex/', import.meta.url).href;
+const loader = new THREE.TextureLoader();
+export const TEX_OPTS = { aniso: 8, small: false }; // pcbuild.js chỉnh theo mức đồ hoạ
+function photo(name, { srgb = true } = {}) {
+  return cachedTex('photo:' + name, () => {
+    const t = loader.load(TEX_BASE + name);
+    if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = TEX_OPTS.aniso;
+    return t;
+  });
+}
+// Ảnh chụp + vẽ thêm chữ (ví dụ tên CPU đúng mẫu đang chọn)
+function photoDraw(name, key, draw, maxW = 1024) {
+  return cachedTex('pd:' + name + ':' + key, () => {
+    const c = document.createElement('canvas'); c.width = 4; c.height = 4;
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = TEX_OPTS.aniso;
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, maxW / img.width); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height); draw(ctx, c.width, c.height, img);
+      t.dispose(); t.needsUpdate = true;
+    };
+    img.src = TEX_BASE + name;
+    return t;
+  });
+}
+// Gán UV chiếu phẳng từ trên xuống (trục z): điểm (x,y) cục bộ → vị trí trên ảnh.
+// rect = [x0, y0, w, h]: vùng (theo toạ độ cục bộ) phủ toàn bộ ảnh, y0 là mép trên (y giảm dần xuống dưới).
+function planarUV(geo, ox, oy, rect) {
+  const [x0, y0, w, h] = rect; const p = geo.attributes.position; const uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) { uv[i * 2] = (p.getX(i) + ox - x0) / w; uv[i * 2 + 1] = 1 - (y0 - (p.getY(i) + oy)) / h; }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return geo;
+}
+// Khối nổi phủ ảnh chiếu phẳng – mặt trên là ảnh thật, cạnh bên lấy màu mép ảnh (giống chi tiết thật)
+function reliefBox(x, y, w, h, d, material, rect, z0 = 0, r = 0.06) {
+  const rr = Math.min(r, w / 2 - 0.001, h / 2 - 0.001, d / 2 - 0.001);
+  const g = rr > 0.01 ? new RoundedBoxGeometry(w, h, d, 2, rr) : new THREE.BoxGeometry(w, h, d);
+  const cx = x + w / 2, cy = -(y + h / 2);
+  planarUV(g, cx, cy, rect);
+  const m = new THREE.Mesh(g, material); m.position.set(cx, cy, z0 + d / 2); m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
 // ======================= Hình khối =======================
 export function box(w, h, d, material, x = 0, y = 0, z = 0, r = 0) {
   const rr = Math.min(r, w / 2 - 0.001, h / 2 - 0.001, d / 2 - 0.001);
@@ -235,102 +281,68 @@ export function caseModel(part) {
 }
 
 // ======================= Mainboard (gốc góc trên-trái, mặt linh kiện hướng +z) =======================
-function pcbTexture(part, W, H) {
-  const accent = hex(part.accent ?? 0x888888);
-  return textTexture((ctx, CW, CH) => {
-    const k = CW / W; // px / cm
-    ctx.fillStyle = hex(part.color); ctx.fillRect(0, 0, CW, CH);
-    // vân sợi thuỷ tinh rất nhẹ
-    for (let i = 0; i < 4000; i++) { ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.025})`; ctx.fillRect(Math.random() * CW, Math.random() * CH, 2, 2); }
-    // đường mạch đồng
-    ctx.strokeStyle = 'rgba(255,255,255,0.055)'; ctx.lineWidth = 1.5;
-    for (let i = 0; i < 260; i++) { ctx.beginPath(); let x = Math.random() * CW, y = Math.random() * CH; ctx.moveTo(x, y); for (let s = 0; s < 3; s++) { if (s % 2) x += (Math.random() - 0.5) * 160; else y += (Math.random() - 0.5) * 160; ctx.lineTo(x, y); } ctx.stroke(); }
-    // linh kiện SMD nhỏ
-    for (let i = 0; i < 900; i++) { ctx.fillStyle = Math.random() < 0.5 ? '#c9c2b0' : '#2a2a2a'; const x = Math.random() * CW, y = Math.random() * CH; ctx.fillRect(x, y, 3 + Math.random() * 3, 2); }
-    // lỗ bắt vít mạ bạc
-    [[0.64, 0.64], [W - 0.64, 0.64], [0.64, H - 0.64], [W - 0.64, H - 0.64], [W * 0.62, 0.64], [W * 0.62, H - 0.64], [0.64, H * 0.52], [W - 0.64, H * 0.52]].forEach(([x, y]) => { ctx.fillStyle = '#c9ccd0'; ctx.beginPath(); ctx.arc(x * k, y * k, 0.45 * k, 0, 7); ctx.fill(); ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x * k, y * k, 0.2 * k, 0, 7); ctx.fill(); });
-    // chữ in lụa
-    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = `${0.36 * k}px monospace`;
-    [['CPU_FAN', 13.0, 1.2], ['ATX_24P', 21.4, 6.8], ['DIMMA1 DIMMA2 DIMMB1 DIMMB2', 15.6, 15.2], ['PCIE_1', 2, 15.2], ['M2_1', 6, 11.8], ['JFP1', 19.6, H - 1.2], ['SATA', 22.2, 14.4], ['JUSB1', 14.4, H - 1.2], ['JAUD1', 1.2, H - 1.2], ['BAT1', 12, H * 0.72]].forEach(([t, x, y]) => ctx.fillText(t, x * k, y * k));
-    // logo dọc theo mép phải
-    ctx.save(); ctx.translate(W * 0.955 * k, H * 0.86 * k); ctx.rotate(-Math.PI / 2); ctx.fillStyle = accent; ctx.font = `bold ${0.9 * k}px Segoe UI, Arial`; ctx.fillText(part.label || part.chipset, 0, 0); ctx.restore();
-    // vùng âm thanh tách biệt
-    ctx.strokeStyle = 'rgba(255,215,120,.35)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2; ctx.strokeRect(0.3 * k, (H - 6.5) * k, 5.2 * k, 6.1 * k); ctx.setLineDash([]);
-  }, 1024, Math.round(1024 * H / W));
+// Mỗi mẫu = 1 ảnh chụp thật đã nắn phẳng đúng kích thước (cm). Toạ độ [x, y] tính từ góc trên-trái, y hướng xuống.
+// relief: [x, y, w, h, cao, kiểu] – khối nổi phủ ảnh (tản nhiệt, khe RAM/PCIe, đầu nguồn...) để có chiều sâu thật.
+const RAMS = (xs, y0, y1) => xs.map((x) => [x - 0.32, y0, 0.64, y1 - y0, 0.85, 'p']);
+const MB_TPL = {
+  z690: { form: 'ATX', sock: 'LGA1700', cpu: [13.6, 8.6], sockBox: [5.4, 7.2], ram: [20.6, 9.0], pitch: 0.97, gpu: [4.2, 18.0], p24: [23.7, 7.3], p8: [5.0, 0.5], m2: [8.2, 19.9, 0.5], fp: [20.5, 29.7], sata: [23.8, 21.0],
+    relief: [[0, 0, 8.2, 15.0, 2.6, 'm'], [8.0, 0.3, 10.2, 3.6, 2.0, 'm'], [4.0, 0, 2.0, 0.9, 1.2, 'p'], [6.1, 0, 2.0, 0.9, 1.2, 'p'], [23.1, 4.7, 1.2, 5.3, 1.2, 'p'],
+      ...RAMS([18.6, 19.6, 20.6, 21.55], 2.1, 15.9), [4.2, 17.6, 12.2, 0.85, 1.1, 'p'], [0.3, 15.2, 17.4, 2.1, 0.7, 'm'],
+      [11.4, 16.1, 12.7, 5.7, 0.8, 'm'], [6.8, 21.8, 17.3, 3.3, 0.7, 'm'], [2.5, 25.1, 21.6, 2.6, 0.7, 'm']] },
+  z390: { form: 'ATX', sock: 'LGA1151', cpu: [12.9, 8.4], sockBox: [4.6, 5.8], ram: [20.4, 8.1], pitch: 0.98, gpu: [4.0, 17.7], p24: [23.6, 8.6], p8: [5.0, 0.5], m2: [12.0, 15.8, 0.5], fp: [20.5, 29.8], sata: [23.8, 20.5],
+    relief: [[0, 0, 5.6, 12.5, 2.6, 'm'], [5.4, 0, 8.0, 2.6, 2.0, 'm'], [4.6, 2.6, 2.8, 9.0, 2.0, 'm'], [4.2, 0, 1.7, 0.9, 1.2, 'p'], [23.0, 6.0, 1.2, 5.3, 1.2, 'p'],
+      ...RAMS([18.4, 19.4, 20.4, 21.35], 0.9, 15.3), [4.0, 17.3, 8.9, 0.85, 1.1, 'p'], [4.0, 23.6, 8.9, 0.85, 1.1, 'p'],
+      [14.6, 17.3, 7.9, 8.1, 0.9, 'm'], [8.6, 25.4, 13.9, 1.8, 0.6, 'm']] },
+  b550: { form: 'ATX', sock: 'AM4', cpu: [12.3, 9.6], sockBox: [4.4, 4.9], ram: [20.35, 9.4], pitch: 1.02, gpu: [3.7, 18.9], p24: [23.6, 10.1], p8: [3.9, 0.6], m2: [9.3, 16.75, 1.05], fp: [20.5, 29.8], sata: [23.8, 22.5],
+    relief: [[0, 0, 6.9, 14.4, 2.6, 'm'], [6.9, 0, 9.7, 2.6, 2.2, 'm'], [3.0, 0, 1.9, 1.1, 1.2, 'p'], [23.0, 7.4, 1.2, 5.4, 1.2, 'p'],
+      ...RAMS([18.3, 19.3, 20.4, 21.4], 2.2, 16.6), [3.3, 15.8, 11.9, 1.9, 0.8, 'm'], [3.7, 18.45, 9.2, 0.9, 1.1, 'p'], [3.9, 24.7, 9.0, 0.85, 1.1, 'p'],
+      [14.0, 20.0, 9.3, 6.1, 0.9, 'm']] },
+  ab350: { form: 'mATX', sock: 'AM4', cpu: [12.6, 8.4], sockBox: [4.4, 4.9], ram: [20.4, 8.1], pitch: 1.0, gpu: [5.3, 18.4], p24: [23.7, 9.1], p8: [5.3, 2.0], m2: [10.4, 15.6, 0.5], fp: [20.5, 23.7], sata: [23.8, 19.5],
+    relief: [[0, 0, 4.2, 15.5, 3.0, 'p'], [4.7, 3.1, 3.7, 7.5, 2.4, 'm'], [4.7, 1.4, 1.3, 1.3, 1.2, 'p'], [23.2, 6.4, 1.2, 5.4, 1.2, 'p'],
+      ...RAMS([18.4, 19.4, 20.4, 21.4], 0.7, 15.5), [18.0, 17.1, 4.8, 3.8, 1.0, 'm'], [5.3, 18.0, 10.2, 0.85, 1.1, 'p'], [5.3, 22.0, 10.2, 0.85, 1.1, 'p']] },
+};
+export function boardTemplate(part) {
+  if (part.form !== 'ATX') return 'ab350';
+  if (/TOMAHAWK/i.test(part.label || part.name)) return 'b550';
+  if (/ROG/i.test(part.label || part.name)) return 'z390';
+  return 'z690';
 }
+// Socket thật đặt chồng lên ảnh khi socket của mẫu ảnh khác socket của mainboard đang chọn
+const SOCK_PHOTO = { LGA1700: ['sock_lga1700.jpg', 5.4, 7.2], LGA1851: ['sock_lga1700.jpg', 5.4, 7.2], AM5: ['sock_am5.jpg', 6.0, 7.3] };
 export function motherboardModel(part) {
   part = { name: '', ...part };
+  const key = boardTemplate(part), T = MB_TPL[key];
   const g = new THREE.Group();
-  const H = boardH(part.form), W = BOARD_W;
-  const intel = /^LGA/.test(part.socket || '');
-  const acc = part.accent ?? 0x888888;
-  const pcbM = new THREE.MeshStandardMaterial({ map: pcbTexture(part, W, H), roughness: 0.5, metalness: 0.15 });
-  g.add(box(W, H, 0.16, [PCB(part.color), PCB(part.color), PCB(part.color), PCB(part.color), pcbM, PCB(part.color)], W / 2, -H / 2, 0.08));
-  // ---- cụm I/O có nắp che + tản VRM dạng khối có rãnh ----
-  const hsM = mat(acc, { metalness: 0.85, roughness: 0.35, roughnessMap: brushed() });
-  const ioCover = box(3.2, 11, 3.0, ALU_DARK(), 1.9, -6.2, 1.66, 0.35); g.add(ioCover);
-  g.add(label(2.4, 7.5, simpleText([{ t: (part.label || '').split(' ')[0] || part.chipset, font: 'bold 70px Segoe UI, Arial', color: hex(acc) }], {}, 512, 128), 1.9, -6.2, 3.18, [0, 0, Math.PI / 2]));
-  const vrmTop = new THREE.Group(); vrmTop.add(box(9.4, 2.0, 1.7, hsM, 0, 0, 0, 0.25));
-  for (let i = 0; i < 12; i++) vrmTop.add(box(0.12, 1.6, 0.4, mat(0x111111), -4.2 + i * 0.75, 0, 0.75));
-  vrmTop.position.set(8.9, -1.9, 1.05); g.add(vrmTop);
-  const vrmLeft = new THREE.Group(); vrmLeft.add(box(2.0, 9.2, 1.7, hsM, 0, 0, 0, 0.25));
-  for (let i = 0; i < 11; i++) vrmLeft.add(box(1.6, 0.12, 0.4, mat(0x111111), 0, -4 + i * 0.8, 0.75));
-  vrmLeft.position.set(4.6, -7.4, 1.05); g.add(vrmLeft);
-  // cuộn cảm (choke) và tụ quanh VRM
-  const chokeG = new THREE.BoxGeometry(0.75, 0.75, 0.55);
-  g.add(instances(chokeG, mat(0x6b6e73, { metalness: 0.6, roughness: 0.5 }), [...Array(9)].map((_, i) => [5.2 + i * 0.9, -3.4, 0.45]).concat([...Array(8)].map((_, i) => [6.2, -3.6 - i * 0.9, 0.45]))));
-  const capG = new THREE.CylinderGeometry(0.2, 0.2, 0.6, 14); capG.rotateX(Math.PI / 2);
-  g.add(instances(capG, mat(0x1a1a1c, { metalness: 0.7, roughness: 0.3 }), [...Array(7)].map((_, i) => [6.2 + i * 1.0, -11.2, 0.46])));
-  // ---- socket CPU ----
-  const sock = new THREE.Group(); sock.position.set(9.5, -7.5, 0.16);
-  sock.add(box(5.2, 5.6, 0.35, PLASTIC(0x1c1c1e), 0, 0, 0.17, 0.1));
-  const pinTex = cachedTex('pins', () => textTexture((ctx, W2, H2) => { ctx.fillStyle = '#2b2617'; ctx.fillRect(0, 0, W2, H2); ctx.fillStyle = '#d8b356'; for (let y = 5; y < H2; y += 7) for (let x = 5; x < W2; x += 7) ctx.fillRect(x, y, 3, 3); ctx.fillStyle = '#2b2617'; ctx.fillRect(W2 * 0.35, H2 * 0.35, W2 * 0.3, H2 * 0.3); }, 256, 256));
-  sock.add(label(3.9, 3.9, pinTex, 0, 0, 0.36));
-  // khung giữ (load plate) + cần gạt
-  const lp = new THREE.Shape(); lp.moveTo(-2.6, -2.8); lp.lineTo(2.6, -2.8); lp.lineTo(2.6, 2.8); lp.lineTo(-2.6, 2.8); lp.lineTo(-2.6, -2.8);
-  const lph = new THREE.Path(); lph.moveTo(-1.95, -2.15); lph.lineTo(-1.95, 2.15); lph.lineTo(1.95, 2.15); lph.lineTo(1.95, -2.15); lph.lineTo(-1.95, -2.15); lp.holes.push(lph);
-  const plate = extrude(lp, 0.12, METAL(), 0.02); plate.position.z = 0.4; sock.add(plate);
-  sock.add(cyl(0.08, 5.4, NICKEL(), 2.95, 0, 0.5, 'y', 10), box(0.5, 0.2, 0.25, NICKEL(), 3.05, -2.75, 0.5));
-  [[-2.4, 2.6], [2.4, 2.6], [-2.4, -2.6], [2.4, -2.6]].forEach(([x, y]) => sock.add(cyl(0.18, 0.2, NICKEL(), x, y, 0.5, 'z', 12)));
-  g.add(sock);
-  // lỗ bắt tản (4 lỗ)
-  const mh = intel ? 3.75 : [4.5, 5.4];
-  (intel ? [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => [9.5 + a * 3.75, -7.5 + b * 3.75]) : [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => [9.5 + a * 2.7, -7.5 + b * 4.5])).forEach(([x, y]) => g.add(cyl(0.38, 0.05, NICKEL(), x, y, 0.19, 'z', 16)));
-  // ---- khe RAM (4 khe, chốt 2 đầu) ----
-  [16.0, 16.9, 17.8, 18.7].forEach((x, i) => {
-    g.add(box(0.62, 13.3, 0.85, PLASTIC(i % 2 ? 0x24272c : 0x4d525a), x, -7.5, 0.59, 0.08));
-    g.add(box(0.15, 12.6, 0.05, mat(0x050505), x, -7.5, 1.03));
-    g.add(box(0.72, 0.7, 1.25, PLASTIC(0xe5e7ea), x, -0.55, 0.8, 0.1), box(0.72, 0.7, 1.25, PLASTIC(0xe5e7ea), x, -14.45, 0.8, 0.1));
-    if (part.rgbSlots !== false && i % 2 === 0) g.add(box(0.66, 13.2, 0.08, METAL(), x, -7.5, 0.18));
-  });
-  // ---- đầu nguồn 24-pin, 8-pin, quạt ----
-  g.add(box(1.1, 5.4, 1.25, PLASTIC(0x121212), 22.9, -10, 0.78, 0.08));
-  g.add(instances(new THREE.BoxGeometry(0.32, 0.32, 0.05), mat(0x050505), [...Array(24)].map((_, i) => [22.65 + (i % 2) * 0.48, -12.5 + Math.floor(i / 2) * 0.43, 1.42])));
-  g.add(box(2.1, 1.1, 1.25, PLASTIC(0x121212), 5.6, -0.8, 0.78, 0.08));
-  g.add(instances(new THREE.BoxGeometry(0.32, 0.32, 0.05), mat(0x050505), [...Array(8)].map((_, i) => [4.9 + (i % 4) * 0.46, -1.02 + Math.floor(i / 4) * 0.44, 1.42])));
-  [[12.8, -0.5], [20.4, -0.6], [23.6, -20]].forEach(([x, y]) => g.add(box(1.0, 0.5, 0.6, PLASTIC(0xf2f2f2), x, y, 0.46)));
-  // ---- khe M.2 + tản M.2 thứ 2 ----
-  g.add(box(0.55, 2.3, 0.45, PLASTIC(0x111111), 5.6, -12.6, 0.38), cyl(0.28, 0.35, NICKEL(), 13.9, -12.6, 0.34, 'z', 14));
-  const m2hs = box(9.0, 2.6, 0.55, hsM, 9.6, part.form === 'ATX' ? -21.0 : -20.6, 0.45, 0.2); g.add(m2hs);
-  g.add(label(5, 1.1, simpleText([{ t: 'M.2  SHIELD', font: 'bold 60px Segoe UI', color: '#eee' }], {}, 512, 110), 9.6, m2hs.position.y, 0.74));
-  // ---- khe PCIe: x16 bọc thép + x1 + x16 phụ ----
-  const pcieY = -16;
-  g.add(box(8.9, 0.85, 1.15, PLASTIC(0x16171a), 8.45, pcieY, 0.73, 0.05));
-  g.add(box(9.1, 0.95, 1.0, NICKEL(), 8.45, pcieY, 0.72, 0.06));
-  g.add(box(8.5, 0.18, 0.06, mat(0x050505), 8.45, pcieY, 1.23));
-  g.add(box(0.6, 1.2, 1.2, PLASTIC(0xe5e7ea), 13.2, pcieY, 0.75, 0.1));
-  g.add(box(2.5, 0.8, 1.1, PLASTIC(0x16171a), 5.25, -19.0, 0.71, 0.05));
-  if (part.form === 'ATX') { g.add(box(8.9, 0.8, 1.1, PLASTIC(0x2a2d33), 8.45, -25.6, 0.71, 0.05)); g.add(box(2.5, 0.8, 1.1, PLASTIC(0x16171a), 5.25, -23.4, 0.71, 0.05)); }
-  // ---- chipset: tấm tản lớn có logo ----
-  const cs = box(6.2, 6.0, 0.75, hsM, 17.6, part.form === 'ATX' ? -22.5 : -19.6, 0.55, 0.35); g.add(cs);
-  g.add(label(4.6, 1.4, simpleText([{ t: part.chipset || '', font: 'bold 72px Segoe UI, Arial', color: '#f2f2f2' }], {}, 512, 140), 17.6, cs.position.y + 0.6, 0.94));
-  if (part.accent !== undefined) { const rl = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.12, 0.1), new THREE.MeshStandardMaterial({ color: 0x3a3a3e, emissive: acc, emissiveIntensity: 0.25 })); rl.position.set(17.6, cs.position.y - 1.6, 0.95); rl.name = 'rgb'; g.add(rl); }
-  // ---- SATA (xếp chồng, quay ngang), pin CMOS, audio, header ----
-  for (let i = 0; i < 4; i++) { g.add(box(0.95, 1.05, 0.85, PLASTIC(0x111111), 23.7, -15.0 - i * 1.25, 0.5, 0.05)); g.add(box(0.5, 0.18, 0.05, mat(0x050505), 23.8, -15.0 - i * 1.25, 0.94)); }
-  g.add(cyl(1.0, 0.32, NICKEL(), 13, part.form === 'ATX' ? -17.8 : -22.4, 0.32, 'z', 32));
-  const audioCap = new THREE.CylinderGeometry(0.32, 0.32, 0.9, 16); audioCap.rotateX(Math.PI / 2);
-  g.add(instances(audioCap, mat(0xd4af37, { metalness: 0.7, roughness: 0.3 }), [[1.3, -H + 2.0, 0.6], [2.2, -H + 2.0, 0.6], [3.1, -H + 2.0, 0.6], [1.3, -H + 3.1, 0.6], [2.2, -H + 3.1, 0.6]]));
-  g.add(box(1.8, 0.6, 0.75, PLASTIC(0x111111), 20.5, -H + 1.0, 0.5), box(1.6, 0.6, 0.75, PLASTIC(0x111111), 15.4, -H + 1.0, 0.5), box(1.3, 0.6, 0.75, PLASTIC(0x111111), 11, -H + 1.0, 0.5));
+  const H = boardH(part.form), W = BOARD_W, rect = [0, 0, W, H];
+  const map = photo(`mb_${key}.jpg`);
+  const nrm = TEX_OPTS.small ? null : photo(`mb_${key}_n.jpg`, { srgb: false });
+  const pcbM = new THREE.MeshStandardMaterial({ color: 0xb4b4b4, map, normalMap: nrm, normalScale: new THREE.Vector2(0.55, 0.55), roughness: 0.68, metalness: 0.05, envMapIntensity: 0.6 });
+  const metM = new THREE.MeshStandardMaterial({ color: 0xb8b8b8, map, normalMap: nrm, normalScale: new THREE.Vector2(0.35, 0.35), roughness: 0.5, metalness: 0.3, envMapIntensity: 0.7 });
+  const plM = new THREE.MeshStandardMaterial({ color: 0xb4b4b4, map, roughness: 0.6, metalness: 0.05, envMapIntensity: 0.6 });
+  // tấm mạch: mặt trên là ảnh thật, mép và mặt dưới màu PCB
+  const edge = PCB(0x141518);
+  const pcb = reliefBox(0, 0, W, H, 0.16, [edge, edge, edge, edge, pcbM, edge], rect, 0, 0);
+  g.add(pcb);
+  T.relief.forEach(([x, y, w, h, d, k]) => g.add(reliefBox(x, y, w, h, d, k === 'm' ? metM : plM, rect, 0.16)));
+  // socket: dùng ảnh socket thật nếu khác loại, nếu cùng loại thì nổi khối socket trên ảnh
+  const [cx, cy] = T.cpu;
+  const need = part.socket && part.socket !== T.sock && !(T.sock === 'LGA1700' && part.socket === 'LGA1851');
+  if (need && SOCK_PHOTO[part.socket]) {
+    const [img, sw, sh] = SOCK_PHOTO[part.socket];
+    // che vùng socket cũ của ảnh bằng màu PCB
+    g.add(box(Math.max(sw, T.sockBox[0] + 0.6), Math.max(sh, T.sockBox[1] + 0.6), 0.03, PCB(0x17181b), cx, -cy, 0.175));
+    const sm = new THREE.MeshStandardMaterial({ map: photo(img), roughness: 0.38, metalness: 0.55 });
+    const sb = reliefBox(cx - sw / 2, cy - sh / 2, sw, sh, 0.3, sm, [cx - sw / 2, -(cy - sh / 2), sw, sh], 0.16, 0.05); g.add(sb);
+    // cần gạt
+    g.add(cyl(0.07, sh * 0.82, NICKEL(), cx + sw / 2 + 0.25, -cy, 0.38, 'y', 10));
+  } else g.add(reliefBox(cx - T.sockBox[0] / 2, cy - T.sockBox[1] / 2, T.sockBox[0], T.sockBox[1], 0.3, plM, rect, 0.16, 0.05));
+  const v = (x, y, z) => new THREE.Vector3(x, -y, z);
+  g.userData.anchors = {
+    cpu: v(cx, cy, 0.46), ram: v(T.ram[0], T.ram[1], 1.06), m2: v(T.m2[0], T.m2[1], T.m2[2]), gpu: v(T.gpu[0], T.gpu[1], 1.26),
+    'c-24pin': v(T.p24[0], T.p24[1], 1.4), 'c-cpu8': v(T.p8[0], T.p8[1], 1.4), 'c-fp': v(T.fp[0], T.fp[1], 1.0), 'c-sata-mb': v(T.sata[0], T.sata[1], 1.0),
+  };
+  g.userData.ramPitch = T.pitch;
+  g.userData.template = key;
   return g;
 }
 
@@ -347,25 +359,49 @@ export const BOARD_ANCHORS = {
 };
 
 // ======================= CPU (gốc ở giữa socket) =======================
+// Ảnh chụp thật của CPU; dòng tên mẫu được xoá khỏi ảnh và vẽ lại đúng CPU đang chọn.
+function cpuTexture(part, intel) {
+  return photoDraw(intel ? 'cpu_intel.jpg' : 'cpu_amd.jpg', part.id || part.name, (ctx, W, H) => {
+    if (intel) {
+      const n = part.name.replace(/^Intel /, ''); const ultra = /Ultra/.test(n);
+      const tier = ultra ? 'ULTRA ' + (n.match(/Ultra (\d)/) || ['', '5'])[1] : (n.match(/i\d/) || ['i5'])[0];
+      const model = ultra ? n.replace(/Core Ultra \d /, '') : n.replace(/Core /, '');
+      ctx.fillStyle = 'rgba(52,56,62,.88)'; ctx.font = `bold ${Math.round(W * 0.046)}px "Roboto Mono", monospace`;
+      ctx.fillText('INTEL® CORE™ ' + tier, W * 0.262, H * 0.293); ctx.fillText(model, W * 0.262, H * 0.358);
+    } else {
+      ctx.fillStyle = 'rgba(48,50,54,.85)'; ctx.font = `italic bold ${Math.round(W * 0.06)}px Arial, sans-serif`;
+      ctx.fillText(part.name.replace(/Ryzen (\d) /, 'Ryzen $1 '), W * 0.175, H * 0.168);
+    }
+  }, 512);
+}
 export function cpuModel(part) {
   part = { name: '', ...part };
   const g = new THREE.Group();
   const intel = part.brand === 'intel';
+  const am5 = part.socket === 'AM5';
   const w = intel ? 3.75 : 4.0, h = intel ? 4.5 : 4.0;
-  g.add(box(w, h, 0.14, PCB(intel ? 0x1f5a37 : 0x1d4d33), 0, 0, 0.07, 0.05));
-  // linh kiện nhỏ trên đế
-  g.add(instances(new THREE.BoxGeometry(0.12, 0.06, 0.05), GOLD(), [...Array(14)].map((_, i) => [-w / 2 + 0.25 + (i % 7) * (w - 0.5) / 6, (i < 7 ? -1 : 1) * (h / 2 - 0.18), 0.16])));
-  // nắp IHS: Intel hình chữ nhật có tai; AMD AM5 hình "bạch tuộc"
+  const rect = [-w / 2, h / 2, w, h];
+  const tex = cpuTexture(part, intel);
+  const subM = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.15 });
+  const ihsM = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.34, metalness: 0.85, roughnessMap: brushed() });
+  // đế (substrate) – cả mặt trên là ảnh thật
+  const sub = new THREE.Mesh(planarUV(new THREE.BoxGeometry(w, h, 0.14), 0, 0, rect), subM); sub.position.z = 0.07; sub.castShadow = sub.receiveShadow = true; g.add(sub);
+  // nắp IHS nổi lên, cùng ảnh chiếu phẳng nên chữ/logo nằm đúng chỗ
   const s = new THREE.Shape();
-  if (intel) { const a = w * 0.42, b = h * 0.38; s.moveTo(-a, -b); s.lineTo(a, -b); s.lineTo(a, -0.6); s.lineTo(a + 0.25, -0.6); s.lineTo(a + 0.25, 0.6); s.lineTo(a, 0.6); s.lineTo(a, b); s.lineTo(-a, b); s.lineTo(-a, 0.6); s.lineTo(-a - 0.25, 0.6); s.lineTo(-a - 0.25, -0.6); s.lineTo(-a, -0.6); s.lineTo(-a, -b); }
-  else { const a = 1.7; s.moveTo(-a, -a); [[-0.9, -a], [-0.9, -1.95], [-0.45, -1.95], [-0.45, -a], [0.45, -a], [0.45, -1.95], [0.9, -1.95], [0.9, -a], [a, -a], [a, -0.9], [1.95, -0.9], [1.95, -0.45], [a, -0.45], [a, 0.45], [1.95, 0.45], [1.95, 0.9], [a, 0.9], [a, a], [0.9, a], [0.9, 1.95], [0.45, 1.95], [0.45, a], [-0.45, a], [-0.45, 1.95], [-0.9, 1.95], [-0.9, a], [-a, a], [-a, 0.9], [-1.95, 0.9], [-1.95, 0.45], [-a, 0.45], [-a, -0.45], [-1.95, -0.45], [-1.95, -0.9], [-a, -0.9], [-a, -a]].forEach(([x, y]) => s.lineTo(x, y)); }
-  const ihsM = new THREE.MeshStandardMaterial({ color: 0xd2d6db, metalness: 1, roughness: 0.28, roughnessMap: brushed() });
-  const ihs = extrude(s, 0.22, ihsM, 0.03); ihs.position.z = 0.15; g.add(ihs);
-  const t = simpleText(intel
-    ? [{ t: 'intel', font: 'italic bold 64px Arial', color: '#3a4350' }, { t: /Ultra/.test(part.name) ? 'CORE ULTRA' : 'CORE', font: 'bold 38px Arial', color: '#3a4350' }, { t: part.name.replace(/Intel Core (Ultra )?/, ''), font: 'bold 34px Arial', color: '#3a4350' }, { t: 'SRMB' + (part.cores || 8) + 'X  V' + (part.power || 65), font: '26px monospace', color: '#596270' }]
-    : [{ t: 'AMD', font: 'bold 66px Arial', color: '#2a2f36' }, { t: 'RYZEN', font: 'bold 46px Arial', color: '#2a2f36' }, { t: part.name.replace('AMD Ryzen ', ''), font: 'bold 34px Arial', color: '#2a2f36' }, { t: '100-000001084  2451', font: '24px monospace', color: '#4b525c' }], {}, 300, 320);
-  g.add(label(w * 0.74, h * 0.68, t, 0, 0, 0.42, null, { opacity: 0.85 }));
-  const tri = new THREE.Mesh(new THREE.CircleGeometry(0.22, 3), GOLD()); tri.position.set(-w / 2 + 0.3, -h / 2 + 0.3, 0.15); g.add(tri);
+  if (intel) { const a = 1.45, b = 2.06, e = 0.13, q = 0.56; s.moveTo(-a, -b); s.lineTo(a, -b); s.lineTo(a, -q); s.lineTo(a + e, -q); s.lineTo(a + e, q); s.lineTo(a, q); s.lineTo(a, b); s.lineTo(-a, b); s.lineTo(-a, q); s.lineTo(-a - e, q); s.lineTo(-a - e, -q); s.lineTo(-a, -q); s.lineTo(-a, -b); }
+  else if (am5) { const a = 1.7; s.moveTo(-a, -a); [[-0.9, -a], [-0.9, -1.95], [-0.45, -1.95], [-0.45, -a], [0.45, -a], [0.45, -1.95], [0.9, -1.95], [0.9, -a], [a, -a], [a, -0.9], [1.95, -0.9], [1.95, -0.45], [a, -0.45], [a, 0.45], [1.95, 0.45], [1.95, 0.9], [a, 0.9], [a, a], [0.9, a], [0.9, 1.95], [0.45, 1.95], [0.45, a], [-0.45, a], [-0.45, 1.95], [-0.9, 1.95], [-0.9, a], [-a, a], [-a, 0.9], [-1.95, 0.9], [-1.95, 0.45], [-a, 0.45], [-a, -0.45], [-1.95, -0.45], [-1.95, -0.9], [-a, -0.9], [-a, -a]].forEach(([x, y]) => s.lineTo(x, y)); }
+  else { const r = 0.3, a = 1.82; s.moveTo(-a + r, -a); s.lineTo(a - r, -a); s.quadraticCurveTo(a, -a, a, -a + r); s.lineTo(a, a - r); s.quadraticCurveTo(a, a, a - r, a); s.lineTo(-a + r, a); s.quadraticCurveTo(-a, a, -a, a - r); s.lineTo(-a, -a + r); s.quadraticCurveTo(-a, -a, -a + r, -a); }
+  if (intel || !am5) {
+    const ig = new THREE.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 8 });
+    planarUV(ig, 0, 0, rect); const ihs = new THREE.Mesh(ig, ihsM); ihs.position.z = 0.15; ihs.castShadow = ihs.receiveShadow = true; g.add(ihs);
+  } else {
+    // AM5: nắp "bạch tuộc", mặt trên dùng phần kim loại của ảnh Ryzen
+    const ig = new THREE.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2 });
+    planarUV(ig, 0, 0, [-2.05, 2.05, 4.1, 4.1]); const ihs = new THREE.Mesh(ig, ihsM); ihs.position.z = 0.15; ihs.castShadow = true; g.add(ihs);
+    g.add(instances(new THREE.BoxGeometry(0.28, 0.16, 0.04), mat(0x9a7b3a, { metalness: 0.6, roughness: 0.4 }), [[-0.68, -1.83, 0.16], [0.68, -1.83, 0.16], [-0.68, 1.83, 0.16], [0.68, 1.83, 0.16]]));
+  }
+  // tam giác đánh dấu chân số 1 (căn đúng với dấu trên socket)
+  const tri = new THREE.Mesh(new THREE.CircleGeometry(0.2, 3), GOLD()); tri.rotation.z = Math.PI / 4; tri.position.set(-w / 2 + 0.28, -h / 2 + 0.28, 0.146); g.add(tri);
   return g;
 }
 
@@ -473,7 +509,10 @@ export function ramModel(part) {
   const brandT = simpleText([{ t: (part.label || '').toUpperCase(), font: 'bold 64px Segoe UI, Arial', color: lt ? '#1e1e1e' : '#f0f0f0' }, { t: `${ddr5 ? 'DDR5' : 'DDR4'} · ${part.size / 2}GB · ${part.speed || ''}`, font: 'bold 34px Arial', color: lt ? '#555' : '#9aa0a8' }], {}, 1024, 180);
   [-0.9, 0.9].forEach((dx) => {
     const s = new THREE.Group(); s.position.x = dx;
-    s.add(box(0.12, 13.3, 3.0, PCB(0x15412a), 0, 0, 1.5));
+    const pm = new THREE.MeshStandardMaterial({ map: photo(ddr5 ? 'ram_ddr5.jpg' : 'ram_ddr4.jpg'), roughness: 0.5, metalness: 0.2 });
+    const pcbG = new THREE.BoxGeometry(0.12, 13.3, 3.0); const pe = PCB(0x15412a);
+    const pc = new THREE.Mesh(pcbG, [pm, pm, pe, pe, pe, pe]); pc.position.z = 1.5; pc.material[0].map.rotation = Math.PI / 2; pc.material[0].map.center.set(0.5, 0.5);
+    s.add(pc);
     // chân cắm vàng
     s.add(instances(new THREE.BoxGeometry(0.13, 0.17, 0.42), GOLD(), [...Array(36)].map((_, i) => [0, -6.3 + i * 0.36, 0.22])));
     const sp = new THREE.Mesh(spreader, sprM); sp.position.set(-0.29, 0, 0.35); sp.castShadow = true; s.add(sp);
@@ -494,16 +533,19 @@ export function m2Model(part) {
   const g = new THREE.Group();
   const isSam = /samsung|990|980/i.test(part.name), isWD = /wd|sn\d/i.test(part.name);
   g.add(box(8.0, 2.2, 0.08, PCB(0x0d0d0d), 0, 0, 0.04));
-  g.add(instances(new THREE.BoxGeometry(0.11, 0.3, 0.09), GOLD(), [...Array(14)].map((_, i) => [-3.92, -0.95 + i * 0.146, 0.045])));
-  g.add(box(1.3, 1.3, 0.14, PLASTIC(0x202022), -2.4, 0, 0.15), box(1.5, 1.5, 0.14, PLASTIC(0x202022), 0.1, 0, 0.15), box(1.5, 1.5, 0.14, PLASTIC(0x202022), 2.2, 0, 0.15));
-  const t = textTexture((ctx, W, H) => {
-    ctx.fillStyle = isSam ? '#0b0b0c' : isWD ? '#111' : '#1a2440'; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = isSam ? '#d8d8d8' : '#fff'; ctx.font = 'bold 48px Segoe UI, Arial'; ctx.fillText(isSam ? 'SAMSUNG' : isWD ? 'WD_BLACK' : (part.name.split(' ')[0] || '').toUpperCase(), 20, 60);
-    ctx.font = 'bold 36px Segoe UI'; ctx.fillStyle = isWD ? '#cfcfcf' : '#9fd3ff'; ctx.fillText((part.name.match(/\d{3,4}\s?(PRO|EVO|X|Plus)?/i) || [''])[0] + '  NVMe™ M.2', 20, 110);
-    ctx.font = '26px monospace'; ctx.fillStyle = '#9a9a9a'; ctx.fillText((part.size >= 1000 ? part.size / 1000 + 'TB' : part.size + 'GB') + '  PCIe 4.0 x4  ·  S/N 3R2NJ0X', 20, 150);
-    ctx.fillStyle = '#fff'; for (let i = 0; i < 40; i++) ctx.fillRect(560 + i * 9, 30, i % 3 ? 3 : 5, 60);
-  }, 1024, 180);
-  g.add(label(6.8, 1.9, t, 0.45, 0, 0.23));
+  // ảnh SSD M.2 thật (mạch, chip, chân vàng) + tem nhãn vẽ lại theo đúng mẫu
+  const t = photoDraw('m2.jpg', part.id || part.name, (ctx, W, H, img) => {
+    ctx.save(); ctx.translate(W, H); ctx.rotate(Math.PI); ctx.drawImage(img, 0, 0, W, H); ctx.restore();
+    const x0 = W * 0.17, y0 = H * 0.13, w = W * 0.8, h = H * 0.74;
+    ctx.fillStyle = isSam ? '#0b0b0c' : isWD ? '#121212' : '#1a2440'; ctx.fillRect(x0, y0, w, h);
+    ctx.fillStyle = isSam ? '#e0e0e0' : '#fff'; ctx.font = `bold ${H * 0.2}px Segoe UI, Arial`;
+    ctx.fillText(isSam ? 'SAMSUNG' : isWD ? 'WD_BLACK' : (part.name.split(' ')[0] || '').toUpperCase(), x0 + W * 0.03, y0 + h * 0.36);
+    ctx.font = `bold ${H * 0.15}px Segoe UI`; ctx.fillStyle = isWD ? '#cfcfcf' : '#9fd3ff';
+    ctx.fillText((part.name.match(/\d{3,4}\s?(PRO|EVO|X|Plus)?/i) || [''])[0] + '  NVMe™ M.2', x0 + W * 0.03, y0 + h * 0.66);
+    ctx.font = `${H * 0.1}px monospace`; ctx.fillStyle = '#9a9a9a';
+    ctx.fillText((part.size >= 1000 ? part.size / 1000 + 'TB' : part.size + 'GB') + '  PCIe x4', x0 + W * 0.03, y0 + h * 0.9);
+  }, 1024);
+  g.add(label(8.0, 2.2, t, 0, 0, 0.085, null, { transparent: false, roughness: 0.5, metalness: 0.2 }));
   return g;
 }
 
@@ -567,28 +609,22 @@ export const PSU_POS = new THREE.Vector3(-13.6, 4.9, -2.4);
 export function psuModel(part) {
   part = { name: '', ...part };
   const g = new THREE.Group();
-  const body = mat(0x17181b, { metalness: 0.6, roughness: 0.45, roughnessMap: grain() });
-  g.add(box(15, 8.6, 15, body, 0, 0, 0, 0.35));
-  // nhãn thông số bên hông
+  const face = (n, o = {}) => new THREE.MeshStandardMaterial({ map: photo(n), roughness: 0.55, metalness: 0.35, ...o });
+  const black = mat(0x141518, { metalness: 0.5, roughness: 0.5, roughnessMap: grain() });
+  // 6 mặt: +x cổng modular, -x ổ cắm AC + công tắc, +y nóc, -y quạt, +z mặt logo (hướng người xem), -z nhãn thông số
+  const mats = [face('psu_modular.jpg'), face('psu_ac.jpg'), black, face('psu_fan.jpg'), face('psu_side.jpg'), face('psu_label.jpg')];
+  const geo = new THREE.BoxGeometry(15, 8.6, 15);
+  const m = new THREE.Mesh(geo, mats); m.castShadow = m.receiveShadow = true; g.add(m);
+  // nhãn công suất/hiệu suất theo đúng mẫu đang chọn (dán ở nóc)
   const t = textTexture((ctx, W, H) => {
     ctx.fillStyle = '#121316'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 92px Segoe UI, Arial'; ctx.fillText((part.brand || part.name.split(' ')[0]).toUpperCase(), 40, 120);
     ctx.font = 'bold 150px Segoe UI'; ctx.fillText(part.watt + 'W', 40, 290);
     const effc = /PLATINUM/.test(part.eff) ? '#d9dde3' : /GOLD/.test(part.eff) ? '#e8c35a' : /TITANIUM/.test(part.eff) ? '#9fb2c8' : '#cd7f32';
     ctx.fillStyle = effc; ctx.beginPath(); ctx.arc(W - 150, 210, 100, 0, 7); ctx.fill(); ctx.fillStyle = '#111'; ctx.font = 'bold 40px Arial'; ctx.textAlign = 'center'; ctx.fillText('80', W - 150, 190); ctx.font = 'bold 24px Arial'; ctx.fillText('PLUS', W - 150, 222); ctx.fillText((part.eff || '').replace('80 PLUS ', ''), W - 150, 252);
-    ctx.textAlign = 'left'; ctx.fillStyle = '#9aa0a8'; ctx.font = '28px monospace'; ctx.fillText('FULLY MODULAR  ·  ATX 3.1  ·  PCIe 5.1', 40, 380); ctx.fillText('+12V ' + Math.round(part.watt / 12) + 'A   +5V 22A   +3.3V 22A', 40, 425);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#9aa0a8'; ctx.font = '28px monospace'; ctx.fillText(part.name, 40, 380); ctx.fillText('+12V ' + Math.round(part.watt / 12) + 'A   +5V 22A   +3.3V 22A', 40, 425);
   }, 1024, 480);
-  g.add(label(13.4, 6.3, t, 0, 0, 7.53));
-  // lưới quạt tổ ong ở mặt dưới (hướng xuống) + quạt bên trong
-  const gr = perforated(13.4, 13.4, 0x222428, 'hex', [10, 10]); gr.rotation.x = Math.PI / 2; gr.position.y = -4.33; g.add(gr);
-  const f = fan(12, { frame: 0x111111, blade: 0x1a1a1a, thick: 2 }); f.rotation.x = Math.PI / 2; f.position.y = -3.2; g.add(f);
-  // mặt cắm dây modular (phía trước, +x)
-  g.add(box(0.2, 7.2, 13, PLASTIC(0x0c0c0c), 7.56, 0, 0));
-  const sockets = [[2.2, -4.6, 2.6], [2.2, -1.6, 2.6], [2.2, 1.4, 1.8], [2.2, 3.8, 1.8], [-0.3, -4.6, 1.8], [-0.3, -2.4, 1.8], [-0.3, 0.2, 1.8], [-0.3, 2.6, 1.8], [-2.6, -4, 1.4], [-2.6, -1.8, 1.4], [-2.6, 0.6, 1.4]];
-  sockets.forEach(([y, z, w]) => g.add(box(0.25, 1.0, w, PLASTIC(0x050505), 7.66, y, z, 0.05)));
-  // mặt sau: ổ cắm AC + công tắc + lưới
-  g.add(box(0.3, 2.2, 3.2, PLASTIC(0x111111), -7.6, 2.2, -3.4, 0.1), box(0.3, 1.4, 0.9, mat(0xa42020, { roughness: 0.4 }), -7.62, -1.4, -3.4, 0.1));
-  const rg = perforated(10, 7, 0x2a2c30, 'hex', [8, 6]); rg.rotation.y = -Math.PI / 2; rg.position.set(-7.6, 0, 2.6); g.add(rg);
+  g.add(label(10.5, 4.9, t, 0, 4.31, 0, [-Math.PI / 2, 0, 0]));
   return g;
 }
 export const PSU_OUT = new THREE.Vector3(7.6, 2.5, 4);
@@ -598,19 +634,12 @@ export const HDD_POS = new THREE.Vector3(13.2, 4.8, -1.85);
 export function hddModel(part) {
   part = { name: '', ...part };
   const g = new THREE.Group();
-  const al = mat(0xb6bcc3, { metalness: 0.9, roughness: 0.38, roughnessMap: brushed() });
-  g.add(box(14.7, 2.6, 10.2, al, 0, 0, 0, 0.2));
-  g.add(box(14.4, 0.3, 9.9, PCB(0x0e3b22), 0, -1.4, 0));
-  const t = textTexture((ctx, W, H) => {
-    ctx.fillStyle = '#f2f2f2'; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = part.brand === 'Seagate' ? '#2c9a3c' : '#0b3d91'; ctx.fillRect(0, 0, W, 90);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 60px Segoe UI, Arial'; ctx.fillText((part.brand || 'HDD').toUpperCase(), 30, 66);
-    ctx.fillStyle = '#111'; ctx.font = 'bold 54px Segoe UI'; ctx.fillText(part.size >= 1000 ? part.size / 1000 + 'TB' : part.size + 'GB', 30, 170);
-    ctx.font = '28px monospace'; ctx.fillStyle = '#444'; ctx.fillText('7200 RPM · SATA 6Gb/s · 3.5"', 30, 220); ctx.fillText('MODEL: ' + (part.name.match(/\w+\d+\w*/) || ['HDD'])[0], 30, 262);
-    for (let i = 0; i < 46; i++) { ctx.fillStyle = '#111'; ctx.fillRect(560 + i * 8, 300, i % 3 ? 3 : 5, 70); }
-  }, 1024, 400);
-  g.add(label(11, 4.3, t, -0.6, 1.31, 0, [-Math.PI / 2, 0, 0]));
-  [[-6.8, -4.5], [6.8, -4.5], [-6.8, 4.5], [6.8, 4.5], [0, -4.5], [0, 4.5]].forEach(([x, z]) => g.add(cyl(0.25, 0.06, NICKEL(), x, 1.32, z, 'y', 12)));
+  const al = mat(0xaeb4bb, { metalness: 0.85, roughness: 0.4, roughnessMap: brushed() });
+  const top = new THREE.MeshStandardMaterial({ map: photo('hdd_top.jpg'), roughness: 0.42, metalness: 0.55 });
+  const bot = new THREE.MeshStandardMaterial({ map: photo('hdd_bottom.jpg'), roughness: 0.5, metalness: 0.3 });
+  const m = new THREE.Mesh(new THREE.BoxGeometry(14.7, 2.6, 10.2), [al, al, top, bot, al, al]); m.castShadow = m.receiveShadow = true; g.add(m);
+  // dung lượng/hãng theo mẫu đang chọn
+  g.add(label(3.2, 0.9, simpleText([{ t: (part.brand || '') + ' ' + (part.size >= 1000 ? part.size / 1000 + 'TB' : part.size + 'GB'), font: 'bold 64px Segoe UI, Arial', color: '#1b1b1b' }], { bg: '#f4f4f4' }, 512, 140), 3.6, 1.315, -2.6, [-Math.PI / 2, 0, 0]));
   g.add(box(0.3, 1.2, 3.2, PLASTIC(0x111111), -7.45, 0, 2.5));
   g.userData.port = new THREE.Vector3(-7.5, 0, 2.5);
   return g;
@@ -626,7 +655,7 @@ export function ssd25Model(part) {
     ctx.fillStyle = sam ? '#ff8a00' : '#9fe'; ctx.font = 'bold 56px Segoe UI'; ctx.fillText(sam ? 'SSD 870 EVO' : 'MX500 SSD', 40, 200);
     ctx.fillStyle = '#bbb'; ctx.font = '34px Segoe UI'; ctx.fillText(((part.name.match(/\d+(GB|TB)/) || [''])[0]) + '  ·  SATA III 2.5"', 40, 270);
   }, 1024, 340);
-  g.add(label(7.6, 2.6, t, 1.5, -0.44, 0, [-Math.PI / 2, 0, 0]));
+  g.add(sam ? label(9.9, 6.9, photo('ssd25.jpg'), 1.5, -0.44, 0, [-Math.PI / 2, 0, 0], { transparent: false, metalness: 0.4, roughness: 0.45 }) : label(7.6, 2.6, t, 1.5, -0.44, 0, [-Math.PI / 2, 0, 0]));
   g.add(box(0.3, 0.6, 3.0, PLASTIC(0x111111), -3.55, -0.8, 2.3));
   g.userData.port = new THREE.Vector3(-3.6, -0.8, 2.3);
   return g;

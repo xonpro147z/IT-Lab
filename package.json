@@ -1,6 +1,6 @@
 {
   "name": "tinhoclab",
-  "version": "1.12.2",
+  "version": "1.13.0",
   "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
   "main": "main.js",
   "scripts": {
@@ -82,7 +82,10 @@
       ],
       "icon": "build/icon.png",
       "category": "public.app-category.education",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "dmg": {
       "title": "TinHocLab ${version}"
