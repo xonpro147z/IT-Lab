@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Hướng nghiệp IT – TinHocLab</title>
+<link rel="stylesheet" href="../ui/mono.css">
+<link rel="stylesheet" href="../ui/lab.css">
+<link rel="stylesheet" href="career.css">
+</head>
+<body class="lab">
+<header class="hd">
+  <span class="badge" style="background:var(--green);color:#fff">TH-G</span>
+  <span class="ttl">HƯỚNG NGHIỆP <em>//</em> NGHỀ NGHIỆP TRONG NGÀNH TIN HỌC &amp; IT</span>
+  <span class="grow"></span>
+  <button class="hbtn" data-nav="../index.html">‹ TINHOCLAB</button>
+</header>
+<nav class="tabs" id="tabs">
+  <a data-p="map" class="on">01 · BẢN ĐỒ NGHỀ</a>
+  <a data-p="quiz">02 · EM HỢP VỚI NGHỀ NÀO?</a>
+  <a data-p="me">03 · HỒ SƠ NĂNG LỰC</a>
+  <a data-p="road">04 · LỘ TRÌNH</a>
+</nav>
+<main class="wrap">
+  <section class="pane" id="p-map">
+    <h2 class="sh" style="--sc:var(--green)"><span class="no">01</span><span class="tx">14 NGHỀ TRONG NGÀNH TIN HỌC</span><span class="rt">BẤM VÀO MỘT NGHỀ ĐỂ XEM CHI TIẾT</span></h2>
+    <div class="chips" id="chips"></div>
+    <div class="mapwrap"><div class="cgrid" id="cgrid"></div><aside class="detail" id="detail"></aside></div>
+  </section>
+  <section class="pane" id="p-quiz" hidden>
+    <h2 class="sh" style="--sc:var(--blue)"><span class="no">02</span><span class="tx">EM HỢP VỚI NGHỀ NÀO?</span><span class="rt">12 CÂU · KHÔNG CÓ ĐÚNG SAI</span></h2>
+    <div id="quiz"></div>
+  </section>
+  <section class="pane" id="p-me" hidden>
+    <h2 class="sh" style="--sc:var(--orange)"><span class="no">03</span><span class="tx">HỒ SƠ NĂNG LỰC CỦA EM</span><span class="rt" id="meName"></span></h2>
+    <div id="me"></div>
+  </section>
+  <section class="pane" id="p-road" hidden>
+    <h2 class="sh" style="--sc:var(--pink)"><span class="no">04</span><span class="tx">TỪ PHÒNG MÁY ĐẾN NGHỀ NGHIỆP</span><span class="rt">LỘ TRÌNH THAM KHẢO</span></h2>
+    <div id="road"></div>
+  </section>
+</main>
+<script src="../common.js"></script>
+<script src="../ui/motion.js"></script>
+<script type="module" src="career.js"></script>
+</body>
+</html>

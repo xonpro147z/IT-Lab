@@ -36,7 +36,7 @@ body { margin: 0; display: flex; flex-direction: column; overflow: hidden; backg
 .h2 { font-size: 34px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 20px; display: flex; align-items: center; gap: 12px; }
 .muted { color: var(--ink3); }
 .eyebrow { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .02em; background: var(--g); -webkit-background-clip: text; background-clip: text; color: transparent; text-decoration: none; text-transform: uppercase; }
-.grad { background: linear-gradient(90deg, #0a84ff, #5e5ce6 40%, #bf5af2 70%, #ff375f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.grad { color: var(--ink, #111); }
 
 /* trang chính */
 .hero { text-align: center; padding: 64px 0 40px; position: relative; }

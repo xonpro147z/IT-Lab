@@ -1,0 +1,83 @@
+/* TinHocLab Scratch – khung kiểu tài liệu (đơn cách, trắng, viền xám) bao quanh trình soạn Scratch 3 */
+:root {
+  --bg: #ffffff; --bg2: #f7f7f7; --bg3: #efefef; --ink: #111111; --ink2: #3d3d3d; --mute: #767676;
+  --line: #e2e2e2; --line2: #cfcfcf; --ok: #0a7a3a; --okbg: #eaf6ee; --bad: #c0261e; --badbg: #fdeeed;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --topH: 48px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+button { font: inherit; color: inherit; }
+
+#top { height: var(--topH); display: flex; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--line); font: 13px/1 var(--mono); background: var(--bg); position: relative; z-index: 30; }
+#top .tb { border: 0; background: none; cursor: pointer; padding: 6px 4px; color: var(--ink2); }
+#top .tb:hover { color: var(--ink); }
+#top .brand { font-weight: 700; font-size: 15px; letter-spacing: -.2px; }
+#top .brand::before { content: '~/'; color: var(--mute); font-weight: 400; }
+#crumb { color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#crumb b { color: var(--ink); font-weight: 500; }
+#save { color: var(--mute); font-size: 12px; white-space: nowrap; }
+.grow { flex: 1; }
+.btn { border: 1px solid var(--line2); background: var(--bg); padding: 6px 12px; cursor: pointer; border-radius: 4px; white-space: nowrap; font: 13px var(--mono); }
+.btn:hover { background: var(--bg2); }
+.btn small { color: var(--mute); margin-left: 4px; }
+.btn.pri { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.pri:hover { background: #333; }
+.btn:disabled { opacity: .45; cursor: default; }
+
+#wrap { position: relative; height: calc(100vh - var(--topH)); display: flex; }
+#scratch-root { flex: 1; min-width: 0; height: 100%; position: relative; }
+/* scratch-gui dùng chiều cao 100% của vùng chứa */
+#scratch-root > div { height: 100% !important; }
+
+/* bảng thử thách bên phải */
+#side { width: 310px; flex: none; border-left: 1px solid var(--line); background: var(--bg); display: flex; flex-direction: column; font: 13px/1.65 var(--mono); }
+#side[hidden] { display: none; }
+#side .sh { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+#side .sh b { flex: 1; font-size: 14px; }
+#side .x { border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--mute); }
+#sBody { padding: 14px; overflow: auto; flex: 1; color: var(--ink2); }
+#sBody p { margin: 0 0 12px; }
+#sBody b { color: var(--ink); }
+#sBody code { background: var(--bg2); border: 1px solid var(--line); padding: 0 4px; border-radius: 3px; }
+#sBody .codebox { background: var(--bg2); border: 1px solid var(--line2); padding: 10px 12px; margin: 0 0 12px; white-space: pre-wrap; }
+#sBody .lv { color: var(--mute); font-size: 12px; margin-bottom: 8px; }
+#sBody details { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+#sBody summary { cursor: pointer; color: var(--ink); }
+#sRes { border-top: 1px solid var(--line); padding: 12px 14px; max-height: 45%; overflow: auto; }
+#sRes:empty { display: none; }
+#sRes .sum { padding: 8px 10px; border: 1px solid var(--line2); margin-bottom: 8px; font-weight: 700; }
+#sRes .sum.ok { background: var(--okbg); border-color: #b9e0c6; color: var(--ok); }
+#sRes .sum.bad { background: var(--badbg); border-color: #f2c6c3; color: var(--bad); }
+#sRes .it { display: flex; gap: 8px; padding: 3px 0; }
+#sRes .it i { font-style: normal; width: 14px; flex: none; }
+#sRes .it.ok i { color: var(--ok); }
+#sRes .it.bad i { color: var(--bad); }
+#sRes .it small { display: block; color: var(--mute); }
+
+/* danh sách thử thách */
+#list { position: absolute; left: 0; top: 0; bottom: 0; width: 420px; max-width: 100%; z-index: 600; background: var(--bg); border-right: 1px solid var(--line); overflow: auto; font: 13px/1.6 var(--mono); box-shadow: 8px 0 30px rgba(0,0,0,.06); }
+#list[hidden] { display: none; }
+#list h3 { margin: 0; padding: 16px 18px 6px; font-size: 12px; color: var(--mute); font-weight: 400; }
+#list .intro { padding: 16px 18px; border-bottom: 1px solid var(--line); color: var(--ink2); }
+#list .intro b { color: var(--ink); font-size: 16px; display: block; margin-bottom: 4px; }
+#list a { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; padding: 9px 18px; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink); cursor: pointer; }
+#list a:hover { background: var(--bg2); }
+#list a .st { color: var(--line2); }
+#list a.done .st { color: var(--ok); }
+#list a small { color: var(--mute); }
+#list a.on { box-shadow: inset 2px 0 0 var(--ink); font-weight: 700; }
+
+#boot { position: absolute; inset: 0; z-index: 700; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font: 13px var(--mono); color: var(--mute); }
+#boot.gone { display: none; }
+.spin { width: 22px; height: 22px; border: 2px solid var(--line); border-top-color: var(--ink); border-radius: 50%; animation: sp 0.8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+#toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px); opacity: 0; transition: .2s; background: var(--ink); color: #fff; padding: 8px 14px; font: 13px var(--mono); border-radius: 4px; z-index: 99; pointer-events: none; }
+#toast.on { opacity: 1; transform: translateX(-50%); }
+
+/* làm dịu màu tím của thanh menu Scratch cho hợp phong cách tối giản */
+#scratch-root [class*="menu-bar_menu-bar_"] { background: #111 !important; font-family: var(--mono); }
+#scratch-root [class*="menu-bar_menu-bar_"] [class*="menu-bar_hoverable_"]:hover,
+#scratch-root [class*="menu-bar_menu-bar_"] [class*="menu-bar_active_"] { background: #333 !important; }
+#scratch-root [class*="menu-bar_menu-bar_"] input { background: #2a2a2a !important; border-color: #444 !important; }
