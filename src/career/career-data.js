@@ -14,7 +14,7 @@ export const ROOMS = {
   py: ['Space · Python', '../space/space.html#/t/python'], web: ['Space · Web', '../space/space.html#/t/web'], cpp: ['Space · C++', '../space/space.html#/t/cpp'],
   scratch: ['Scratch', '../scratch/scratch.html'], net: ['Phòng Mạng', '../network/network.html'], safe: ['An toàn số', '../safety/safety.html'],
   excel: ['Luyện tập Excel', '../office/practice.html#excel'], ppt: ['Luyện tập PowerPoint', '../office/practice.html#powerpoint'], word: ['Luyện tập Word', '../office/practice.html#word'],
-  keys: ['Phím tắt', '../keys/keys.html'], typing: ['Luyện gõ', '../typing/typing.html'], wiki: ['Bách khoa', '../wiki/wiki.html'], ic3: ['Ôn IC3', '../ic3/ic3.html'],
+  keys: ['Phím tắt', '../keys/keys.html'], typing: ['Luyện gõ', '../typing/typing.html'], wiki: ['Bách khoa', '../wiki/wiki.html'], ic3: ['Ôn IC3', '../ic3/world/world.html'],
 };
 export const CAREERS = [
   { id: 'web', g: 'soft', icon: '🌐', name: 'Lập trình viên Web', short: 'Xây dựng trang web và ứng dụng chạy trên trình duyệt.',

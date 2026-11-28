@@ -85,6 +85,125 @@ class TeacherServer {
       for (const f of fs.readdirSync(this.mediaDir)) { const p = path.join(this.mediaDir, f); if (!used.has(f) && Date.now() - fs.statSync(p).mtimeMs > 6 * 3600e3) fs.unlinkSync(p); }
     } catch {}
   }
+
+  // ======================= ĐẤU TRƯỜNG (thi đấu trực tiếp) =======================
+  arenaCreate({ title, qs, time }) {
+    if (!Array.isArray(qs) || !qs.length) throw new Error('Chưa có câu hỏi');
+    let code; do { code = String(100000 + crypto.randomInt(900000)); } while (this.arena && this.arena.code === code);
+    this.arena = { code, title: String(title || 'Đấu trường IC3').slice(0, 80), time: Math.max(5, Math.min(120, +time || 20)), qs: qs.slice(0, 60), qi: -1, phase: 'lobby', players: new Map(), qStart: 0, deadline: 0, created: Date.now(), saved: false };
+    this.onEvent('arena', this.arenaTeacherState());
+    return this.arenaTeacherState();
+  }
+  arenaJoin(d, ip) {
+    const A = this.arena; const name = normName(d.name), cls = normName(d.class).toUpperCase();
+    if (!A || String(d.code || '').trim() !== A.code) return { ok: false, msg: 'Mã phòng không đúng hoặc phòng đã đóng.' };
+    if (!name || !cls) return { ok: false, msg: 'Thiếu họ tên hoặc lớp.' };
+    const key = name.toLowerCase() + '|' + cls;
+    let p = [...A.players.values()].find((x) => x.key === key);
+    if (!p) {
+      if (A.phase === 'end') return { ok: false, msg: 'Trận đấu đã kết thúc.' };
+      if (A.players.size >= 80) return { ok: false, msg: 'Phòng đã đủ người.' };
+      p = { pid: crypto.randomUUID(), key, name, class: cls, look: d.look && typeof d.look === 'object' ? d.look : {}, score: 0, streak: 0, correct: 0, answers: {}, ip, seen: Date.now(), joined: Date.now() };
+      A.players.set(p.pid, p);
+    } else if (d.look && typeof d.look === 'object') p.look = d.look;
+    p.seen = Date.now();
+    this.onEvent('arena', this.arenaTeacherState());
+    return { ok: true, pid: p.pid, code: A.code, title: A.title };
+  }
+  arenaGrade(q, a) {
+    if (a === undefined || a === null) return false;
+    try {
+      switch (q.t) {
+        case 'one': return a === q.a;
+        case 'multi': return Array.isArray(a) && a.length === q.a.length && q.a.every((x) => a.includes(x));
+        case 'yesno': case 'match': return Array.isArray(a) && a.length === q.a.length && a.every((x, i) => x === q.a[i]);
+        case 'order': return Array.isArray(a) && a.length === q.items.length && a.every((x, i) => x === i);
+        case 'hot': return !!a && a.id === (q.img ? 'box' : q.a);
+      }
+    } catch {}
+    return false;
+  }
+  arenaAnswer(d) {
+    const A = this.arena; if (!A || d.code !== A.code) return { ok: false, msg: 'Phòng đã đóng.' };
+    const p = A.players.get(d.pid); if (!p) return { ok: false, kicked: true };
+    this.arenaTick();
+    if (A.phase !== 'question' || +d.qi !== A.qi) return { ok: false, msg: 'Hết giờ trả lời câu này.' };
+    if (p.answers[A.qi]) return { ok: true, dup: true };
+    const now = Date.now(); if (now < A.qStart) return { ok: false, msg: 'Câu hỏi chưa bắt đầu.' };
+    const q = A.qs[A.qi], ok = this.arenaGrade(q, d.ans);
+    const el = Math.min(1, (now - A.qStart) / (A.time * 1000));
+    p.streak = ok ? p.streak + 1 : 0;
+    const pts = ok ? 500 + Math.round(500 * (1 - el)) + (p.streak >= 3 ? 100 : 0) : 0;
+    p.answers[A.qi] = { ans: d.ans, ok, pts, t: now - A.qStart }; p.score += pts; if (ok) p.correct++; p.seen = now;
+    this.arenaTick(); this.onEvent('arena', this.arenaTeacherState());
+    return { ok: true };
+  }
+  arenaTick() {
+    const A = this.arena; if (!A || A.phase !== 'question') return;
+    const active = [...A.players.values()].filter((p) => Date.now() - p.seen < 15000);
+    const all = active.length > 0 && active.every((p) => p.answers[A.qi]);
+    if (Date.now() > A.deadline || all) { A.phase = 'reveal'; A.revealAt = Date.now(); this.onEvent('arena', this.arenaTeacherState()); }
+  }
+  arenaNext() {
+    const A = this.arena; if (!A) return null;
+    this.arenaTick();
+    if (A.phase === 'question') { A.phase = 'reveal'; A.revealAt = Date.now(); }
+    else if (A.qi + 1 >= A.qs.length) return this.arenaEnd();
+    else { A.qi++; A.phase = 'question'; A.qStart = Date.now() + 3500; A.deadline = A.qStart + A.time * 1000 + 800; }
+    this.onEvent('arena', this.arenaTeacherState());
+    return this.arenaTeacherState();
+  }
+  arenaEnd() {
+    const A = this.arena; if (!A) return null;
+    A.phase = 'end';
+    if (!A.saved && A.qi >= 0) {
+      A.saved = true; const n = A.qi + 1;
+      for (const p of A.players.values()) this.addResult({ id: `arena-${A.code}-${p.pid}`, name: p.name, class: p.class, school: '', level: 0, testId: 'ARENA-' + A.code, testTitle: 'Đấu trường: ' + A.title, mode: 'arena', score: Math.round((p.correct / n) * 1000), correct: p.correct, total: n, duration: Math.round((Date.now() - A.created) / 1000), xp: Math.round(p.score / 50), domains: {}, qids: A.qs.slice(0, n).map((q) => q.id), wrong: A.qs.slice(0, n).filter((q, i) => !(p.answers[i] && p.answers[i].ok)).map((q) => q.id), at: Date.now() }, p.ip);
+    }
+    this.onEvent('arena', this.arenaTeacherState());
+    return this.arenaTeacherState();
+  }
+  arenaKick(pid) { if (this.arena) { this.arena.players.delete(pid); this.onEvent('arena', this.arenaTeacherState()); } return this.arenaTeacherState(); }
+  arenaClose() { this.arena = null; this.onEvent('arena', null); return null; }
+  arenaRanked() { return [...this.arena.players.values()].sort((a, b) => b.score - a.score || a.joined - b.joined); }
+  arenaDist() {
+    const A = this.arena, q = A.qs[A.qi]; if (!q) return null;
+    const ps = [...A.players.values()], ans = ps.filter((p) => p.answers[A.qi]);
+    const d = { answered: ans.length, right: ans.filter((p) => p.answers[A.qi].ok).length, n: ps.length };
+    if (q.t === 'one') d.opts = q.o.map((_, i) => ans.filter((p) => p.answers[A.qi].ans === i).length);
+    return d;
+  }
+  arenaTeacherState() {
+    const A = this.arena; if (!A) return null;
+    this.arenaTick();
+    const now = Date.now(), q = A.qs[A.qi] || null;
+    return { code: A.code, title: A.title, phase: A.phase, qi: A.qi, total: A.qs.length, time: A.time, startIn: Math.max(0, A.qStart - now), timeLeft: Math.max(0, A.deadline - now), q, dist: q ? this.arenaDist() : null,
+      cloud: this.cloudStatus ? this.cloudStatus() : null,
+      players: this.arenaRanked().map((p, i) => ({ pid: p.pid, name: p.name, class: p.class, look: p.look, score: p.score, correct: p.correct, rank: i + 1, online: now - p.seen < 15000, net: p.ip === 'internet' ? 'web' : 'lan', answered: !!p.answers[A.qi], last: p.answers[A.qi] || null })) };
+  }
+  arenaStudentState(code, pid) {
+    const A = this.arena; if (!A || A.code !== String(code)) return { ok: false, closed: true, msg: 'Phòng đã đóng.' };
+    const p = A.players.get(pid); if (!p) return { ok: false, kicked: true, msg: 'Em không còn trong phòng.' };
+    p.seen = Date.now();
+    const s = this.arenaPub(p); s.me = this.arenaMe(p); return s;
+  }
+  // phần trạng thái giống nhau cho mọi học sinh (dùng cho LAN và cho Firebase)
+  arenaPub(meP) {
+    const A = this.arena; this.arenaTick();
+    const now = Date.now(), ranked = this.arenaRanked();
+    const pub = (x, i) => ({ pid: x.pid, name: x.name, class: x.class, look: x.look, score: x.score, rank: i + 1, me: x === meP });
+    const s = { ok: true, code: A.code, title: A.title, phase: A.phase, qi: A.qi, total: A.qs.length, time: A.time, startIn: Math.max(0, A.qStart - now), timeLeft: Math.max(0, A.deadline - now), n: ranked.length };
+    if (A.phase === 'lobby' || A.phase === 'end') s.players = ranked.slice(0, 80).map(pub);
+    else s.top = ranked.slice(0, 5).map(pub);
+    if ((A.phase === 'question' && now >= A.qStart) || A.phase === 'reveal') { const q = { ...A.qs[A.qi] }; if (A.phase === 'question') delete q.a; s.q = q; }
+    if (A.phase === 'question' && now < A.qStart) s.qType = A.qs[A.qi].t;
+    if (A.phase === 'reveal') s.dist = this.arenaDist();
+    return s;
+  }
+  arenaMe(p) {
+    const A = this.arena, rank = this.arenaRanked().indexOf(p) + 1;
+    return { pid: p.pid, score: p.score, rank, streak: p.streak, correct: p.correct, answered: !!p.answers[A.qi], last: A.phase === 'reveal' || A.phase === 'end' ? (p.answers[A.qi] ? { ok: p.answers[A.qi].ok, pts: p.answers[A.qi].pts } : { ok: false, pts: 0, none: true }) : null };
+  }
   saveCfg() { writeJSON(path.join(this.dir, 'teacher.json'), this.cfg); }
   get running() { return !!this.server; }
   info() { return { running: this.running, port: HTTP_PORT, ips: lanIPs().map((x) => x.address), room: this.cfg.room, teacher: this.cfg.teacher, count: this.results.length, online: [...this.online.values()].filter((s) => Date.now() - s.at < 60000) }; }
@@ -151,6 +270,13 @@ class TeacherServer {
       if (!MEDIA_RE.test(f) || !fs.existsSync(p)) return json(404, { ok: false });
       res.writeHead(200, { 'Content-Type': MIME[f.split('.').pop()], 'Content-Length': fs.statSync(p).size });
       return fs.createReadStream(p).pipe(res);
+    }
+    if (req.method === 'GET' && u.pathname === '/api/arena/state') return json(200, this.arenaStudentState(u.searchParams.get('code'), u.searchParams.get('pid')));
+    if (req.method === 'POST' && (u.pathname === '/api/arena/join' || u.pathname === '/api/arena/answer')) {
+      let body = '';
+      req.on('data', (c) => { body += c; if (body.length > 2e5) req.destroy(); });
+      req.on('end', () => { let d; try { d = JSON.parse(body); } catch { return json(400, { ok: false }); } json(200, u.pathname.endsWith('join') ? this.arenaJoin(d, ip) : this.arenaAnswer(d)); });
+      return;
     }
     if (req.method === 'GET' && u.pathname === '/api/leaderboard') return json(200, { ok: true, rows: this.leaderboard((u.searchParams.get('class') || '').toUpperCase(), u.searchParams.get('period')) });
     if (req.method === 'POST' && (u.pathname === '/api/result' || u.pathname === '/api/hello')) {
@@ -258,6 +384,11 @@ class StudentClient {
       req.on('timeout', () => req.destroy(new Error('timeout'))); req.on('error', reject);
     });
   }
+  // ----- đấu trường -----
+  arenaBase() { return this.teacher ? `http://${this.teacher.host}:${this.teacher.port}/media/` : ''; }
+  async arenaJoin(d) { try { return { ...(await this.request('POST', '/api/arena/join', d, 5000)), base: this.arenaBase() }; } catch (e) { return { ok: false, msg: this.teacher ? 'Không kết nối được máy giáo viên.' : 'Chưa kết nối máy giáo viên. Hãy kiểm tra mạng LAN của phòng máy.', net: true }; } }
+  async arenaState(code, pid) { try { return { ...(await this.request('GET', `/api/arena/state?code=${encodeURIComponent(code)}&pid=${encodeURIComponent(pid)}`, null, 3000)), base: this.arenaBase() }; } catch { return { ok: false, net: true, msg: 'Mất kết nối máy giáo viên…' }; } }
+  async arenaAnswer(d) { try { return await this.request('POST', '/api/arena/answer', d, 4000); } catch { return { ok: false, net: true, msg: 'Mất kết nối, đang thử lại…' }; } }
   async hello(p) { try { await this.request('POST', '/api/hello', p, 2500); } catch {} }
   async leaderboard(cls, period) { const r = await this.request('GET', `/api/leaderboard?class=${encodeURIComponent(cls || '')}&period=${period || 'all'}`); return r.rows || []; }
 }

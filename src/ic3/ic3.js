@@ -178,7 +178,7 @@ function drawMe() {
   const b = $('#me'); b.hidden = false;
   const L = levelInfo(me.xp);
   b.innerHTML = `<span class="av" style="background:${color(me.name)}">${esc(initials(me.name))}</span>${esc(me.name)} · ${esc(me.class)} · Cấp ${L.lv}`;
-  b.onclick = async () => { if (await sure('Đăng xuất?', 'Đăng xuất để bạn khác đăng nhập trên máy này.', 'Đăng xuất')) { sessionStorage.removeItem('thl.ic3.me'); me = null; viewLogin(); } };
+  b.onclick = async () => { if (await sure('Đăng xuất?', 'Đăng xuất để bạn khác đăng nhập trên máy này.', 'Đăng xuất')) { sessionStorage.removeItem('thl.ic3.me'); me = null; if (new URLSearchParams(location.search).has('embed') && window.parent !== window) { parent.postMessage('ic3-logout', '*'); return; } viewLogin(); } };
 }
 
 // ================= TRANG CHÍNH =================
@@ -439,6 +439,13 @@ function viewBadges() {
   $('#home').onclick = () => viewHome();
 }
 
+// ---------- chạy bên trong Đảo IC3 (khung nhúng) ----------
+const EMBED = new URLSearchParams(location.search).has('embed') && window.parent !== window;
+if (EMBED) {
+  document.body.classList.add('embed');
+  const b = document.querySelector('#top [data-nav="../index.html"]'); if (b) { b.removeAttribute('data-nav'); b.textContent = '‹ Về Đảo IC3'; b.onclick = () => parent.postMessage('ic3-close', '*'); }
+  const t = document.querySelector('#top [data-nav="teacher.html"]'); if (t) t.hidden = true;
+}
 // ---------- khởi động ----------
 const k = sessionStorage.getItem('thl.ic3.me');
 if (k && profiles[k]) { me = profiles[k]; viewHome(); } else viewLogin();

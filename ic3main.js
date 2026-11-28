@@ -5,8 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { TeacherServer, StudentClient, lanIPs } = require('./lan');
+const { CloudConfig, CloudTeacher, CloudStudent, testConfig, parseConfig, niceErr, RULES } = require('./cloud');
 
-let teacher, student, authed = false;
+let teacher, student, authed = false, cloudConf, cloudT, cloudS, via = null, viaCode = null;
 // ---- đọc .docx (zip) không cần thư viện ngoài ----
 function unzipEntry(buf, want) {
   const zlib = require('zlib');
@@ -49,6 +50,9 @@ function init() {
   teacher = new TeacherServer(dir, (type, d) => broadcast('ic3:teacher', { type, data: d }));
   student = new StudentClient(dir, (type, d) => broadcast('ic3:student', { type, data: d }));
   if (teacher.cfg.autoStart) teacher.start();
+  cloudConf = new CloudConfig(dir, path.join(__dirname, 'cloud.json'));
+  cloudT = new CloudTeacher(cloudConf, teacher);
+  cloudS = new CloudStudent(cloudConf, dir);
 
   // ----- học sinh -----
   ipcMain.handle('ic3:status', () => student.status());
@@ -66,6 +70,33 @@ function init() {
     return { sets, memes, fresh: r.fresh, from: r.from || '' };
   });
   ipcMain.handle('ic3:setHost', (_e, host) => student.setManualHost(host));
+  // ----- đấu trường (học sinh) -----
+  // Đấu trường: ưu tiên mạng LAN của phòng máy; không có thì đi qua Internet (Firebase)
+  ipcMain.handle('ic3:arena:join', async (_e, d) => {
+    const code = String(d.code || '').trim(), hasCloud = !!cloudConf.get();
+    if (viaCode === code && via) return via === 'cloud' ? cloudS.join(d) : student.arenaJoin(d);
+    const lan = () => student.arenaJoin(d), web = () => cloudS.join(d);
+    const lanFirst = !hasCloud || student.status().connected;
+    const a = await (lanFirst ? lan() : web());
+    if (a.ok) { via = lanFirst ? 'lan' : 'cloud'; viaCode = code; return a; }
+    if (!hasCloud) return a;
+    const b = await (lanFirst ? web() : lan());
+    if (b.ok) { via = lanFirst ? 'cloud' : 'lan'; viaCode = code; return b; }
+    const web1 = lanFirst ? b : a, lan1 = lanFirst ? a : b;
+    return lan1.net ? web1 : web1.net ? lan1 : web1; // cả hai đều không vào được: báo lỗi có ích nhất
+  });
+  ipcMain.handle('ic3:arena:state', (_e, { code, pid }) => (via === 'cloud' && viaCode === String(code) ? cloudS.state(code) : student.arenaState(code, pid)));
+  ipcMain.handle('ic3:arena:answer', (_e, d) => (via === 'cloud' && viaCode === String(d.code) ? cloudS.answer(d) : student.arenaAnswer(d)));
+  // cài kết nối Internet (dùng chung cho máy giáo viên và học sinh)
+  ipcMain.handle('ic3:cloud:info', () => cloudConf.info());
+  ipcMain.handle('ic3:cloud:set', async (_e, text) => {
+    let c; try { c = parseConfig(text); } catch (e) { return { ok: false, msg: e.message }; }
+    const t = await testConfig(c, path.join(dir, 'cloud-auth.json')); if (!t.ok) return t;
+    cloudConf.set(JSON.stringify(c)); return { ok: true, ...cloudConf.info() };
+  });
+  ipcMain.handle('ic3:cloud:test', async () => { const c = cloudConf.get(); return c ? testConfig(c, path.join(dir, 'cloud-auth.json')) : { ok: false, msg: 'Chưa cài.' }; });
+  ipcMain.handle('ic3:cloud:clear', () => { cloudConf.clear(); return cloudConf.info(); });
+  ipcMain.handle('ic3:cloud:rules', () => JSON.stringify(RULES, null, 2));
 
   // ----- giáo viên -----
   ipcMain.handle('ic3:t:hasPassword', () => ({ has: !!teacher.cfg.pass, rec: !!teacher.cfg.rec }));
@@ -116,6 +147,17 @@ function init() {
     if (r.canceled || !r.filePath) return false; fs.copyFileSync(src, r.filePath); shell.showItemInFolder(r.filePath); return r.filePath;
   });
   ipcMain.handle('ic3:t:info', () => teacher.info());
+  // ----- đấu trường (giáo viên) -----
+  ipcMain.handle('ic3:t:arena', (_e, { op, arg }) => {
+    guard();
+    if (op === 'create') { if (!teacher.running) teacher.start(); const r = teacher.arenaCreate(arg); cloudT.start(); return teacher.arenaTeacherState() || r; }
+    if (op === 'state') return teacher.arenaTeacherState();
+    if (op === 'next') return teacher.arenaNext();
+    if (op === 'end') return teacher.arenaEnd();
+    if (op === 'kick') return teacher.arenaKick(arg);
+    if (op === 'close') { cloudT.stop(); return teacher.arenaClose(); }
+    return null;
+  });
   ipcMain.handle('ic3:t:start', () => teacher.start());
   ipcMain.handle('ic3:t:stop', () => teacher.stop(true));
   ipcMain.handle('ic3:t:setRoom', (_e, { room, name }) => { teacher.cfg.room = String(room || 'Phòng máy').slice(0, 40); teacher.cfg.teacher = String(name || 'Giáo viên').slice(0, 40); teacher.saveCfg(); return teacher.info(); });

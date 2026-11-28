@@ -3,6 +3,7 @@ import L1 from './bank-l1.js';
 import L2 from './bank-l2.js';
 import { paneSets } from './editor.js';
 import { setToast } from './qrender.js';
+import { paneArena, onArenaEvent } from './arena-teacher.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const app = $('#app');
@@ -32,7 +33,7 @@ async function loadCustomQs() { try { const L = await T.lib(); for (const st of 
 const fmtT = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}'${String(s % 60).padStart(2, '0')}"`;
 const dstr = (t) => new Date(t).toLocaleString('vi-VN');
 const iso = (d) => d.toISOString().slice(0, 10);
-const MODE = { exam: 'Kiểm tra', practice: 'Luyện tập', review: 'Ôn câu sai', challenge: 'Thử thách 60s', pcbuild: 'Thi lắp ráp PC' };
+const MODE = { exam: 'Kiểm tra', practice: 'Luyện tập', review: 'Ôn câu sai', challenge: 'Thử thách 60s', pcbuild: 'Thi lắp ráp PC', arena: 'Đấu trường' };
 
 let info = null, results = [], tab = 'results', newIds = new Set();
 const F = { cls: '', level: '', test: '', mode: '', from: iso(new Date(Date.now() - 6 * 864e5)), to: iso(new Date()), min: 0, best: false, q: '' };
@@ -100,9 +101,10 @@ async function main() {
   $('#logout').hidden = false; $('#logout').onclick = lock;
   info = await T.info(); results = await T.results(); await loadCustomQs();
   T.onEvent((e) => {
-    if (e.type === 'result') { results.push(e.data); newIds.add(e.data.id); toast(`📥 ${e.data.name} (${e.data.class}) vừa nộp: ${e.data.score}/1000`); if (tab === 'results' || tab === 'stats') draw(); }
+    if (e.type === 'result') { results.push(e.data); newIds.add(e.data.id); if (e.data.mode !== 'arena') toast(`📥 ${e.data.name} (${e.data.class}) vừa nộp: ${e.data.score}/1000`); if (tab === 'results' || tab === 'stats') draw(); }
+    if (e.type === 'arena') { onArenaEvent(e.data); return; }
     if (e.type === 'online') { info.online = e.data; if (tab === 'online') draw(); drawSrv(); }
-    if (e.type === 'state') { info = e.data; drawSrv(); if (tab !== 'results') draw(); else drawTop(); }
+    if (e.type === 'state') { info = e.data; drawSrv(); if (tab !== 'results' && tab !== 'arena') draw(); else drawTop(); }
     if (e.type === 'error') toast('⚠️ ' + e.data);
   });
   setInterval(async () => { info = await T.info(); drawSrv(); if (tab === 'online') draw(); }, 10000);
@@ -126,11 +128,11 @@ function draw() {
   drawSrv();
   const onlineN = info.online.length;
   app.innerHTML = `<div class="tw"><div class="card srvcard" id="topcard"></div>
-    <div class="tabs">${[['results', '📋 Kết quả'], ['sets', '📝 Soạn đề'], ['online', `🟢 Đang online${onlineN ? `<span class="cnt">${onlineN}</span>` : ''}`], ['stats', '📊 Thống kê'], ['lb', '🏆 Xếp hạng XP'], ['settings', '⚙️ Cài đặt']].map(([k, l]) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <div class="tabs">${[['results', '📋 Kết quả'], ['sets', '📝 Soạn đề'], ['arena', '⚔️ Đấu trường'], ['online', `🟢 Đang online${onlineN ? `<span class="cnt">${onlineN}</span>` : ''}`], ['stats', '📊 Thống kê'], ['lb', '🏆 Xếp hạng XP'], ['settings', '⚙️ Cài đặt']].map(([k, l]) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
     <div id="pane"></div></div>`;
   drawTop();
   app.querySelectorAll('.tabs button').forEach((b) => (b.onclick = () => { tab = b.dataset.t; draw(); }));
-  ({ results: paneResults, sets: () => paneSets({ T, toast, sure, esc, $ }), online: paneOnline, stats: paneStats, lb: paneLb, settings: paneSettings })[tab]();
+  ({ results: paneResults, sets: () => paneSets({ T, toast, sure, esc, $ }), arena: () => paneArena({ T, toast, sure, esc, $, L1, L2 }), online: paneOnline, stats: paneStats, lb: paneLb, settings: paneSettings })[tab]();
   if (tab !== 'sets') loadCustomQs();
 }
 

@@ -144,3 +144,76 @@ kbd { font: 600 11px var(--sf); background: #fff; border: 1px solid #d2d2d7; bor
 .pvw .qbox { box-shadow: none; border: 1px solid #ececf0; }
 .mslot:has(.mprev) { border-style: solid; border-color: #ececf0; display: inline-block; background: #fff; }
 .ansed > .addrow { display: block; margin-top: 6px; }
+
+/* ---------- Đấu trường ---------- */
+.arsetup { display: flex; gap: 22px; padding: 24px 26px; align-items: flex-start; }
+.arsico { font-size: 54px; }
+.arsetup h3 { margin: 0 0 6px; font-size: 20px; }
+.arform { display: grid; grid-template-columns: 1.2fr 1.6fr .6fr .8fr; gap: 12px; margin-top: 14px; align-items: end; }
+.arform label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--ink3); }
+.arform label.chk { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 8px; color: var(--ink2); font-weight: 500; }
+.arform .field { margin: 0; }
+.arhead { display: grid; grid-template-columns: auto 1fr auto; gap: 26px; align-items: center; padding: 18px 24px; background: linear-gradient(135deg, #1d1d1f, #3a2a6b); color: #fff; }
+.arlbl { font-size: 12px; letter-spacing: 2px; opacity: .7; }
+.arcode { font: 800 54px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 6px; color: #ffd60a; line-height: 1.05; }
+.arinfo { display: flex; flex-direction: column; gap: 3px; }
+.arinfo b { font-size: 20px; } .arinfo span { opacity: .85; } .arinfo small { opacity: .7; font-size: 12.5px; }
+.arbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.arhead .btn.ghost { background: rgba(255,255,255,.12); color: #fff; }
+.arlobby { padding: 18px 22px; margin-top: 16px; }
+.arlobby h3 { margin: 0 0 12px; }
+.argrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.arp { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: #f5f5f7; position: relative; animation: arpop .35s ease-out; }
+.arp.off { opacity: .45; }
+.arp b { display: block; font-size: 14px; } .arp small { color: var(--ink3); font-size: 12px; }
+.arp .x { position: absolute; right: 6px; top: 6px; border: 0; background: none; color: #999; font-size: 18px; cursor: pointer; }
+.pav { display: inline-grid; place-items: center; background: #dff0ff; border-radius: 12px; overflow: hidden; flex: none; }
+@keyframes arpop { from { transform: scale(.6); opacity: 0; } }
+.arq { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-top: 16px; }
+.arqbox { padding: 22px 26px; }
+.arqtop { display: flex; gap: 8px; align-items: center; }
+.arqtop .pill { background: #f2f2f7; border-radius: 980px; padding: 5px 12px; font-size: 13px; font-weight: 600; }
+.arclock { margin-left: auto; font: 800 34px var(--sf); color: #ff3b30; font-variant-numeric: tabular-nums; }
+.arqtext { font-size: 24px; font-weight: 700; margin: 16px 0 18px; line-height: 1.35; }
+.aropts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.aro { border-radius: 14px; padding: 16px 18px; color: #fff; font-size: 17px; font-weight: 600; display: flex; gap: 12px; align-items: center; transition: opacity .3s; }
+.aro b { background: rgba(255,255,255,.25); border-radius: 8px; padding: 2px 9px; }
+.aro.c0 { background: #e53935; } .aro.c1 { background: #1e88e5; } .aro.c2 { background: #f9a825; } .aro.c3 { background: #43a047; }
+.aro.dim { opacity: .35; } .aro.ok { box-shadow: 0 0 0 4px #1d1d1f; }
+.aro .arcnt { margin-left: auto; font-size: 14px; opacity: .9; }
+.arans { margin-top: 14px; padding: 12px 16px; background: #e3f6e8; border-radius: 12px; color: #1d6b33; font-size: 16px; }
+.arprog { height: 10px; background: #eee; border-radius: 10px; overflow: hidden; margin: 18px 0 8px; }
+.arprog i { display: block; height: 100%; background: linear-gradient(90deg, #ff9f0a, #ff3b30); transition: width .5s linear; }
+.arside { padding: 16px 18px; }
+.arside h3 { margin: 0 0 10px; }
+.arrank { list-style: none; margin: 0; padding: 0; }
+.arrank li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.arrank .nm { flex: 1; font-weight: 600; font-size: 14px; }
+.arrank .st { font-size: 12px; font-weight: 700; color: #999; } .arrank .st.on, .arrank .st.ok { color: #1f8a3b; } .arrank .st.no { color: #d70015; }
+.arend { padding: 22px 26px; margin-top: 16px; }
+.arend h3 { margin: 0 0 6px; font-size: 20px; }
+.arpod { display: flex; justify-content: center; align-items: flex-end; gap: 14px; margin: 10px 0 20px; }
+.pd { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 150px; }
+.pd .pav { width: 70px; height: 70px; border-radius: 18px; }
+.pd b { font-size: 15px; text-align: center; } .pd span { font-size: 13px; color: var(--ink3); }
+.pd .blk { width: 100%; border-radius: 12px 12px 0 0; color: #fff; font: 800 30px var(--sf); display: grid; place-items: center; }
+.pd.p1 .blk { height: 120px; background: linear-gradient(#ffd60a, #f5a623); } .pd.p2 .blk { height: 86px; background: linear-gradient(#d7dbe0, #aab2bd); } .pd.p3 .blk { height: 64px; background: linear-gradient(#f0b27a, #c97a40); }
+
+/* thi qua Internet */
+.arnet { display: block; margin-top: 4px; color: #ffd60a; font-weight: 600; }
+.arcloud { margin-top: 16px; padding: 20px 24px; }
+.arcl-h { display: flex; gap: 16px; align-items: flex-start; }
+.arcl-h h3 { margin: 0 0 4px; font-size: 18px; }
+.arcl-h p { margin: 0 0 10px; }
+.arcl-ico { font-size: 34px; line-height: 1; }
+.arcloud .okc { color: #1a7f37; }
+.arcloud textarea.field { width: 100%; font: 12.5px ui-monospace, Menlo, Consolas, monospace; resize: vertical; box-sizing: border-box; }
+.arcl-code { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; }
+.arcl-code .field { flex: 1; font: 12.5px ui-monospace, Menlo, Consolas, monospace; }
+.arcl-btns { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+.arcl-btns .err { color: #d70015; font-weight: 600; }
+.arcl-share { background: #f5f5f7; border-radius: 12px; padding: 12px 14px; margin-top: 4px; }
+.arcl-guide { margin: 4px 0 12px; background: #fffbea; border: 1px solid #f5d76e; border-radius: 12px; padding: 10px 14px; }
+.arcl-guide summary { cursor: pointer; font-weight: 700; }
+.arcl-guide ol { margin: 10px 0 4px; padding-left: 22px; line-height: 1.75; }
+.arcl-guide li { margin-bottom: 6px; }

@@ -1,6 +1,6 @@
 {
   "name": "tinhoclab",
-  "version": "1.23.0",
+  "version": "1.25.0",
   "description": "Phần mềm thực hành Tin học: lắp ráp máy tính 3D, giả lập Word, Excel, PowerPoint",
   "main": "main.js",
   "scripts": {
@@ -36,6 +36,8 @@
       "updater.js",
       "ic3main.js",
       "lan.js",
+      "cloud.js",
+      "cloud.json",
       "content/**/*",
       "src/**/*",
       "build/icon.png",
