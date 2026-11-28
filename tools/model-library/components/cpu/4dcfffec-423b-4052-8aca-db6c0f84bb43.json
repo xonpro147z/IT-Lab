@@ -1,0 +1,121 @@
+{
+  "sku": "4dcfffec-423b-4052-8aca-db6c0f84bb43",
+  "category": "cpu",
+  "opendbCategory": "CPU",
+  "manufacturer": "AMD",
+  "productName": "AMD Ryzen 7 7800X3D",
+  "partNumbers": [
+    "100-100000910WOF",
+    "AMD Ryzen 7 7800X3D",
+    "100100000910WOF"
+  ],
+  "dimensions": {
+    "x": 40,
+    "y": 40,
+    "z": 4.61,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "width": {
+      "value": 40,
+      "source": "standard",
+      "ref": "AMD Socket AM5 (package 40 × 40 mm)"
+    },
+    "depth": {
+      "value": 40,
+      "source": "standard",
+      "ref": "AMD Socket AM5"
+    },
+    "substrate": {
+      "value": 1.2,
+      "source": "estimate",
+      "ref": "đế CPU (substrate) ≈ 1.1–1.3 mm"
+    },
+    "ihsHeight": {
+      "value": 3.4,
+      "source": "estimate",
+      "ref": "nắp tản nhiệt IHS ≈ 3–4 mm tính cả gờ"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [],
+      "source": "estimate",
+      "ref": "không có màu trong OpenDB → màu trung tính"
+    },
+    "lighting": {
+      "value": [],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "socket": {
+      "value": "AM5",
+      "source": "opendb",
+      "ref": "socket"
+    },
+    "contacts": {
+      "value": "LGA",
+      "source": "standard",
+      "ref": "AMD Socket AM5 (package 40 × 40 mm)"
+    },
+    "vendor": {
+      "value": "AMD",
+      "source": "opendb",
+      "ref": "metadata.manufacturer"
+    },
+    "dies": {
+      "value": [
+        1,
+        1
+      ],
+      "source": "estimate",
+      "ref": "AMD chiplet: ≤ 8 nhân → 1 CCD, > 8 → 2 CCD, + 1 I/O die"
+    },
+    "cores": {
+      "value": 8,
+      "source": "opendb",
+      "ref": "cores.total"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "substrate",
+      "value": 1.2,
+      "rule": "đế CPU (substrate) ≈ 1.1–1.3 mm"
+    },
+    {
+      "key": "ihsHeight",
+      "value": 3.4,
+      "rule": "nắp tản nhiệt IHS ≈ 3–4 mm tính cả gờ"
+    },
+    {
+      "key": "color",
+      "value": [],
+      "rule": "không có màu trong OpenDB → màu trung tính"
+    },
+    {
+      "key": "dies",
+      "value": [
+        1,
+        1
+      ],
+      "rule": "AMD chiplet: ≤ 8 nhân → 1 CCD, > 8 → 2 CCD, + 1 I/O die"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:50.880Z",
+  "specHash": "2b68b281",
+  "meshes": [
+    "CPU_Substrate",
+    "CPU_Pin1_Mark",
+    "CPU_Capacitors",
+    "CPU_Contacts",
+    "CPU_Die_CCD_01",
+    "CPU_Die_IO",
+    "CPU_TIM",
+    "CPU_IHS"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

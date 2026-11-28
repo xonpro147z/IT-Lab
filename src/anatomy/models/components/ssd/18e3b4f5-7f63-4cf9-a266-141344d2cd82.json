@@ -1,0 +1,108 @@
+{
+  "sku": "18e3b4f5-7f63-4cf9-a266-141344d2cd82",
+  "category": "ssd",
+  "opendbCategory": "Storage",
+  "manufacturer": "Samsung",
+  "productName": "Samsung 990 Pro 2TB SSD M.2-2280 PCIe 4.0 x4 NVMe",
+  "partNumbers": [
+    "MZ-V9P2T0B/AM",
+    "MZV9P2T0BAM"
+  ],
+  "dimensions": {
+    "x": 80,
+    "y": 22,
+    "z": 2.3,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "length": {
+      "value": 80,
+      "source": "standard",
+      "ref": "PCI-SIG M.2 2280"
+    },
+    "width": {
+      "value": 22,
+      "source": "standard",
+      "ref": "PCI-SIG M.2 2280"
+    },
+    "pcb": {
+      "value": 0.8,
+      "source": "standard",
+      "ref": "PCI-SIG M.2 (bo 0.8 mm)"
+    },
+    "top": {
+      "value": 1.5,
+      "source": "standard",
+      "ref": "PCI-SIG M.2 (S3: linh kiện cao tối đa 1.5 mm)"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [],
+      "source": "estimate",
+      "ref": "không có màu trong OpenDB → màu trung tính"
+    },
+    "lighting": {
+      "value": [],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "formFactor": {
+      "value": "M.2-2280",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "heatsink": {
+      "value": false,
+      "source": "opendb",
+      "ref": "metadata.name (\"Heatsink\")"
+    },
+    "nand": {
+      "value": 2,
+      "source": "estimate",
+      "ref": "mỗi ~1 TB một chip NAND, tối đa 4"
+    },
+    "dram": {
+      "value": true,
+      "source": "opendb",
+      "ref": "cache"
+    },
+    "kind": {
+      "value": "m2",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "capacity": {
+      "value": 2000,
+      "source": "opendb",
+      "ref": "capacity"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "color",
+      "value": [],
+      "rule": "không có màu trong OpenDB → màu trung tính"
+    },
+    {
+      "key": "nand",
+      "value": 2,
+      "rule": "mỗi ~1 TB một chip NAND, tối đa 4"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:50.824Z",
+  "specHash": "61d9d909",
+  "meshes": [
+    "SSD_PCB",
+    "SSD_Connector",
+    "SSD_Controller",
+    "SSD_DRAM",
+    "SSD_NAND_01",
+    "SSD_NAND_02",
+    "SSD_Label"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

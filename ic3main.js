@@ -139,6 +139,4 @@ function init() {
   });
   ipcMain.handle('ic3:ips', () => lanIPs().map((x) => x.address));
 }
-// Cho các phần khác (Thư viện linh kiện) biết giáo viên đã đăng nhập chưa – không thay đổi cách đăng nhập hiện có
-const isTeacher = () => authed;
-module.exports = { init, readDocx, isTeacher };
+module.exports = { init, readDocx };

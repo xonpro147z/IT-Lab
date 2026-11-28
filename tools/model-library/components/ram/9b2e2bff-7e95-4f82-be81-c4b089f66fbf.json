@@ -1,0 +1,135 @@
+{
+  "sku": "9b2e2bff-7e95-4f82-be81-c4b089f66fbf",
+  "category": "ram",
+  "opendbCategory": "RAM",
+  "manufacturer": "G.SKILL",
+  "productName": "G.Skill Trident Z5 Neo RGB Matte Black DDR5-6000 CL36 64GB (2x32GB)",
+  "partNumbers": [
+    "F5-6000J3636F32GX2-TZ5NR",
+    "F5-6000J3636F32GX2-FX5"
+  ],
+  "dimensions": {
+    "x": 8.9,
+    "y": 133.35,
+    "z": 43.85,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "length": {
+      "value": 133.35,
+      "source": "standard",
+      "ref": "JEDEC MO-309 (DDR4/DDR5 UDIMM)"
+    },
+    "pcbHeight": {
+      "value": 31.25,
+      "source": "standard",
+      "ref": "JEDEC MO-309 (DDR4/DDR5 UDIMM)"
+    },
+    "pcb": {
+      "value": 1.27,
+      "source": "standard",
+      "ref": "JEDEC MO-309"
+    },
+    "height": {
+      "value": 44,
+      "source": "opendb",
+      "ref": "height"
+    },
+    "thickness": {
+      "value": 7.5,
+      "source": "estimate",
+      "ref": "bề dày tản nhiệt nhôm hai mặt ≈ 7–8 mm"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [
+        "BLACK"
+      ],
+      "source": "opendb",
+      "ref": "color"
+    },
+    "lighting": {
+      "value": [
+        "ARGB"
+      ],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "formFactor": {
+      "value": "288-pin DIMM",
+      "source": "opendb",
+      "ref": "form_factor"
+    },
+    "heatSpreader": {
+      "value": true,
+      "source": "opendb",
+      "ref": "heat_spreader"
+    },
+    "rgb": {
+      "value": true,
+      "source": "opendb",
+      "ref": "rgb"
+    },
+    "modules": {
+      "value": 2,
+      "source": "opendb",
+      "ref": "modules.quantity"
+    },
+    "ramType": {
+      "value": "DDR5",
+      "source": "opendb",
+      "ref": "ram_type"
+    },
+    "sides": {
+      "value": 2,
+      "source": "estimate",
+      "ref": "≥ 32 GB/thanh → hai mặt chip (dual rank)"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "thickness",
+      "value": 7.5,
+      "rule": "bề dày tản nhiệt nhôm hai mặt ≈ 7–8 mm"
+    },
+    {
+      "key": "sides",
+      "value": 2,
+      "rule": "≥ 32 GB/thanh → hai mặt chip (dual rank)"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:50.723Z",
+  "specHash": "deb838ee",
+  "meshes": [
+    "RAM_PCB",
+    "RAM_Contacts",
+    "RAM_Chip_01",
+    "RAM_Chip_02",
+    "RAM_Chip_03",
+    "RAM_Chip_04",
+    "RAM_Chip_05",
+    "RAM_Chip_06",
+    "RAM_Chip_07",
+    "RAM_Chip_08",
+    "RAM_Chip_09",
+    "RAM_Chip_10",
+    "RAM_Chip_11",
+    "RAM_Chip_12",
+    "RAM_Chip_13",
+    "RAM_Chip_14",
+    "RAM_Chip_15",
+    "RAM_Chip_16",
+    "RAM_PMIC",
+    "RAM_Heatspreader_L",
+    "RAM_Heatspreader_L_Trim",
+    "RAM_Heatspreader_R",
+    "RAM_Heatspreader_R_Trim",
+    "RAM_RGB_Diffuser",
+    "RAM_RGB_Housing"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

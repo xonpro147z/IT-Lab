@@ -1,277 +1,3 @@
-diff --git a/app/build-workspace.tsx b/app/build-workspace.tsx
-index 0032ca1..dc714e5 100644
---- a/app/build-workspace.tsx
-+++ b/app/build-workspace.tsx
-@@ -259,9 +259,9 @@ export default function BuildWorkspace({
-                 ))}
-               </ol>
-               <p className="build-fixed">
--                The case stays the same in every build: an ATX tower with
--                standoffs for ATX and micro-ATX boards, room for a 420 mm card
--                and three 120 mm front fans.
-+                Thùng máy giữ nguyên ở mọi cấu hình: thùng tháp ATX có cọc đỡ
-+                cho bo ATX và micro-ATX, chứa được card dài 420 mm và ba quạt
-+                120 mm phía trước.
-               </p>
-             </div>
-           ) : (
-@@ -276,7 +276,7 @@ export default function BuildWorkspace({
-         >
-           <PanelHead
-             title="Compatibility"
--            note={plural(checks.length, 'check')}
-+            note={`${checks.length} mục kiểm tra`}
-             open={checksOpen}
-             side="right"
-             controls="build-report"
-@@ -286,10 +286,9 @@ export default function BuildWorkspace({
-             <div className="build-scroll">
-               <Report build={build} checks={checks} onShowSlot={showSlot} />
-               <p className="build-note">
--                Figures are each maker’s published numbers, or measurements of
--                the modelled case. A supply below a recommendation may still run
--                the machine; one below a stated minimum is not supported by the
--                card’s maker.
-+                Số liệu theo công bố của từng hãng, hoặc đo trên thùng máy mô
-+                phỏng. Bộ nguồn dưới mức khuyến nghị vẫn có thể chạy được máy;
-+                dưới mức tối thiểu thì hãng card không hỗ trợ.
-               </p>
-               {isCustomBuild(build) && (
-                 <button className="build-restore" onClick={onRestore}>
-@@ -768,7 +767,7 @@ function PowerBudget({ build }: { build: DesktopBuild }) {
-       <div className="build-power-head">
-         <span>Rated draw</span>
-         <strong>
--          {cpu + gpu} W <small>of {supply} W</small>
-+          {cpu + gpu} W <small>trên {supply} W</small>
-         </strong>
-       </div>
-       {/* The figures are in the heading and the key; this is their picture. */}
-@@ -923,11 +922,11 @@ function Verdict({
-           {overall === 'ok'
-             ? 'Everything works together'
-             : overall === 'warn'
--              ? `Works, with ${plural(count('warn'), 'thing')} to check`
--              : `${plural(count('fail'), 'problem')} to fix`}
-+              ? `Chạy được, có ${count('warn')} điểm cần kiểm tra`
-+              : `Có ${count('fail')} lỗi cần sửa`}
-         </strong>
-         <small>
--          {count('ok')} of {total} checks pass
-+          {count('ok')} / {total} mục kiểm tra đạt
-         </small>
-       </output>
-       <span className="build-tally" aria-hidden="true">
-diff --git a/app/comparison-specs.tsx b/app/comparison-specs.tsx
-index e8b206c..20567da 100644
---- a/app/comparison-specs.tsx
-+++ b/app/comparison-specs.tsx
-@@ -30,7 +30,7 @@ type Pair = readonly [ComparisonItem, ComparisonItem];
- const letters = ['A', 'B'] as const;
- 
- function SpecValue({ value }: { value: string | null }) {
--  return value ?? <span className="spec-unlisted">Not listed</span>;
-+  return value ?? <span className="spec-unlisted">Không có</span>;
- }
- 
- /** Like parts: one row per field label, gaps left visible. */
-@@ -42,7 +42,7 @@ function SpecTable({ pair }: { pair: Pair }) {
-       <table className="comparison-specs-grid">
-         <thead>
-           <tr className="spec-row spec-head">
--            <th scope="col">Specification</th>
-+            <th scope="col">Thông số</th>
-             <th scope="col">A · {left.shortName}</th>
-             <th scope="col">B · {right.shortName}</th>
-           </tr>
-@@ -90,7 +90,7 @@ function SpecCards({ pair }: { pair: Pair }) {
-           </h3>
-           <p>
-             {levels[item.system].name} ·{' '}
--            {item.kind === 'physical' ? 'Hardware' : 'Architecture diagram'}
-+            {item.kind === 'physical' ? 'Phần cứng' : 'Sơ đồ kiến trúc'}
-           </p>
-           <dl>
-             {item.specs.map((spec) => (
-@@ -101,7 +101,7 @@ function SpecCards({ pair }: { pair: Pair }) {
-             ))}
-           </dl>
-           {!item.specs.length && (
--            <p>No specifications listed for this model.</p>
-+            <p>Mẫu này không có thông số.</p>
-           )}
-         </section>
-       ))}
-@@ -158,11 +158,11 @@ export default function ComparisonSpecs({
-       >
-         <div className="comparison-specs-heading">
-           <div>
--            <SheetTitle>Specification comparison</SheetTitle>
-+            <SheetTitle>So sánh thông số</SheetTitle>
-             <SheetDescription>
-               {aligned
--                ? 'Matching fields are aligned. Not listed means the catalogue has no value for that model.'
--                : 'Different kinds of parts, with each model’s own specifications.'}
-+                ? 'Các mục giống nhau được xếp thẳng hàng. "Không có" nghĩa là danh mục không có số liệu cho mẫu đó.'
-+                : 'Hai loại linh kiện khác nhau, mỗi mẫu có thông số riêng.'}
-             </SheetDescription>
-           </div>
-           <button
-diff --git a/app/comparison-viewer.tsx b/app/comparison-viewer.tsx
-index 895b9a3..a257ea0 100644
---- a/app/comparison-viewer.tsx
-+++ b/app/comparison-viewer.tsx
-@@ -37,7 +37,7 @@ export default function ComparisonViewer({ state }: Props) {
-         ),
-       error: reportError,
-     }),
--    'The comparison viewer could not load. Reload to try again.',
-+    'Không tải được khung so sánh. Hãy tải lại.',
-   );
- 
-   return (
-diff --git a/app/comparison-workbench.tsx b/app/comparison-workbench.tsx
-index 137d0d6..d1de305 100644
---- a/app/comparison-workbench.tsx
-+++ b/app/comparison-workbench.tsx
-@@ -37,15 +37,15 @@ import './comparison.css';
- type Props = { initialLevel: ComparisonLevel; onExit: () => void };
- 
- function framingNote(framing: ComparisonFraming, trueSizeAvailable: boolean) {
--  if (framing === 'scale') return 'Same physical scale in both panes.';
-+  if (framing === 'scale') return 'Hai bên cùng một tỉ lệ thật.';
-   return trueSizeAvailable
--    ? 'Each model fits its pane. Sizes are not relative.'
--    : 'Each model fits its pane. Diagrams and illustrative parts have no physical scale.';
-+    ? 'Mỗi mô hình vừa khung của nó; kích thước không so được với nhau.'
-+    : 'Mỗi mô hình vừa khung của nó. Sơ đồ và linh kiện minh hoạ không có tỉ lệ thật.';
- }
- 
- function disassemblyTitle(left: ComparisonItem, right: ComparisonItem) {
--  if (left.kind !== right.kind) return 'Explore both';
--  return left.kind === 'logical' ? 'Expand both' : 'Disassemble both';
-+  if (left.kind !== right.kind) return 'Khám phá cả hai';
-+  return left.kind === 'logical' ? 'Mở rộng cả hai' : 'Tháo rời cả hai';
- }
- 
- type PartSelectorProps = {
-@@ -185,7 +185,7 @@ export default function ComparisonWorkbench({ initialLevel, onExit }: Props) {
-                 setState((current) => setComparisonFraming(current, 'fit'))
-               }
-             >
--              Fit each
-+              Vừa khung
-             </button>
-             <button
-               aria-pressed={state.framing === 'scale'}
-@@ -195,7 +195,7 @@ export default function ComparisonWorkbench({ initialLevel, onExit }: Props) {
-                 setState((current) => setComparisonFraming(current, 'scale'))
-               }
-             >
--              True size
-+              Đúng tỉ lệ
-             </button>
-           </fieldset>
-           <p id="comparison-scale-note">
-@@ -222,7 +222,7 @@ export default function ComparisonWorkbench({ initialLevel, onExit }: Props) {
-       <div className="comparison-divider" aria-hidden="true" />
-       <ComparisonViewer key={viewerRevision} state={viewerState} />
-       <div className="sr-only" aria-live="polite">
--        Comparing {leftItem.name} with {rightItem.name}.
-+        Đang so sánh {leftItem.name} với {rightItem.name}.
-       </div>
-       <Disassembly
-         level={state.left}
-diff --git a/app/detail-panel.tsx b/app/detail-panel.tsx
-index 8ae52de..46c8a26 100644
---- a/app/detail-panel.tsx
-+++ b/app/detail-panel.tsx
-@@ -1,4 +1,5 @@
- 'use client';
-+import { categoryLabel } from '@/lib/concept';
- import {
-   ArrowUpRight,
-   ChevronRight,
-@@ -70,24 +71,24 @@ export default function DetailPanel({
-             <div className="detail-top">
-               <span className="detail-kind">
-                 <i aria-hidden="true" />
--                {selected.category} /{' '}
-+                {categoryLabel[selected.category]} /{' '}
-                 {selected.representationType === 'logical'
--                  ? 'ARCHITECTURE'
--                  : 'HARDWARE'}
-+                  ? 'KIẾN TRÚC'
-+                  : 'PHẦN CỨNG'}
-               </span>
--              <button aria-label="Close component details" onClick={onClose}>
-+              <button aria-label="Đóng thông tin linh kiện" onClick={onClose}>
-                 <X size={17} />
-               </button>
-             </div>
-             <SheetTitle>{selected.name}</SheetTitle>
-             <div className="instance-label">
-               {selection?.instance !== undefined
--                ? 'INSTANCE ' + String(selection.instance + 1).padStart(2, '0')
--                : 'COMPONENT GROUP'}
-+                ? 'BẢN THỨ ' + String(selection.instance + 1).padStart(2, '0')
-+                : 'NHÓM LINH KIỆN'}
-             </div>
-             <SheetDescription>{selected.description}</SheetDescription>
-             <div className="purpose">
--              <h3>What it does</h3>
-+              <h3>Chức năng</h3>
-               <p>{selected.purpose}</p>
-             </div>
-             <div className="quantity">{selected.quantity}</div>
-@@ -101,7 +102,7 @@ export default function DetailPanel({
-             </dl>
-             {selected.parent && (
-               <div className="parent-link">
--                Part of{' '}
-+                Thuộc{' '}
-                 <button onClick={() => onSelectConcept(selected.parent!)}>
-                   {byId[selected.parent].shortName}
-                   <ChevronRight size={12} />
-@@ -114,31 +115,31 @@ export default function DetailPanel({
-                 style={hueStyle(hueOfLevel(opens))}
-                 onClick={() => onDive(piece!)}
-               >
--                Take apart {levels[opens].name}
-+                Tháo rời {levels[opens].name}
-                 <ChevronRight size={17} />
-               </button>
-             )}
-             <div className="detail-actions">
-               <button onClick={onIsolate}>
-                 <Focus size={14} />
--                {isolated ? 'Show context' : 'Isolate'}
-+                {isolated ? 'Hiện lại xung quanh' : 'Chỉ xem phần này'}
-               </button>
-               <button onClick={onFocus}>
-                 <Maximize size={14} />
--                Focus
-+                Phóng tới
-               </button>
-               <button onClick={() => onHide(piece!)}>
-                 <EyeOff size={14} />
--                Hide
-+                Ẩn
-               </button>
-             </div>
-             <p className="accuracy">{selected.physicalAccuracy}</p>
-             {selected.sources.length > 0 && (
-               <div className="source-links">
--                <h3>References & architecture</h3>
-+                <h3>Tài liệu tham khảo & kiến trúc</h3>
-                 <p>
--                  Manufacturer documents and standards explain this component
--                  family. Illustrative geometry is not a product schematic.
-+                  Tài liệu của nhà sản xuất và các tiêu chuẩn giải thích loại
-+                  linh kiện này. Hình dạng minh hoạ không phải sơ đồ sản phẩm.
-                 </p>
-                 {selected.sources.map((s) => (
-                   <a
 diff --git a/app/links.ts b/app/links.ts
 index cb85961..5ba5c6d 100644
 --- a/app/links.ts
@@ -311,115 +37,6 @@ index ad1aab4..52afbc8 100644
            target="_blank"
            rel="noreferrer"
          >
-diff --git a/app/scale-nav.tsx b/app/scale-nav.tsx
-index fac8019..14e336c 100644
---- a/app/scale-nav.tsx
-+++ b/app/scale-nav.tsx
-@@ -115,22 +115,28 @@ const levelIcon: Record<LevelId, typeof Box> = {
- 
- /** What a menu's dropdowns are, where each is a product of its own. */
- const dropdowns: Record<string, string> = {
--  GPU: 'cards',
--  Memory: 'generations',
--  Processor: 'processors',
-+  GPU: 'card',
-+  Memory: 'thế hệ',
-+  Processor: 'CPU',
-+};
-+/** TinHocLab: tên menu tiếng Việt */
-+const menuLabel: Record<string, string> = {
-+  Motherboard: 'Bo mạch chủ', Processor: 'Bộ vi xử lý (CPU)', Memory: 'Bộ nhớ RAM', 'Power supply': 'Bộ nguồn',
-+  Cooling: 'Tản nhiệt', Storage: 'Lưu trữ', GPU: 'Card đồ hoạ (GPU)', 'System board': 'Bo mạch chính', Graphics: 'Đồ hoạ',
-+  Battery: 'Pin', Display: 'Màn hình', 'Logic board': 'Bo mạch logic', 'Apple Silicon': 'Apple Silicon',
- };
- /** Menus whose every scale is a whole product, so they are counted as such. */
- const products: Record<string, string> = {
--  Motherboard: 'boards',
--  'Power supply': 'models',
-+  Motherboard: 'bo mạch',
-+  'Power supply': 'mẫu',
- };
- 
- /** The line under a menu: "5 cards · 17 scales", "3 boards", "1 scale inside". */
- function menuNote(label: string, scales: number, submenus: number) {
-   if (submenus > 0)
--    return `${submenus} ${dropdowns[label] ?? 'models'} · ${scales} scales`;
-+    return `${submenus} ${dropdowns[label] ?? 'mẫu'} · ${scales} cấp độ`;
-   if (products[label]) return `${scales} ${products[label]}`;
--  return `${scales} ${scales === 1 ? 'scale' : 'scales'} inside`;
-+  return `${scales} cấp độ bên trong`;
- }
- 
- type Props = {
-@@ -269,7 +275,7 @@ export default function ScaleNav({
-                     <Icon size={15} />
-                   </b>
-                   <div>
--                    {label}
-+                    {menuLabel[label] ?? label}
-                     <small>
-                       {menuNote(label, scales.length, submenus.length)}
-                     </small>
-@@ -313,7 +319,7 @@ export default function ScaleNav({
-                               <small>
-                                 {sub.note ? sub.note + ' · ' : ''}
-                                 {sub.levels.length}{' '}
--                                {sub.levels.length === 1 ? 'scale' : 'scales'}
-+                                cấp độ
-                               </small>
-                             </div>
-                             <ChevronDown size={13} />
-diff --git a/app/search-dialog.tsx b/app/search-dialog.tsx
-index a0a9d08..990f964 100644
---- a/app/search-dialog.tsx
-+++ b/app/search-dialog.tsx
-@@ -1,4 +1,5 @@
- 'use client';
-+import { categoryLabel } from '@/lib/concept';
- import { ArrowUpRight } from 'lucide-react';
- import {
-   Dialog,
-@@ -81,7 +82,7 @@ export default function SearchDialog({
-                     <small>
-                       <span>{levels[c.level].name}</span>
-                       <em>
--                        <b>{c.category}</b> ·{' '}
-+                        <b>{categoryLabel[c.category]}</b> ·{' '}
-                         {c.representationType === 'logical'
-                           ? 'Logical architecture'
-                           : 'Physical hardware'}
-diff --git a/app/systems-list.tsx b/app/systems-list.tsx
-index c5cb200..54d0c00 100644
---- a/app/systems-list.tsx
-+++ b/app/systems-list.tsx
-@@ -1,4 +1,5 @@
- 'use client';
-+import { categoryLabel } from '@/lib/concept';
- import { systemRoot, type LevelId } from '@/lib/levels';
- import { useState } from 'react';
- import { ChevronDown } from 'lucide-react';
-@@ -53,7 +54,7 @@ export default function SystemsList({
-                 onClick={() => onToggleCategory(category)}
-               >
-                 <i />
--                <span>{category}</span>
-+                <span>{categoryLabel[category]}</span>
-                 <small>{visible.includes(category) ? 'On' : 'Off'}</small>
-               </button>
-               <button
-diff --git a/app/topbar.tsx b/app/topbar.tsx
-index cc964b9..78fcdeb 100644
---- a/app/topbar.tsx
-+++ b/app/topbar.tsx
-@@ -105,7 +105,7 @@ export default function Topbar({
-           <MessageSquare size={15} />
-           {/* One of the two is hidden at a time, so the button's name is
-               always the label that is showing. */}
--          <span className="label-full">Feedback / Idea / Collaboration</span>
-+          <span className="label-full">Góp ý / Ý tưởng / Hợp tác</span>
-           <span className="label-short">Feedback</span>
-         </button>
-         <a
 diff --git a/index.html b/index.html
 index 7821b60..0dee192 100644
 --- a/index.html
@@ -442,38 +59,12 @@ index 7821b60..0dee192 100644
              >Learn how PC components work</a
            >
            ·
-diff --git a/lab.html b/lab.html
-new file mode 100644
-index 0000000..b00d94e
---- /dev/null
-+++ b/lab.html
-@@ -0,0 +1,7 @@
-+<!DOCTYPE html>
-+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thực hành theo bài – TinHocLab</title>
-+<link rel="stylesheet" href="../ui/apple.css"><link rel="stylesheet" href="./labs/labs.css"></head>
-+<body class="labs3d">
-+<script type="module" src="/lab/main.ts"></script>
-+<script src="./labs/labs3d.js" defer></script>
-+</body></html>
-diff --git a/lab/main.ts b/lab/main.ts
-new file mode 100644
-index 0000000..ba3fba4
---- /dev/null
-+++ b/lab/main.ts
-@@ -0,0 +1,7 @@
-+// TinHocLab – điểm vào cho trang "Thực hành theo bài 3D": dùng lại mô hình và ánh sáng của PC Anatomy.
-+import * as T from 'three';
-+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-+import { createStageRuntime } from '../lib/stage-runtime.ts';
-+import { buildModel } from '../lib/models.ts';
-+(globalThis as unknown as { __PCLAB: object }).__PCLAB = { T, OrbitControls, createStageRuntime, buildModel };
-+window.dispatchEvent(new Event('pclab-ready'));
 diff --git a/lib/assembly-mode.ts b/lib/assembly-mode.ts
 new file mode 100644
-index 0000000..b7ee72c
+index 0000000..e0708de
 --- /dev/null
 +++ b/lib/assembly-mode.ts
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,92 @@
 +/**
 + * TinHocLab – chế độ lắp ráp.
 + *
@@ -533,8 +124,6 @@ index 0000000..b7ee72c
 +  },
 +};
 +(globalThis as unknown as { __asm: typeof asm }).__asm = asm;
-+// TinHocLab: cho script ngoài (đổi màu vỏ máy) dùng chung thư viện three.js của trang.
-+(globalThis as unknown as { __THREE: typeof T }).__THREE = T;
 +
 +const target = (piece: Piece) => (asm.installed.has(piece.concept) ? 0 : 1);
 +
@@ -568,495 +157,6 @@ index 0000000..b7ee72c
 +  }
 +  return moving;
 +}
-diff --git a/lib/build-checks.ts b/lib/build-checks.ts
-index e234626..6f62a27 100644
---- a/lib/build-checks.ts
-+++ b/lib/build-checks.ts
-@@ -80,13 +80,13 @@ function socketCheck(cpu: ProcessorOption, board: BoardOption) {
-   return socketFits(cpu, board)
-     ? result(
-         'ok',
--        'Processor fits the socket',
--        `The ${cpu.name} is an ${cpu.socket} processor, and the ${board.name} has an ${board.socket} socket.`,
-+        'CPU vừa socket',
-+        `${cpu.name} là CPU ${cpu.socket}, và ${board.name} có socket ${board.socket}.`,
-       )
-     : result(
-         'fail',
--        'Processor does not fit the socket',
--        `The ${cpu.name} needs an ${cpu.socket} socket. The ${board.name} has ${board.socket}, so the processor stays in its box and the socket keeps its cover.`,
-+        'CPU không vừa socket',
-+        `${cpu.name} cần socket ${cpu.socket}. ${board.name} có socket ${board.socket}, nên không lắp được CPU – nắp bảo vệ socket vẫn để nguyên.`,
-       );
- }
- 
-@@ -101,15 +101,15 @@ export function coolerCheck(cooler: CoolerOption) {
-   const { radiator, height } = cooler;
-   if (radiator) {
-     const fits = radiator.fans <= caseRoom.frontFans;
--    const detail = `The ${radiator.length} mm radiator takes ${radiator.fans} 120 mm fans. The case has ${caseRoom.frontFans} behind the front panel, and ${caseRoom.roof} mm between the board and the roof, too little for a radiator and its fans.`;
-+    const detail = `Két tản ${radiator.length} mm gắn ${radiator.fans} quạt 120 mm. Thùng máy có ${caseRoom.frontFans} vị trí sau mặt trước, và chỉ có ${caseRoom.roof} mm giữa bo mạch và nắp trên – không đủ chỗ cho két tản và quạt.`;
-     return fits
--      ? result('ok', 'Radiator fits the front of the case', detail)
--      : result('fail', 'Radiator is too long for the case', detail);
-+      ? result('ok', 'Két tản vừa mặt trước thùng máy', detail)
-+      : result('fail', 'Két tản quá dài so với thùng máy', detail);
-   }
--  const detail = `The tower stands ${height} mm off the board, and the case has about ${caseRoom.coolerHeight} mm to the side glass.`;
-+  const detail = `Tản tháp cao ${height} mm tính từ bo mạch, còn thùng máy có khoảng ${caseRoom.coolerHeight} mm tới tấm kính hông.`;
-   return (height ?? 0) <= caseRoom.coolerHeight
--    ? result('ok', 'Cooler fits under the side panel', detail)
--    : result('fail', 'Cooler is too tall for the case', detail);
-+    ? result('ok', 'Tản nhiệt vừa dưới tấm hông', detail)
-+    : result('fail', 'Tản nhiệt quá cao so với thùng máy', detail);
- }
- 
- /**
-@@ -122,19 +122,18 @@ export function boardCheck(
- ) {
-   const result = checkOf('board', board.sources);
-   const [height, depth] = board.size;
--  const article = board.formFactor === 'ATX' ? 'an' : 'a';
--  const detail = `The ${board.name} is ${article} ${board.formFactor} board, ${height} × ${depth} mm, and the case has standoffs for ${caseRoom.boards.join(' and ')} boards.`;
-+  const detail = `${board.name} là bo mạch ${board.formFactor}, ${height} × ${depth} mm, và thùng máy có cọc đỡ cho bo ${caseRoom.boards.join(' và ')}.`;
-   return (caseRoom.boards as readonly string[]).includes(board.formFactor)
--    ? result('ok', 'Board fits the case', detail)
--    : result('fail', 'Board does not fit the case', detail);
-+    ? result('ok', 'Bo mạch vừa thùng máy', detail)
-+    : result('fail', 'Bo mạch không vừa thùng máy', detail);
- }
- 
- function memoryCheck(ram: MemoryOption, board: BoardOption) {
-   if (memoryFits(ram, board))
-     return checkOf('memory', [...ram.sources, ...board.sources])(
-       'ok',
--      'Memory fits the slots',
--      `${plural(ram.modules, `${ram.generation} module`)} in the board’s four ${board.memory} slots.`,
-+      'RAM vừa khe cắm',
-+      `${ram.modules} thanh ${ram.generation} cắm vào bốn khe ${board.memory} của bo mạch.`,
-     );
-   // The failure rests on the key positions, which the module's own sources
-   // do not describe.
-@@ -144,8 +143,8 @@ function memoryCheck(ram: MemoryOption, board: BoardOption) {
-     ...board.sources,
-   ])(
-     'fail',
--    'Memory does not fit the slots',
--    `The key notch of a ${ram.generation} module is in a different place from a ${board.memory} slot’s, so it cannot be pushed in. The slots stay empty.`,
-+    'RAM không vừa khe cắm',
-+    `Khấc của thanh ${ram.generation} nằm ở vị trí khác với khe ${board.memory}, nên không ấn vào được. Các khe vẫn để trống.`,
-   );
- }
- 
-@@ -160,22 +159,22 @@ function speedCheck(cpu: ProcessorOption, ram: MemoryOption) {
-   const result = checkOf('speed', [...cpu.sources, ...ram.sources]);
-   const maker = cpu.brand === 'amd' ? 'AMD' : 'Intel';
-   const rated = cpu.memorySpeed[ram.modules];
--  const profile = `The kit reaches DDR5-${ram.speed} through its XMP or EXPO profile, which runs it past the processor’s rating.`;
-+  const profile = `Bộ RAM đạt DDR5-${ram.speed} nhờ cấu hình XMP hoặc EXPO, cao hơn mức CPU được công bố hỗ trợ.`;
-   if (rated === undefined)
-     return result(
-       'ok',
--      'Memory speed is within the published rating',
--      `${maker} rates the ${cpu.name} for up to DDR5-${cpu.memorySpeed[2]} and publishes no separate figure for ${ram.modules} modules. ${profile}`,
-+      'Tốc độ RAM trong mức được công bố',
-+      `${maker} công bố ${cpu.name} hỗ trợ tới DDR5-${cpu.memorySpeed[2]} và không ghi riêng cho ${ram.modules} thanh. ${profile}`,
-     );
-   const four = cpu.memorySpeed[4];
--  const detail = `${maker} rates the ${cpu.name} at DDR5-${cpu.memorySpeed[2]} with two single-rank modules${four ? ` and DDR5-${four} with four` : ''}. ${profile}`;
-+  const detail = `${maker} công bố ${cpu.name} chạy DDR5-${cpu.memorySpeed[2]} với hai thanh single-rank${four ? ` và DDR5-${four} với bốn thanh` : ''}. ${profile}`;
-   return ram.modules === 4 && rated < cpu.memorySpeed[2]
-     ? result(
-         'warn',
--        'Four modules run slower',
--        `${detail} With every slot filled that profile is unlikely to hold, so expect the memory to run nearer DDR5-${rated}.`,
-+        'Bốn thanh RAM sẽ chạy chậm hơn',
-+        `${detail} Khi cắm đầy mọi khe, cấu hình đó khó giữ được, nên RAM thường chỉ chạy quanh mức DDR5-${rated}.`,
-       )
--    : result('ok', 'Memory speed is within reach', detail);
-+    : result('ok', 'Tốc độ RAM đạt được', detail);
- }
- 
- /** Exported so the tests can try a card longer than any on offer. */
-@@ -190,68 +189,68 @@ export function lengthCheck(
-     ...(cooler.radiator ? cooler.sources : []),
-   ]);
-   const radiator = cooler.radiator
--    ? ` With the radiator inside the front fans, that is ${caseRoom.cardLength} mm less its ${cooler.radiator.thickness} mm.`
-+    ? ` Vì két tản nằm phía trong quạt trước, chỗ trống là ${caseRoom.cardLength} mm trừ đi ${cooler.radiator.thickness} mm của két.`
-     : '';
-   return gpu.length <= room
-     ? result(
-         'ok',
--        'Card fits the case',
--        `${gpu.length} mm long, and the case takes cards up to about ${room} mm.${radiator}`,
-+        'Card vừa thùng máy',
-+        `Card dài ${gpu.length} mm, thùng máy nhận card dài tới khoảng ${room} mm.${radiator}`,
-       )
-     : result(
-         'fail',
--        'Card is too long for the case',
--        `${gpu.length} mm long, but the case only takes about ${room} mm.${radiator}`,
-+        'Card quá dài so với thùng máy',
-+        `Card dài ${gpu.length} mm, nhưng thùng máy chỉ nhận khoảng ${room} mm.${radiator}`,
-       );
- }
- 
- function supplyCheck(gpu: GraphicsOption, psu: PowerOption) {
-   const result = checkOf('supply', [...gpu.sources, ...psu.sources]);
--  const detail = `${gpu.psuSource} gives ${gpu.psu} W as the ${gpu.psuKind} supply for the ${gpu.name}. The ${psu.name} is rated ${psu.watts} W.`;
-+  const detail = `${gpu.psuSource} ghi bộ nguồn ${gpu.psuKind === 'minimum' ? 'tối thiểu' : 'khuyến nghị'} cho ${gpu.name} là ${gpu.psu} W. ${psu.name} có công suất ${psu.watts} W.`;
-   if (psu.watts >= gpu.psu)
--    return result('ok', 'Supply meets the card maker’s figure', detail);
-+    return result('ok', 'Bộ nguồn đạt mức hãng card yêu cầu', detail);
-   return gpu.psuKind === 'minimum'
--    ? result('fail', 'Supply is below the card’s minimum', detail)
--    : result('warn', 'Supply is below the card maker’s recommendation', detail);
-+    ? result('fail', 'Bộ nguồn dưới mức tối thiểu của card', detail)
-+    : result('warn', 'Bộ nguồn dưới mức hãng card khuyến nghị', detail);
- }
- 
- function connectorCheck(gpu: GraphicsOption, psu: PowerOption) {
-   const result = checkOf('connector', [...gpu.sources, ...psu.sources]);
--  const leads = plural(psu.eightPin, '8-pin PCIe lead');
-+  const leads = `${psu.eightPin} dây PCIe 8 chân`;
-   if (gpu.connector === '8-pin')
-     return psu.eightPin >= 1
-       ? result(
-           'ok',
--          'Power cable matches the card',
--          `The card takes one 8-pin PCIe lead, and the ${psu.name} has ${leads}.`,
-+          'Dây nguồn khớp với card',
-+          `Card cần một dây PCIe 8 chân, và ${psu.name} có ${leads}.`,
-         )
-       : result(
-           'fail',
--          'No lead for the card',
--          `The card takes an 8-pin PCIe lead, and the ${psu.name} has none.`,
-+          'Không có dây nguồn cho card',
-+          `Card cần dây PCIe 8 chân, nhưng ${psu.name} không có.`,
-         );
-   if (psu.sixteenPin)
-     return result(
-       'ok',
--      'Power cable matches the card',
--      `The card takes a 16-pin 12V-2x6 lead, which the ${psu.name} has.`,
-+      'Dây nguồn khớp với card',
-+      `Card cần dây 16 chân 12V-2x6, và ${psu.name} có sẵn dây này.`,
-     );
-   if (!gpu.adapter)
-     return result(
-       'warn',
--      'No 16-pin lead for the card',
--      `The ${psu.name} has only 8-pin PCIe leads, and the card has a 16-pin 12V-2x6 socket. It needs a 12V-2x6 cable or an adapter.`,
-+      'Không có dây 16 chân cho card',
-+      `${psu.name} chỉ có dây PCIe 8 chân, còn card dùng ổ 16 chân 12V-2x6. Cần dây 12V-2x6 hoặc đầu chuyển.`,
-     );
-   return psu.eightPin >= gpu.adapter.leads
-     ? result(
-         'warn',
--        'Card needs its adapter',
--        `The ${psu.name} has no 16-pin 12V-2x6 lead. The card comes with a ${gpu.adapter.name} adapter, and the supply has ${leads} to fill it.`,
-+        'Card cần dùng đầu chuyển',
-+        `${psu.name} không có dây 16 chân 12V-2x6. Card kèm đầu chuyển ${gpu.adapter.name}, và bộ nguồn có ${leads} để cắm vào.`,
-       )
-     : result(
-         'fail',
--        'Not enough leads for the card’s adapter',
--        `The ${psu.name} has no 16-pin 12V-2x6 lead, and the card’s ${gpu.adapter.name} adapter needs ${gpu.adapter.leads} leads where the supply has ${psu.eightPin}.`,
-+        'Không đủ dây cho đầu chuyển của card',
-+        `${psu.name} không có dây 16 chân 12V-2x6, và đầu chuyển ${gpu.adapter.name} của card cần ${gpu.adapter.leads} dây trong khi bộ nguồn chỉ có ${psu.eightPin}.`,
-       );
- }
- 
-@@ -265,12 +264,12 @@ function storageCheck(
-   board: BoardOption,
- ) {
-   const m2 =
--    'The M.2 drive sits in the board’s M.2 slot and takes its power through it.';
-+    'Ổ M.2 cắm vào khe M.2 trên bo mạch và lấy điện qua khe đó.';
-   if (!drives.sata)
-     return checkOf('storage', [...drives.sources, ...board.sources])(
-       'ok',
--      'Drive fits the board',
--      `${m2} The build needs no drive cables.`,
-+      'Ổ vừa bo mạch',
-+      `${m2} Cấu hình không cần dây cho ổ.`,
-     );
-   const result = checkOf('storage', [
-     ...drives.sources,
-@@ -280,13 +279,13 @@ function storageCheck(
-   return psu.sata >= 1
-     ? result(
-         'ok',
--        'Both drives are connected',
--        `${m2} The SATA SSD takes a data cable to one of the board’s SATA ports and a power lead from the ${psu.name}, which has ${plural(psu.sata, 'SATA power connector')}.`,
-+        'Cả hai ổ đều được kết nối',
-+        `${m2} SSD SATA cần một dây dữ liệu tới cổng SATA trên bo mạch và một dây nguồn từ ${psu.name}, bộ nguồn này có ${psu.sata} đầu nguồn SATA.`,
-       )
-     : result(
-         'fail',
--        'No power lead for the SATA drive',
--        `${m2} The SATA SSD needs a SATA power lead, and the ${psu.name} has none.`,
-+        'Không có dây nguồn cho ổ SATA',
-+        `${m2} SSD SATA cần dây nguồn SATA, nhưng ${psu.name} không có.`,
-       );
- }
- 
-@@ -306,13 +305,13 @@ function budgetCheck(
-   // supply would carry them when the processor cannot go into this board.
-   const unseated = socketFits(cpu, board)
-     ? ''
--    : ` The ${cpu.name} is counted as chosen, though it does not fit this board.`;
--  const detail = `${cpu.watts} W (${cpu.wattsLabel}) plus ${gpu.watts} W for the card is ${draw} W, against ${psu.watts} W. Memory, drives, fans and short peaks add more on top.${unseated}`;
-+    : ` ${cpu.name} vẫn được tính vào dù không lắp vừa bo mạch này.`;
-+  const detail = `${cpu.watts} W (${cpu.wattsLabel}) cộng ${gpu.watts} W của card là ${draw} W, so với ${psu.watts} W của bộ nguồn. RAM, ổ đĩa, quạt và các lúc tải vọt ngắn còn tốn thêm.${unseated}`;
-   return draw <= psu.watts
--    ? result('ok', 'Processor and card are within the supply’s rating', detail)
-+    ? result('ok', 'CPU và card nằm trong công suất bộ nguồn', detail)
-     : result(
-         'fail',
--        'Processor and card add up to more than the supply',
-+        'CPU và card cộng lại vượt công suất bộ nguồn',
-         detail,
-       );
- }
-diff --git a/lib/comparison-catalogue.ts b/lib/comparison-catalogue.ts
-index 91c50e7..4278217 100644
---- a/lib/comparison-catalogue.ts
-+++ b/lib/comparison-catalogue.ts
-@@ -13,16 +13,16 @@ import type { Category } from './concept.ts';
- 
- /** Picker headings, in display order. Empty categories are not shown. */
- const categoryDefinitions = [
--  { id: 'systems', label: 'Complete systems' },
--  { id: 'boards', label: 'Boards' },
--  { id: 'processors', label: 'Processors' },
--  { id: 'graphics', label: 'Graphics' },
--  { id: 'memory', label: 'Memory' },
--  { id: 'storage', label: 'Storage' },
--  { id: 'cooling', label: 'Cooling' },
--  { id: 'power', label: 'Power & batteries' },
--  { id: 'displays', label: 'Displays' },
--  { id: 'chassis', label: 'Chassis' },
-+  { id: 'systems', label: 'Máy hoàn chỉnh' },
-+  { id: 'boards', label: 'Bo mạch' },
-+  { id: 'processors', label: 'Bộ xử lý' },
-+  { id: 'graphics', label: 'Đồ hoạ' },
-+  { id: 'memory', label: 'Bộ nhớ' },
-+  { id: 'storage', label: 'Lưu trữ' },
-+  { id: 'cooling', label: 'Tản nhiệt' },
-+  { id: 'power', label: 'Nguồn & pin' },
-+  { id: 'displays', label: 'Màn hình' },
-+  { id: 'chassis', label: 'Vỏ máy' },
- ] as const;
- 
- export type ComparisonCategoryId = (typeof categoryDefinitions)[number]['id'];
-diff --git a/lib/concept.ts b/lib/concept.ts
-index dd5a74e..8e266b8 100644
---- a/lib/concept.ts
-+++ b/lib/concept.ts
-@@ -1,5 +1,8 @@
- import type { LevelId } from './levels.ts';
- import type { SourceId } from './sources.ts';
-+// TinHocLab: bản dịch tiếng Việt cho tên, mô tả và thông số linh kiện (tiếng Anh → tiếng Việt)
-+import VI from './vi-concepts.json';
-+const vi = (s: string): string => (s && (VI as Record<string, string>)[s]) || s;
- 
- /**
-  * Systems a component can belong to. These drive the visibility toggles and
-@@ -17,6 +20,11 @@ export const categories = [
-   'Graphics',
- ] as const;
- export type Category = (typeof categories)[number];
-+/** TinHocLab: tên hiển thị tiếng Việt của từng hệ */
-+export const categoryLabel: Record<Category, string> = {
-+  Chassis: 'Vỏ máy', Cooling: 'Tản nhiệt', Board: 'Bo mạch', Power: 'Nguồn điện',
-+  Memory: 'Bộ nhớ', Storage: 'Lưu trữ', Compute: 'Xử lý', Graphics: 'Đồ hoạ',
-+};
- 
- export const colors: Record<Category, string> = {
-   Chassis: '#a39a91',
-@@ -77,16 +85,26 @@ export type Entry = Omit<
-   >;
- 
- export function concept(c: Entry): Concept {
-+  const shortName = c.shortName ?? c.name;
-+  const specifications: Record<string, string> = {};
-+  for (const [k, v] of Object.entries(c.specifications)) specifications[vi(k)] = vi(v);
-   return {
-     ...c,
-+    name: vi(c.name),
-+    description: vi(c.description),
-+    purpose: vi(c.purpose),
-+    quantity: vi(c.quantity),
-+    specifications,
-     children: c.children ?? [],
--    shortName: c.shortName ?? c.name,
--    physicalAccuracy:
-+    shortName: vi(shortName),
-+    physicalAccuracy: vi(
-       c.physicalAccuracy ??
--      (c.representationType === 'physical' ? physical : logical),
-+        (c.representationType === 'physical' ? physical : logical),
-+    ),
-     sources: c.sources ?? [
-       c.representationType === 'physical' ? 'specs' : 'whitepaper',
-     ],
--    searchTerms: c.searchTerms ?? [],
-+    // giữ tên tiếng Anh để vẫn tìm được bằng tiếng Anh
-+    searchTerms: [...(c.searchTerms ?? []), c.name, shortName],
-   };
- }
-diff --git a/lib/desktop-build.ts b/lib/desktop-build.ts
-index 9aa3ae3..0704620 100644
---- a/lib/desktop-build.ts
-+++ b/lib/desktop-build.ts
-@@ -186,23 +186,23 @@ export interface PowerOption extends Option {
- export const processorOptions: Record<ProcessorChoice, ProcessorOption> = {
-   ryzen: {
-     name: 'AMD Ryzen 9 9950X',
--    summary: '16 cores · AM5',
-+    summary: '16 nhân · AM5',
-     socket: 'AM5',
-     // AMD publishes only the 170 W default TDP, a cooling figure. The socket
-     // power limit is the like-for-like number to Intel's maximum turbo power,
-     // and comes from an independent review.
-     watts: 200,
--    wattsLabel: 'socket power limit (PPT)',
-+    wattsLabel: 'giới hạn công suất socket (PPT)',
-     memorySpeed: { 2: 5600, 4: 3600 },
-     brand: 'amd',
-     sources: ['ryzen', 'fpsreview9950x'],
-   },
-   corei9: {
-     name: 'Intel Core Ultra 9 285K',
--    summary: '24 cores · LGA 1851',
-+    summary: '24 nhân · LGA 1851',
-     socket: 'LGA 1851',
-     watts: 250,
--    wattsLabel: 'maximum turbo power',
-+    wattsLabel: 'công suất turbo tối đa',
-     memorySpeed: { 2: 6400 },
-     brand: 'intel',
-     sources: ['corei9'],
-@@ -218,14 +218,14 @@ export const radiator360: Radiator = { length: 394, thickness: 27, fans: 3 };
-  */
- export const coolerOptions: Record<CoolerChoice, CoolerOption> = {
-   cooler: {
--    name: 'Tower air cooler',
--    summary: '4 heat pipes · 120 mm fin stack',
-+    name: 'Tản khí dạng tháp',
-+    summary: '4 ống dẫn nhiệt · khối lá tản 120 mm',
-     height: 150,
-     sources: ['aircooler'],
-   },
-   liquid: {
--    name: '360 mm liquid cooler',
--    summary: 'Pump block · front radiator',
-+    name: 'Tản nước 360 mm',
-+    summary: 'Khối bơm · két tản phía trước',
-     radiator: radiator360,
-     sources: ['aio'],
-   },
-@@ -318,7 +318,7 @@ export const memoryOptions: Record<MemoryChoice, MemoryOption> = {
-   // The same module, twice over: every slot on the board filled.
-   dimm4: {
-     name: 'Kingston FURY Beast DDR5-6000 × 4',
--    summary: '4 × 16 GB · every slot filled',
-+    summary: '4 × 16 GB · cắm đầy mọi khe',
-     generation: 'DDR5',
-     modules: 4,
-     speed: 6000,
-@@ -402,14 +402,14 @@ export const graphicsOptions: Record<GraphicsChoice, GraphicsOption> = {
- /** The drives are representative models of the two families, not products. */
- export const storageOptions: Record<StorageChoice, StorageOption> = {
-   nvmesata: {
--    name: 'M.2 NVMe + 2.5-inch SATA SSD',
--    summary: 'Two drives · one SATA cable',
-+    name: 'M.2 NVMe + SSD SATA 2,5 inch',
-+    summary: '2 ổ · 1 cáp SATA',
-     sata: true,
-     sources: ['samsungnvme', 'samsungsata'],
-   },
-   nvme: {
--    name: 'M.2 NVMe SSD only',
--    summary: 'One drive · no cables',
-+    name: 'Chỉ SSD M.2 NVMe',
-+    summary: '1 ổ · không cần cáp',
-     sata: false,
-     sources: ['samsungnvme'],
-   },
-@@ -419,7 +419,7 @@ export const storageOptions: Record<StorageChoice, StorageOption> = {
- export const powerOptions: Record<PowerChoice, PowerOption> = {
-   psu650: {
-     name: 'ASUS TUF Gaming 650W Bronze',
--    summary: '650 W · fixed cables',
-+    summary: '650 W · dây liền',
-     watts: 650,
-     modular: false,
-     sixteenPin: false,
-@@ -429,7 +429,7 @@ export const powerOptions: Record<PowerChoice, PowerOption> = {
-   },
-   psubronze: {
-     name: 'ASUS TUF Gaming 750W Bronze',
--    summary: '750 W · fixed cables',
-+    summary: '750 W · dây liền',
-     watts: 750,
-     modular: false,
-     sixteenPin: false,
-@@ -439,7 +439,7 @@ export const powerOptions: Record<PowerChoice, PowerOption> = {
-   },
-   psu: {
-     name: 'ASUS TUF Gaming 850W Gold',
--    summary: '850 W · modular',
-+    summary: '850 W · dây rời',
-     watts: 850,
-     modular: true,
-     sixteenPin: true,
-@@ -449,7 +449,7 @@ export const powerOptions: Record<PowerChoice, PowerOption> = {
-   },
-   psu1000: {
-     name: 'ASUS TUF Gaming 1000W Gold',
--    summary: '1000 W · modular',
-+    summary: '1000 W · dây rời',
-     watts: 1000,
-     modular: true,
-     sixteenPin: true,
-@@ -459,7 +459,7 @@ export const powerOptions: Record<PowerChoice, PowerOption> = {
-   },
-   psu1200: {
-     name: 'ASUS TUF Gaming 1200W Gold',
--    summary: '1200 W · modular · two 16-pin',
-+    summary: '1200 W · dây rời · hai đầu 16 chân',
-     watts: 1200,
-     modular: true,
-     sixteenPin: true,
-diff --git a/lib/levels.ts b/lib/levels.ts
-index 76efec6..147a168 100644
---- a/lib/levels.ts
-+++ b/lib/levels.ts
-@@ -1,3 +1,4 @@
-+import VIL from './vi-levels.json';
- import type { ComparisonCategoryId } from './comparison-catalogue.ts';
- import { notebookLevels, type NotebookLevel } from './notebook-levels.ts';
- /**
-@@ -813,6 +814,15 @@ export const levels: Record<LevelId, LevelDef> = {
-   ...notebookLevels,
- };
- 
-+// TinHocLab: dịch tên, tiêu đề, mô tả các cấp độ sang tiếng Việt
-+for (const l of Object.values(levels) as LevelDef[]) {
-+  const t = (x: string | undefined) => (x && (VIL as Record<string, string>)[x]) || x;
-+  const m = l as unknown as Record<string, unknown>;
-+  for (const k of ['name', 'title', 'caption', 'summary', 'submenu', 'submenuNote']) // branchLabel giữ tiếng Anh vì dùng làm khoá
-+    if (typeof m[k] === 'string') m[k] = t(m[k] as string);
-+  if (l.phases) m.phases = l.phases.map(([a, b]) => [t(a) as string, b] as const);
-+}
-+
- export const levelIds = Object.keys(levels) as LevelId[];
- 
- export const rootLevel: LevelId = 'pc';
 diff --git a/lib/machine.ts b/lib/machine.ts
 index b2a6bb9..6c400dc 100644
 --- a/lib/machine.ts
@@ -1131,15 +231,16 @@ index 02e1848..f56c6d2 100644
      const cover = new T.Group();
      // Underside 7.2 mm including bevel; flash tops 6.4 mm.
 diff --git a/lib/model-stage.ts b/lib/model-stage.ts
-index 5d9ca43..79dd946 100644
+index 5d9ca43..aa699b0 100644
 --- a/lib/model-stage.ts
 +++ b/lib/model-stage.ts
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,5 @@
 +import { asmShift, asmValue } from './assembly-mode.ts';
++import { tdApply } from './thl/teardown.ts';
  import * as T from 'three';
  import { byId } from './manifest.ts';
  import { isPhysical, levels, type LevelId } from './levels.ts';
-@@ -93,6 +94,7 @@ export function pieceDestination(
+@@ -93,6 +95,7 @@ export function pieceDestination(
    position: T.Vector3,
    inventoryTarget: T.Vector3,
  ) {
@@ -1147,7 +248,7 @@ index 5d9ca43..79dd946 100644
    const entry = byId[piece.concept];
    const stage = entry.opensFirst
      ? smoothstep(0, 0.2, value)
-@@ -113,6 +115,8 @@ export function pieceDestination(
+@@ -113,6 +116,8 @@ export function pieceDestination(
        piece.lieCenter ?? piece.center,
        -(piece.inventoryScale ?? 1),
      );
@@ -1156,7 +257,7 @@ index 5d9ca43..79dd946 100644
    position.lerp(inventoryTarget, grid);
    return {
      position,
-@@ -128,6 +132,7 @@ export function applyPiecePose(
+@@ -128,6 +133,7 @@ export function applyPiecePose(
    scratch: ModelStageScratch,
    scaleMultiplier = 1,
  ) {
@@ -1164,7 +265,16 @@ index 5d9ca43..79dd946 100644
    const destination = pieceDestination(
      piece,
      level,
-@@ -205,7 +210,12 @@ export function posedModelBounds(
+@@ -147,6 +153,8 @@ export function applyPiecePose(
+     piece.object.quaternion
+       .copy(piece.restQuat)
+       .slerp(piece.lie, laidOutAmount(value));
++  // TinHocLab – tháo lắp 3D: cộng phần rút/kéo/xoay của linh kiện
++  tdApply(piece, level);
+   if (piece.batch) {
+     scratch.matrix.compose(
+       piece.object.position,
+@@ -205,7 +213,12 @@ export function posedModelBounds(
        scratch.position,
        scratch.inventoryTarget,
      );
@@ -1179,18 +289,19 @@ index 5d9ca43..79dd946 100644
      target.expandByPoint(
        scratch.point
 diff --git a/lib/scene.ts b/lib/scene.ts
-index 2d2d3c1..4f52e47 100644
+index 2d2d3c1..ac90c35 100644
 --- a/lib/scene.ts
 +++ b/lib/scene.ts
-@@ -17,6 +17,7 @@ import { towerKey } from './desktop-build.ts';
+@@ -17,6 +17,8 @@ import { towerKey } from './desktop-build.ts';
  import type { ExplorerState, Selection } from './explorer-state.ts';
  import { isPhysical, levels } from './levels.ts';
  import { smoothstep } from './layout';
 +import { asm, asmTick, asmValue } from './assembly-mode.ts';
++import { tdAfterRender, tdBind, tdFit, tdOwnsClicks, tdTick } from './thl/teardown.ts';
  import {
    ModelPoseCache,
    createModelShelf,
-@@ -130,6 +131,23 @@ export function createViewer(
+@@ -130,6 +132,23 @@ export function createViewer(
    const stageScratch = new ModelStageScratch();
    let poses = new ModelPoseCache(model, state.level),
      cancelAcceleration = scheduleRaycastAcceleration(model.root);
@@ -1214,7 +325,7 @@ index 2d2d3c1..4f52e47 100644
    /** The view the pointer was last resolved against. */
    const hoverView = new T.Matrix4();
    const shelf = createModelShelf(shelfLimit());
-@@ -174,16 +192,20 @@ export function createViewer(
+@@ -174,16 +193,20 @@ export function createViewer(
      // slider. The packing only depends on which pieces are on stage and on the
      // shape of the viewport, so it is redone when one of those changes and not
      // sixty times a second while the parts are in flight.
@@ -1238,7 +349,7 @@ index 2d2d3c1..4f52e47 100644
      }
      for (const p of model.pieces) p.visible = shown(p);
      for (const child of model.root.children)
-@@ -205,6 +227,7 @@ export function createViewer(
+@@ -205,6 +228,7 @@ export function createViewer(
      );
      loop.wake();
      autoCamera = true;
@@ -1246,7 +357,7 @@ index 2d2d3c1..4f52e47 100644
    }
    /**
     * How far the parts have settled onto the shelves, 0 to 1.
-@@ -259,8 +282,9 @@ export function createViewer(
+@@ -259,8 +283,9 @@ export function createViewer(
      // A selected part needs breathing room inside the smaller stage left by
      // the detail panel. The old 0.8 multiplier cropped focused parts at every
      // edge, even though the ordinary whole-model fit looked intentional.
@@ -1258,7 +369,16 @@ index 2d2d3c1..4f52e47 100644
          ? cameraProfile.padding
          : focus
            ? 1.16
-@@ -299,7 +323,7 @@ export function createViewer(
+@@ -292,6 +317,8 @@ export function createViewer(
+       padding,
+       cameraProfile?.minimumDistance ?? (focus ? 3.2 : 6),
+     );
++    // TinHocLab – tháo lắp 3D: góc camera đặt tên sẵn
++    tdFit(targetPosition, targetLook, camera);
+   }
+   function boxFor(p: Piece, target: T.Box3) {
+     // Use the part's authored bounds instead of measuring its descendants on
+@@ -299,7 +326,7 @@ export function createViewer(
      // each blade turns, which made the hover outline breathe in and out even
      // though the fan itself never changed size.
      const s = p.object.scale.x;
@@ -1267,7 +387,7 @@ index 2d2d3c1..4f52e47 100644
      target.setFromCenterAndSize(
        boxCenter.copy(p.object.position).addScaledVector(centre, s),
        boxSize.copy(extent).multiplyScalar(s).addScalar(0.018),
-@@ -405,6 +429,10 @@ export function createViewer(
+@@ -405,6 +432,14 @@ export function createViewer(
      key.shadow.intensity = shadowFade;
      renderer.shadowMap.autoUpdate = shadowFade > 0.002;
  
@@ -1275,10 +395,22 @@ index 2d2d3c1..4f52e47 100644
 +      poses.invalidate();
 +      changed = true;
 +    }
++    if (tdTick(dt)) {
++      poses.invalidate();
++      changed = true;
++    }
      const poseChanged = poses.update(
        amount,
        dive
-@@ -528,14 +556,14 @@ export function createViewer(
+@@ -500,6 +535,7 @@ export function createViewer(
+       hoverPending = false;
+     }
+     renderer.render(scene, camera);
++    tdAfterRender();
+     reportLabels();
+     host.dataset.cameraSettled = String(
+       !autoCamera || camera.position.distanceToSquared(targetPosition) < 0.0001,
+@@ -528,14 +564,14 @@ export function createViewer(
        isPhysical(state.level) &&
        !dive &&
        !state.isolated &&
@@ -1295,7 +427,7 @@ index 2d2d3c1..4f52e47 100644
          boxFor(p, labelBox);
          labelBox.getCenter(projected).project(camera);
          if (projected.z > 1) continue;
-@@ -567,6 +595,16 @@ export function createViewer(
+@@ -567,6 +603,32 @@ export function createViewer(
      render,
    );
    const wake = loop.wake;
@@ -1309,12 +441,31 @@ index 2d2d3c1..4f52e47 100644
 +    autoCamera = true;
 +    wake();
 +  };
++  tdBind({
++    host,
++    canvas: renderer.domElement,
++    camera,
++    controls,
++    scene,
++    renderer,
++    model: () => model,
++    level: () => state.level,
++    wake,
++    refit: () => {
++      fitDirty = true;
++      autoCamera = true;
++      wake();
++    },
++  });
    const resize = () => {
      const w = host.clientWidth,
        h = host.clientHeight;
-@@ -623,6 +661,16 @@ export function createViewer(
+@@ -622,7 +684,19 @@ export function createViewer(
+       pointerMoved(e, dragStart)
      )
        return;
++    // TinHocLab – tháo lắp 3D tự xử lý cú bấm (thl/teardown.ts)
++    if (tdOwnsClicks(state.level)) return;
      const p = hit(e, e.pointerType === 'touch' ? TOUCH_AIM : MOUSE_AIM);
 +    if (asm.active && state.level === 'pc') {
 +      // Chế độ lắp ráp: bấm vào linh kiện là chọn để lắp, không mở vào bên trong.
@@ -1329,7 +480,15 @@ index 2d2d3c1..4f52e47 100644
      callbacks.select(
        p ? { concept: p.concept, instance: p.instance } : null,
        tapIntent(e.pointerType, p, state.selection),
-@@ -733,6 +781,7 @@ export function createViewer(
+@@ -645,6 +719,7 @@ export function createViewer(
+   }
+   function inspect(e: MouseEvent) {
+     e.preventDefault();
++    if (tdOwnsClicks(state.level)) return;
+     if (rightGestureMoved) {
+       rightGestureMoved = false;
+       return;
+@@ -733,6 +808,7 @@ export function createViewer(
        powerRoutes = visiblePowerRoutes(state);
        const priorAuto = autoCamera;
        refresh();
@@ -1355,13 +514,3 @@ index 321e516..4fcfc78 100644
    renderer.shadowMap.type = T.PCFShadowMap;
    // Both stages switch `autoUpdate` off once shadows have faded out, which
    // is every frame on a diagram and on a disassembled model. A stage that
-diff --git a/vite.config.ts b/vite.config.ts
-index 14ae0bd..e40fd41 100644
---- a/vite.config.ts
-+++ b/vite.config.ts
-@@ -2,4 +2,4 @@ import { defineConfig } from 'vite';
- import react from '@vitejs/plugin-react';
- import tailwindcss from '@tailwindcss/postcss';
- import { fileURLToPath, URL } from 'node:url';
--export default defineConfig({plugins:[react()],css:{postcss:{plugins:[tailwindcss()]}},resolve:{alias:{'@':fileURLToPath(new URL('.',import.meta.url))}},server:{host:'127.0.0.1',port:5173},build:{chunkSizeWarningLimit:650}});
-+export default defineConfig({plugins:[react()],css:{postcss:{plugins:[tailwindcss()]}},resolve:{alias:{'@':fileURLToPath(new URL('.',import.meta.url))}},server:{host:'127.0.0.1',port:5173},build:{chunkSizeWarningLimit:650,rollupOptions:{input:{main:fileURLToPath(new URL('./index.html',import.meta.url)),lab:fileURLToPath(new URL('./lab.html',import.meta.url))}}}});

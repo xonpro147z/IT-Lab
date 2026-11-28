@@ -1,0 +1,128 @@
+{
+  "sku": "4281f6fc-39cd-41b5-aa58-ef9531aa208d",
+  "category": "case",
+  "opendbCategory": "PCCase",
+  "manufacturer": "Lian Li",
+  "productName": "Lian Li LANCOOL 216 RGB EATX Mid Tower Black Tempered Glass Side Panel",
+  "partNumbers": [],
+  "dimensions": {
+    "x": 484.4,
+    "y": 491.7,
+    "z": 235.2,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "depth": {
+      "value": 480.9,
+      "source": "opendb",
+      "ref": "dimensions_mm.depth"
+    },
+    "width": {
+      "value": 235,
+      "source": "opendb",
+      "ref": "dimensions_mm.width"
+    },
+    "height": {
+      "value": 491.7,
+      "source": "opendb",
+      "ref": "dimensions_mm.height"
+    },
+    "wall": {
+      "value": 1,
+      "source": "estimate",
+      "ref": "tôn vỏ ≈ 0.8–1.2 mm"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [
+        "BLACK"
+      ],
+      "source": "opendb",
+      "ref": "color"
+    },
+    "lighting": {
+      "value": [
+        "RGB"
+      ],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "sidePanel": {
+      "value": "Tempered Glass",
+      "source": "opendb",
+      "ref": "side_panel"
+    },
+    "shroud": {
+      "value": true,
+      "source": "opendb",
+      "ref": "power_supply_shroud"
+    },
+    "slots": {
+      "value": 7,
+      "source": "opendb",
+      "ref": "expansion_slots"
+    },
+    "maxGpu": {
+      "value": 392,
+      "source": "opendb",
+      "ref": "max_video_card_length"
+    },
+    "maxCooler": {
+      "value": 180.5,
+      "source": "opendb",
+      "ref": "max_cpu_cooler_height"
+    },
+    "fans": {
+      "value": 3,
+      "source": "estimate",
+      "ref": "OpenDB không ghi quạt kèm vỏ → vẽ 2 quạt trước + 1 quạt sau 120 mm"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "wall",
+      "value": 1,
+      "rule": "tôn vỏ ≈ 0.8–1.2 mm"
+    },
+    {
+      "key": "fans",
+      "value": 3,
+      "rule": "OpenDB không ghi quạt kèm vỏ → vẽ 2 quạt trước + 1 quạt sau 120 mm"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:51.419Z",
+  "specHash": "24b3cc19",
+  "meshes": [
+    "Case_Frame",
+    "Case_Floor",
+    "Case_Feet",
+    "Case_Tray",
+    "Case_PSUShroud_Top",
+    "Case_PSUShroud_Side",
+    "Case_Panel_Rear",
+    "Case_IO_Cutout",
+    "Case_ExpansionSlots",
+    "Case_Panel_Glass",
+    "Case_Panel_Glass_Trim",
+    "Case_Panel_Back",
+    "Case_Panel_Front",
+    "Case_Panel_Top",
+    "Case_Fan_01_Frame",
+    "Case_Fan_01_Hub",
+    "Case_Fan_01_Label",
+    "Case_Fan_01_Blades",
+    "Case_Fan_02_Frame",
+    "Case_Fan_02_Hub",
+    "Case_Fan_02_Label",
+    "Case_Fan_02_Blades",
+    "Case_Fan_03_Frame",
+    "Case_Fan_03_Hub",
+    "Case_Fan_03_Label",
+    "Case_Fan_03_Blades"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}

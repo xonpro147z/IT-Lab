@@ -1,0 +1,117 @@
+{
+  "sku": "61524df0-3c26-49c3-b7db-b056ad3d3028",
+  "category": "cpu",
+  "opendbCategory": "CPU",
+  "manufacturer": "Intel",
+  "productName": "Intel Core i5 14600K",
+  "partNumbers": [
+    "BX8071514600K"
+  ],
+  "dimensions": {
+    "x": 37.5,
+    "y": 45,
+    "z": 4.61,
+    "unit": "mm"
+  },
+  "specDimensions": {
+    "width": {
+      "value": 37.5,
+      "source": "standard",
+      "ref": "Intel LGA1700 (package 37.5 × 45 mm)"
+    },
+    "depth": {
+      "value": 45,
+      "source": "standard",
+      "ref": "Intel LGA1700"
+    },
+    "substrate": {
+      "value": 1.2,
+      "source": "estimate",
+      "ref": "đế CPU (substrate) ≈ 1.1–1.3 mm"
+    },
+    "ihsHeight": {
+      "value": 3.4,
+      "source": "estimate",
+      "ref": "nắp tản nhiệt IHS ≈ 3–4 mm tính cả gờ"
+    }
+  },
+  "features": {
+    "color": {
+      "value": [],
+      "source": "estimate",
+      "ref": "không có màu trong OpenDB → màu trung tính"
+    },
+    "lighting": {
+      "value": [],
+      "source": "opendb",
+      "ref": "lighting"
+    },
+    "socket": {
+      "value": "LGA 1700",
+      "source": "opendb",
+      "ref": "socket"
+    },
+    "contacts": {
+      "value": "LGA",
+      "source": "standard",
+      "ref": "Intel LGA1700 (package 37.5 × 45 mm)"
+    },
+    "vendor": {
+      "value": "Intel",
+      "source": "opendb",
+      "ref": "metadata.manufacturer"
+    },
+    "dies": {
+      "value": [
+        1,
+        0
+      ],
+      "source": "estimate",
+      "ref": "Intel desktop: một die"
+    },
+    "cores": {
+      "value": 14,
+      "source": "opendb",
+      "ref": "cores.total"
+    }
+  },
+  "modelSource": "procedural: TinHocLab procgen từ BuildCores OpenDB (CC BY-NC-SA 4.0)",
+  "accuracy": "dimension-based",
+  "estimates": [
+    {
+      "key": "substrate",
+      "value": 1.2,
+      "rule": "đế CPU (substrate) ≈ 1.1–1.3 mm"
+    },
+    {
+      "key": "ihsHeight",
+      "value": 3.4,
+      "rule": "nắp tản nhiệt IHS ≈ 3–4 mm tính cả gờ"
+    },
+    {
+      "key": "color",
+      "value": [],
+      "rule": "không có màu trong OpenDB → màu trung tính"
+    },
+    {
+      "key": "dies",
+      "value": [
+        1,
+        0
+      ],
+      "rule": "Intel desktop: một die"
+    }
+  ],
+  "generatorVersion": "1.0.0",
+  "generatedDate": "2026-11-27T13:54:50.909Z",
+  "specHash": "5d3005e4",
+  "meshes": [
+    "CPU_Substrate",
+    "CPU_Pin1_Mark",
+    "CPU_Contacts",
+    "CPU_Die_01",
+    "CPU_TIM",
+    "CPU_IHS"
+  ],
+  "license": "Dữ liệu: BuildCores OpenDB, CC BY-NC-SA 4.0. Mô hình: sinh tự động bởi TinHocLab."
+}
