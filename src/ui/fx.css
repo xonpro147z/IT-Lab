@@ -1,0 +1,67 @@
+/* TinHocLab – phong cách "tài liệu lập trình": chữ đơn cách JetBrains Mono, nền trắng, viền xám mảnh, tối giản.
+   Dùng chung cho trang chủ (body.fx). Space và Scratch có bản sao các biến này trong css riêng. */
+:root {
+  --bg: #ffffff; --bg2: #f7f7f7; --bg3: #efefef; --ink: #111111; --ink2: #3d3d3d; --mute: #767676;
+  --line: #e2e2e2; --line2: #cfcfcf; --ok: #0a7a3a; --okbg: #eaf6ee; --bad: #c0261e; --badbg: #fdeeed;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+body.fx { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.7 var(--mono); -webkit-font-smoothing: antialiased; }
+body.fx * { box-sizing: border-box; }
+body.fx button, body.fx input { font: inherit; color: inherit; }
+body.fx a { color: inherit; }
+body.fx ::selection { background: #111; color: #fff; }
+
+body.fx #top { position: sticky; top: 0; z-index: 20; height: 52px; display: flex; align-items: center; gap: 14px; padding: 0 18px; background: var(--bg); border-bottom: 1px solid var(--line); }
+body.fx #top .brand { font-weight: 700; font-size: 16px; text-decoration: none; letter-spacing: -.2px; }
+body.fx #top .brand::before { content: '~/'; color: var(--mute); font-weight: 400; }
+body.fx #crumb { color: var(--mute); white-space: nowrap; }
+body.fx #crumb b { color: var(--ink); font-weight: 500; }
+body.fx .grow { flex: 1; }
+body.fx .btn { border: 1px solid var(--line2); background: var(--bg); padding: 5px 12px; cursor: pointer; border-radius: 4px; white-space: nowrap; font-size: 13.5px; }
+body.fx .btn:hover { background: var(--bg2); }
+body.fx .input { border: 1px solid var(--line2); border-radius: 4px; padding: 5px 10px; outline: none; background: var(--bg); font-size: 13.5px; }
+body.fx .input:focus { border-color: var(--ink); }
+
+body.fx .docs { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100vh - 52px); }
+body.fx .nav { border-right: 1px solid var(--line); padding: 18px 0; position: sticky; top: 52px; height: calc(100vh - 52px); overflow: auto; }
+body.fx .nav .browse { display: flex; align-items: center; gap: 10px; padding: 0 22px 14px; font-size: 15px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+body.fx .nav .browse i { font-style: normal; font-size: 18px; }
+body.fx .nav a { display: flex; justify-content: space-between; padding: 6px 22px; text-decoration: none; color: var(--ink2); cursor: pointer; }
+body.fx .nav a:hover { background: var(--bg2); color: var(--ink); }
+body.fx .nav a small { color: var(--mute); }
+body.fx .nav .sec { padding: 14px 22px 4px; color: var(--mute); font-size: 12px; }
+body.fx .page { max-width: 880px; padding: 40px 48px 60px; }
+body.fx .page h1 { font-size: 30px; line-height: 1.25; margin: 0 0 14px; letter-spacing: -.5px; }
+body.fx .page h2 { font-size: 19px; margin: 44px 0 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+body.fx .page h2 small { font-size: 13px; color: var(--mute); font-weight: 400; }
+body.fx .page p { margin: 0 0 16px; color: var(--ink2); }
+body.fx .codebox { background: var(--bg2); border: 1px solid var(--line2); padding: 16px 20px; margin: 0 0 20px; overflow: auto; white-space: pre; }
+body.fx .codebox .c { color: var(--mute); }
+
+body.fx .rows { border-top: 1px solid var(--line); }
+body.fx .row { display: grid; grid-template-columns: 30px 40px minmax(0, 1fr) 120px 22px; align-items: center; gap: 8px; padding: 11px 6px; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); cursor: pointer; }
+body.fx .row:hover { background: var(--bg2); }
+body.fx .row .st { color: var(--line2); }
+body.fx .row.done .st { color: var(--ok); }
+body.fx .row .no { color: var(--mute); }
+body.fx .row .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.fx .row .lv { color: var(--mute); font-size: 12.5px; text-align: right; }
+body.fx .row .go { color: var(--mute); }
+body.fx .cards { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line2); margin-bottom: 14px; }
+body.fx .cards a { padding: 16px 18px; text-decoration: none; border-right: 1px solid var(--line2); cursor: pointer; }
+body.fx .cards a:last-child { border-right: 0; }
+body.fx .cards a:hover { background: var(--bg2); }
+body.fx .cards b { display: block; font-size: 15px; }
+body.fx .cards span { color: var(--mute); font-size: 12.5px; }
+
+body.fx .toast { border-radius: 4px; font-family: var(--mono); font-size: 13px; box-shadow: none; }
+body.fx .modal { border-radius: 4px; border: 1px solid var(--line2); box-shadow: 0 20px 60px rgba(0, 0, 0, .15); font-family: var(--mono); }
+body.fx.leaving { opacity: 0; transition: opacity .2s; }
+
+@media (max-width: 900px) {
+  body.fx .docs { grid-template-columns: 1fr; }
+  body.fx .nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  body.fx .page { padding: 28px 20px 50px; }
+  body.fx .cards { grid-template-columns: 1fr; }
+  body.fx .cards a { border-right: 0; border-bottom: 1px solid var(--line2); }
+}

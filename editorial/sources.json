@@ -1,0 +1,166 @@
+{
+  "$comment": "Danh sách nguồn được phép dùng. Pipeline chỉ tải từ các nguồn này (không dùng kết quả Google Search của Gemini). Địa chỉ RSS/API sẽ được kiểm tra thực tế ở giai đoạn D; nguồn nào không tải được sẽ tự tắt và ghi vào nhật ký.",
+  "reliability": {
+    "official": "Tài liệu chính thức của nhà sản xuất / tổ chức phát hành công nghệ",
+    "standard": "Cơ quan tiêu chuẩn, cơ quan nhà nước",
+    "academic": "Tổ chức giáo dục, đại học",
+    "reputable-media": "Báo chí công nghệ uy tín (chỉ dùng cho tin tức, cần đối chiếu nguồn gốc)",
+    "community": "Bách khoa cộng đồng – chỉ để định hướng, không làm nguồn duy nhất"
+  },
+  "sources": [
+    {
+      "id": "mdn",
+      "name": "MDN Web Docs",
+      "reliability": "official",
+      "kind": "api",
+      "base": "https://developer.mozilla.org",
+      "license": "CC BY-SA 2.5",
+      "topics": [
+        "internet",
+        "web"
+      ],
+      "verified": false
+    },
+    {
+      "id": "ms-learn",
+      "name": "Microsoft Learn",
+      "reliability": "official",
+      "kind": "api",
+      "base": "https://learn.microsoft.com",
+      "topics": [
+        "he-thong",
+        "office",
+        "an-toan",
+        "ai"
+      ],
+      "verified": false
+    },
+    {
+      "id": "ms-edu-blog",
+      "name": "Microsoft Education Blog",
+      "reliability": "official",
+      "kind": "rss",
+      "url": "https://educationblog.microsoft.com/feed",
+      "topics": [
+        "ai",
+        "cong-dan-so"
+      ],
+      "verified": false
+    },
+    {
+      "id": "google-edu",
+      "name": "Google for Education",
+      "reliability": "official",
+      "kind": "rss",
+      "url": "https://blog.google/outreach-initiatives/education/rss/",
+      "topics": [
+        "internet",
+        "ai",
+        "cong-dan-so"
+      ],
+      "verified": false
+    },
+    {
+      "id": "google-safety",
+      "name": "Google Safety Center",
+      "reliability": "official",
+      "kind": "page",
+      "base": "https://safety.google",
+      "topics": [
+        "an-toan",
+        "cong-dan-so"
+      ],
+      "verified": false
+    },
+    {
+      "id": "khan",
+      "name": "Khan Academy – Computing",
+      "reliability": "academic",
+      "kind": "page",
+      "base": "https://www.khanacademy.org/computing",
+      "topics": [
+        "he-thong",
+        "internet",
+        "du-lieu"
+      ],
+      "verified": false
+    },
+    {
+      "id": "nist",
+      "name": "NIST CSRC",
+      "reliability": "standard",
+      "kind": "rss",
+      "url": "https://csrc.nist.gov/csrc/media/feeds/metafeeds/all.rss",
+      "topics": [
+        "an-toan"
+      ],
+      "verified": false
+    },
+    {
+      "id": "cisa",
+      "name": "CISA – Secure Our World",
+      "reliability": "standard",
+      "kind": "page",
+      "base": "https://www.cisa.gov/secure-our-world",
+      "topics": [
+        "an-toan"
+      ],
+      "verified": false
+    },
+    {
+      "id": "ncsc-vn",
+      "name": "Cục An toàn thông tin",
+      "reliability": "standard",
+      "kind": "page",
+      "base": "https://ais.gov.vn",
+      "topics": [
+        "an-toan",
+        "cong-dan-so"
+      ],
+      "verified": false
+    },
+    {
+      "id": "wikipedia-vi",
+      "name": "Wikipedia tiếng Việt",
+      "reliability": "community",
+      "kind": "api",
+      "base": "https://vi.wikipedia.org/api/rest_v1",
+      "license": "CC BY-SA 4.0",
+      "topics": [
+        "*"
+      ],
+      "useAs": "orientation-only",
+      "verified": false
+    },
+    {
+      "id": "wikipedia-en",
+      "name": "Wikipedia tiếng Anh",
+      "reliability": "community",
+      "kind": "api",
+      "base": "https://en.wikipedia.org/api/rest_v1",
+      "license": "CC BY-SA 4.0",
+      "topics": [
+        "*"
+      ],
+      "useAs": "orientation-only",
+      "verified": false
+    }
+  ],
+  "imageSources": [
+    {
+      "id": "wikimedia-commons",
+      "name": "Wikimedia Commons",
+      "kind": "api",
+      "base": "https://commons.wikimedia.org/w/api.php",
+      "licenseField": "extmetadata.LicenseShortName"
+    },
+    {
+      "id": "openverse",
+      "name": "Openverse",
+      "kind": "api",
+      "base": "https://api.openverse.org/v1/images/",
+      "licenseFilter": "cc0,pdm,by,by-sa"
+    }
+  ],
+  "blockedDomains": []
+}
