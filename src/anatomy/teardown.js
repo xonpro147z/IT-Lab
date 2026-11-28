@@ -81,14 +81,6 @@
   #tdCap{position:fixed;z-index:61;left:50%;bottom:28px;transform:translateX(-50%);max-width:640px;background:rgba(17,22,26,.95);border:1px solid #e8b86a;border-radius:14px;padding:10px 18px;text-align:center;display:none}
   #tdCap b{color:#e8b86a}
   #tdLabels{position:fixed;inset:0;z-index:58;pointer-events:none}
-  #tdPanel select{width:100%;margin-top:6px;padding:7px 8px;border-radius:9px;border:1px solid #33434a;background:#0b0f12;color:#dfe7ea;font:13px system-ui}
-  #tdPanel .acc{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:99px;margin-left:4px}
-  #tdPanel .acc.dimension-based{background:#1d4a30;color:#9fe3b8}#tdPanel .acc.approximate{background:#4a3a1d;color:#f0cf8f}#tdPanel .acc.exact{background:#1d3a4a;color:#9fd2e3}
-  #tdPanel table.dims{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}#tdPanel table.dims td{padding:2px 4px;border-top:1px solid #222c30;vertical-align:top}
-  #tdPanel table.dims td.s{color:#7f9097;font-size:11px}
-  #tdPanel details{margin-top:6px;font-size:12.5px;color:#b7c4c9}#tdPanel details summary{cursor:pointer;color:#dfe7ea}
-  #tdPanel ul.lib{list-style:none;padding:0;margin:0}#tdPanel ul.lib li{padding:5px 8px;border-radius:8px;margin:2px 0;background:#161d21;cursor:pointer;font-size:12.5px}
-  #tdPanel ul.lib li:hover{background:#1f292e}#tdPanel ul.lib li small{color:#7f9097;display:block}
   #tdLabels svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
   #tdLabels .lb{position:absolute;transform:translateY(-50%);white-space:nowrap;background:rgba(17,22,26,.88);border:1px solid #33434a;border-radius:8px;padding:2px 8px;font-size:12.5px}
   #tdLabels .lb.sel{border-color:#e8b86a;color:#fff}#tdLabels .lb.out{opacity:.75}
@@ -129,55 +121,6 @@
     const cp = $('#tdBar [data-cp]'); if (cp) cp.disabled = !t.cut.axis;
   }
 
-  // ---------------- P4: mô hình theo SKU
-  const ACC = { exact: 'Chính xác', 'dimension-based': 'Dựng theo kích thước', approximate: 'Ước lượng' };
-  const SRC = { opendb: 'OpenDB', standard: 'Tiêu chuẩn', estimate: 'Ước lượng' };
-  const FROM = { library: 'lấy từ thư viện dựng sẵn', cache: 'lấy từ bộ nhớ đệm của máy', generated: 'vừa sinh và lưu vào bộ nhớ đệm' };
-  const CAT = { ram: 'RAM', ssd: 'SSD', cpu: 'CPU', gpu: 'Card đồ hoạ', motherboard: 'Bo mạch chủ', psu: 'Bộ nguồn', case: 'Thùng máy', cooler: 'Tản nhiệt CPU' };
-  const DIMN = { length: 'Dài', width: 'Rộng', height: 'Cao', depth: 'Sâu', thickness: 'Dày', pcbHeight: 'Cao bo mạch', pcb: 'Dày bo mạch', top: 'Cao linh kiện', heatsinkHeight: 'Dày tản nhiệt', substrate: 'Dày đế', ihsHeight: 'Cao nắp IHS', shroudHeight: 'Cao vỏ tản', fan: 'Cỡ quạt', fanSize: 'Cỡ quạt', fanHoles: 'Khoảng lỗ vít quạt', radiator: 'Dài két', radThickness: 'Dày két', pumpHeight: 'Cao khối bơm', towerDepth: 'Dày tháp', base: 'Cỡ đế', wall: 'Dày tôn' };
-  let items = null, prev = null, busy = false, libOpen = false;
-  const libItems = () => (items ??= td().lib.items().catch((e) => { toast('Không đọc được thư viện mô hình: ' + e.message, 'err'); return []; }));
-  function metaCard(meta, from) {
-    const d = meta.dimensions;
-    const rows = Object.entries(meta.specDimensions).map(([k, v]) => `<tr><td>${esc(DIMN[k] || k)}</td><td>${Number(v.value).toFixed(v.value % 1 ? 2 : 0)} mm</td><td class="s">${SRC[v.source]}: ${esc(v.ref)}</td></tr>`).join('');
-    return `<div style="margin-top:6px"><b>${esc(meta.productName)}</b><span class="acc ${meta.accuracy}">${ACC[meta.accuracy]}</span>
-      <div class="role">${esc(meta.manufacturer)} · SKU ${esc((meta.partNumbers[0] || meta.sku))} · Hộp bao ${d.x} × ${d.y} × ${d.z} mm${from ? ' · ' + FROM[from] : ''}</div>
-      <details><summary>Kích thước và nguồn (${Object.keys(meta.specDimensions).length})</summary><table class="dims">${rows}</table></details>
-      ${meta.estimates.length ? `<details><summary>Ước lượng đã dùng (${meta.estimates.length})</summary><ul>${meta.estimates.map((e) => `<li>${esc(e.key)}: ${esc(typeof e.value === 'object' ? JSON.stringify(e.value) : e.value)} – ${esc(e.rule)}</li>`).join('')}</ul></details>` : ''}
-      <div class="role" style="font-size:11.5px">Bộ sinh ${esc(meta.generatorVersion)} · ${esc(meta.generatedDate.slice(0, 10))} · ${esc(meta.license)}</div></div>`;
-  }
-  async function skuBlock(piece) {
-    const t = td(), rule = t.swapRules[sel.concept], box = $('#tdSku');
-    if (!rule || !box) return;
-    const all = (await libItems()).filter((it) => it.category === rule.category && (!rule.accept || rule.accept(it)));
-    const cur = t.skuOf(piece);
-    box.innerHTML = `<h3>Mẫu linh kiện (SKU)</h3><select>${['<option value="">Mô hình gốc (PC Anatomy)</option>', ...all.map((it) => `<option value="${it.sku}" ${cur && cur.sku === it.sku ? 'selected' : ''}>${esc(it.productName)}</option>`)].join('')}</select>
-      ${cur ? metaCard(cur.meta) + `<div class="row"><button data-p="${cur.sku}">👁 Xem riêng, bung rời</button></div>` : '<p class="help">Chọn một SKU từ BuildCores OpenDB để thay mô hình trong máy bằng mô hình dựng theo kích thước thật.</p>'}`;
-    box.querySelector('select').onchange = async (e) => {
-      if (busy) return; busy = true;
-      try { await t.swapSku(piece, e.target.value || null); } catch (err) { toast('Không đổi được mô hình: ' + err.message, 'err'); }
-      busy = false; render();
-    };
-    const pb = box.querySelector('[data-p]'); if (pb) pb.onclick = () => openPreview(pb.dataset.p);
-  }
-  async function libraryBlock() {
-    const box = $('#tdLib'); if (!box) return;
-    const all = await libItems();
-    const cats = Object.keys(CAT).filter((c) => all.some((it) => it.category === c));
-    box.innerHTML = `<details ${libOpen ? 'open' : ''}><summary><b>Thư viện mô hình (${all.length} SKU từ OpenDB)</b></summary>${cats.map((c) => `<h3>${CAT[c]}</h3><ul class="lib">${all.filter((it) => it.category === c).map((it) => `<li data-p="${it.sku}">${esc(it.productName)}<small>${it.entry ? `<span class="acc ${it.entry.accuracy}">${ACC[it.entry.accuracy]}</span> có sẵn trong thư viện` : 'chưa có – sẽ sinh khi mở'}</small></li>`).join('')}</ul>`).join('')}</details>`;
-    box.querySelector('details').ontoggle = (e) => (libOpen = e.target.open);
-    box.querySelectorAll('[data-p]').forEach((li) => (li.onclick = () => openPreview(li.dataset.p)));
-  }
-  async function openPreview(sku) {
-    if (busy) return; busy = true;
-    try { await td().previewSku(sku); const ex = $('#tdBar [data-ex]'); if (ex) ex.value = 0; } catch (e) { toast('Không mở được mô hình: ' + e.message, 'err'); }
-    busy = false;
-  }
-  const PART = { PCB: 'Bo mạch', Board: 'Bo mạch', Fan: 'Quạt', Fans: 'Quạt', Heatsink: 'Tản nhiệt', Backplate: 'Tấm lưng', Shroud: 'Vỏ quạt', Bracket: 'Ke', Chips: 'Chip', Front: 'trước', Back: 'sau', Heatspreader: 'Tản nhiệt', L: 'trái', R: 'phải', RGB: 'Đèn RGB', Contacts: 'Chân tiếp xúc', Dies: 'Die', IHS: 'Nắp IHS', Package: 'Đế CPU', Socket: 'Socket', DIMM: 'Khe RAM', Slots: '', PCIe: 'Khe PCIe', M2: 'Khe M.2', VRM: 'VRM', Chipset: 'Chipset', IO: 'Cổng I/O', Connectors: 'Đầu cắm', PowerConnectors: 'Đầu nguồn', Cover: 'Nắp', Housing: 'Vỏ', FanGrille: 'Lưới quạt', Rear: 'Mặt sau', Internals: 'Bên trong', Frame: 'Khung', Tray: 'Khay mainboard', PSUShroud: 'Che nguồn', Panel: 'Tấm', Side: 'hông', Top: 'nóc', Base: 'Đế', Heatpipes: 'Ống dẫn nhiệt', Tower: 'Tháp tản', Pump: 'Khối bơm', Radiator: 'Két tản', Tubes: 'Ống nước', Shell: 'Vỏ', Bottom: 'dưới', SATA: 'SATA', Connector: 'Đầu cắm', ModularPanel: 'Bảng cắm dây' };
-  const partName = (n) => n.replace(/^(GPU|RAM|SSD|CPU|MB|PSU|Case|Cooler|AIO)_/, '').split('_').map((w) => (PART[w] ?? w)).filter(Boolean).join(' ');
-  addEventListener('td:preview', (e) => { prev = e.detail; render(); });
-  addEventListener('td:sku', (e) => toast(`Đã thay bằng ${e.detail.meta.productName} (${FROM[e.detail.from]}).`, 'ok'));
-
   function render() {
     const bd = $('#tdPanel .bd'); if (!bd) return;
     const t = td();
@@ -185,14 +128,6 @@
     const multi = (c) => list.filter((x) => x.concept === c).length > 1;
     const label = (x) => nm(x.concept) + (multi(x.concept) ? ' ' + (x.instance + 1) : '');
     const steps = window.__thlSteps || {};
-    if (prev) {
-      bd.innerHTML = `<div class="card"><b class="n">👁 Xem riêng mô hình</b>${metaCard(prev.meta, prev.from)}
-        <p class="help">Kéo thanh <b>Bung rời</b> ở trên để tách các bộ phận theo hướng ghi trong file GLB. Kéo để xoay, cuộn để phóng to.</p>
-        <div class="row"><button class="pri" data-x>✕ Quay lại máy</button></div></div><div id="tdLib"></div>`;
-      bd.querySelector('[data-x]').onclick = () => { td().previewSku(null); const ex = $('#tdBar [data-ex]'); if (ex) ex.value = 0; };
-      libraryBlock();
-      return;
-    }
     let info = '<p class="help">Bấm vào một linh kiện trong máy để xem thông tin. Kéo nó để rút ra theo đúng hướng lắp.</p>';
     if (sel) {
       const st = item ? STATUS[item.status] : null;
@@ -205,13 +140,11 @@
           <button class="go" data-a="install" ${item.status === 'seated' || item.status === 'moving' ? 'disabled' : ''}>⬇ Lắp vào</button>
           <button data-a="focus">🎯 Nhìn gần</button></div>
           <div class="row"><button data-r="y,-90" title="Q">↺ Xoay trái</button><button data-r="y,90" title="E">↻ Xoay phải</button><button data-r="x,90" title="R">⤾ Lật</button><button data-r="z,90" title="F">⟳ Nghiêng</button><button data-a="straight" title="T">Căn thẳng</button></div>` : ''}
-        ${item && t.swapRules[sel.concept] ? '<div id="tdSku"></div>' : ''}
         ${OUT[sel.concept] ? `<h3>Cách tháo</h3><ol class="steps">${OUT[sel.concept].map((s) => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
         ${ins.length ? `<h3>Cách lắp</h3><ol class="steps">${ins.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}</div>`;
     }
     bd.innerHTML = `${info}
       <h3>Linh kiện</h3><ul class="parts">${list.map((x) => `<li data-c="${x.concept}" data-i="${x.instance}" class="${sel && sel.concept === x.concept && sel.instance === x.instance ? 'sel' : ''}"><i style="background:${STATUS[x.status][1]}"></i>${esc(label(x))}<span style="margin-left:auto;font-size:12px;color:#7f9097">${STATUS[x.status][0]}</span></li>`).join('')}</ul>
-      <div id="tdLib" style="margin-top:14px"></div>
       <h3>Hướng dẫn</h3><div class="row"><button data-a="tourOut">▶ Xem cách tháo</button><button data-a="tourIn">▶ Xem cách lắp</button></div>
       <div class="row"><button data-a="all-out">Tháo hết</button><button data-a="all-in">Lắp lại hết</button></div>
       <p class="help">Kéo linh kiện: rút dọc theo khe, ra khỏi khe thì kéo tự do (không xuyên qua vỏ hay linh kiện khác). <kbd>Shift</kbd>+kéo: xoay tự do. <kbd>Q</kbd>/<kbd>E</kbd>/<kbd>R</kbd>/<kbd>F</kbd>: xoay 90°, <kbd>T</kbd>: căn thẳng. Thả gần chỗ lắp (khung xanh) và đúng hướng để lắp lại. Kéo khoảng trống để xoay camera.</p>`;
@@ -229,8 +162,6 @@
     }));
     bd.querySelectorAll('[data-r]').forEach((b) => (b.onclick = () => { const [ax, d] = b.dataset.r.split(','); if (!t.rotate(pc(), ax, +d)) toast('Chỉ xoay được linh kiện đã tháo ra khỏi máy.'); }));
     bd.querySelectorAll('ul.parts li').forEach((li) => (li.onclick = () => t.selectBy(li.dataset.c, +li.dataset.i)));
-    if (item && t.swapRules[sel.concept]) skuBlock(pc());
-    libraryBlock();
   }
 
   // Trình diễn tự chạy (mẫu "auto tour" của Teardown): chạm vào máy là dừng, nhường quyền ngay.
@@ -281,7 +212,7 @@
           const ly = ys[i], c = it.selected ? '#e8b86a' : '#8fa3aa';
           const ex = col.left ? col.x + 6 : col.x - 6;
           svg += `<polyline points="${it.x},${it.y} ${ex},${ly} ${col.x},${ly}" fill="none" stroke="${c}" stroke-width="1.1"/><circle cx="${it.x}" cy="${it.y}" r="3" fill="${it.selected ? '#e8b86a' : '#dfe7ea'}"/>`;
-          const text = it.concept.startsWith('part:') ? partName(it.concept.slice(5)) : nm(it.concept) + (multi(it.concept) ? ' ' + (it.instance + 1) : '');
+          const text = nm(it.concept) + (multi(it.concept) ? ' ' + (it.instance + 1) : '');
           html += `<div class="lb ${it.selected ? 'sel' : ''} ${it.status === 'out' ? 'out' : ''}" style="${col.left ? `right:${W - col.x}px` : `left:${col.x}px`};top:${ly}px">${esc(text)}</div>`;
         });
       }

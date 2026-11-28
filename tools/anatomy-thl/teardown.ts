@@ -19,8 +19,6 @@ import type { Piece } from '../models.ts';
 import { resolvePick } from '../picking.ts';
 import { fitCameraToBounds } from '../stage-runtime.ts';
 import { clamp01, easeInOutCubic, layer } from './ease.ts';
-import * as lib from './procgen/library.ts';
-import type { ModelMeta } from './procgen/index.ts';
 
 type Model = { root: T.Group; pieces: Piece[] };
 type V3 = [number, number, number];
@@ -139,7 +137,6 @@ export const td = {
     this.explode = this.exNow = 0;
     this.xray = 'off';
     this.cut.axis = null;
-    skuReset();
     restoreMaterials();
     if (on) {
       this.model = null; // setModel ở khung hình kế tiếp
@@ -323,7 +320,6 @@ function emitState() {
 
 // ------------------------------------------------------------------ mô hình
 function setModel(m: Model) {
-  skuReset(); // mô hình SKU gắn vào máy cũ: trả lại mô hình gốc trước khi đổi máy
   td.model = m;
   td.st.clear();
   restoreMaterials();
@@ -556,7 +552,6 @@ export function tdTick(dt: number) {
     applyMaterials();
     td.matDirty = false;
   }
-  if (tickPreview()) moving = true;
   updateHelpers();
   return moving;
 }
@@ -567,7 +562,6 @@ const tmpBox = new T.Box3(),
   tmpDir = new T.Vector3();
 /** Ghi đè điểm nhìn khi đang chọn một góc camera đặt tên. Trả về true nếu đã ghi đè. */
 export function tdFit(targetPosition: T.Vector3, targetLook: T.Vector3, camera: T.PerspectiveCamera) {
-  if (td.active && preview) return fitBox(new T.Box3().setFromObject(preview.holder), [0.8, 0.55, 1.1], 1.05, 0.5, targetPosition, targetLook, camera);
   if (!td.active || !td.view || !td.model) return false;
   const v = VIEWS[td.view];
   const focus = td.view === 'selected' ? (td.selected ? [td.selected] : []) : v.focus ? td.model.pieces.filter((p) => v.focus!.includes(p.concept) && p.visible) : [];
@@ -739,7 +733,6 @@ let lastFrame = '';
 const proj = new T.Vector3();
 export function tdAfterRender() {
   if (!ctx || !td.active || !td.model) return;
-  if (preview) return previewLabels();
   // toạ độ màn hình (viewport) để lớp nhãn đặt position:fixed
   const r = ctx.host.getBoundingClientRect();
   const w = r.width,
@@ -860,7 +853,6 @@ function beginFree(d: Drag, e: PointerEvent) {
 function down(e: PointerEvent) {
   if (!ctx || !td.active || ctx.level() !== 'pc' || !td.model) return;
   if (e.pointerType === 'mouse' && e.button !== 0) return;
-  if (preview) return; // đang xem riêng một mô hình: kéo để xoay camera
   const p = pick(e);
   // người dùng chạm vào: dừng trình diễn tự chạy
   if (td.queue.length) {
@@ -1010,225 +1002,3 @@ export function tdBind(c: Ctx) {
 }
 /** Trả về true nếu viewer phải bỏ qua cú bấm (chế độ tháo lắp tự xử lý). */
 export const tdOwnsClicks = (level: string) => td.active && level === 'pc';
-
-// ================================================================== P4: mô hình theo SKU (thư viện procgen)
-/** 1 đơn vị của thùng máy PC Anatomy = 35 mm (lib/machine.ts: mm(v) = v / 35). */
-const UNIT = 35;
-type Item = lib.Item;
-/** Linh kiện nào trong máy đổi được sang mô hình SKU, và SKU nào hợp với chỗ lắp đó. */
-export const SWAP: Record<string, { category: string; accept?: (it: Item) => boolean; kit?: boolean }> = {
-  ram: { category: 'ram', kit: true },
-  nvme: { category: 'ssd', accept: (it) => /M\.2/.test(it.formFactor ?? '') },
-  ssd: { category: 'ssd', accept: (it) => it.formFactor === '2.5"' },
-  processor: { category: 'cpu' },
-  graphicscard: { category: 'gpu' },
-  psu: { category: 'psu' },
-  cpucooler: { category: 'cooler', accept: (it) => !it.water },
-};
-/** Mặt tựa khi thay: mô hình mới áp đúng mặt này của chỗ cũ (mặt cắm vào bo, mặt ke sau vỏ…), các trục khác căn giữa. */
-const ANCHOR: Record<string, Partial<Record<'x' | 'y' | 'z', -1 | 1>>> = {
-  graphicscard: { x: -1, y: 1, z: -1 },
-  ram: { z: -1 },
-  nvme: { z: -1 },
-  processor: { z: -1 },
-  cpucooler: { z: -1 },
-  psu: { x: -1, y: -1 },
-  ssd: { y: -1 },
-};
-type Orig = { children: T.Object3D[]; extent: T.Vector3; center: T.Vector3; size: number };
-const swapped = new Map<Piece, { sku: string; meta: ModelMeta; orig: Orig }>();
-
-/** 24 phép quay vuông góc; chọn phép làm kích thước mô hình mới khớp chỗ cũ nhất (ưu tiên giữ nguyên hướng). */
-const ROTS: T.Quaternion[] = (() => {
-  const out: T.Quaternion[] = [];
-  const seen = new Set<string>();
-  const e = new T.Euler();
-  for (let a = 0; a < 4; a++)
-    for (let b = 0; b < 4; b++)
-      for (let c = 0; c < 4; c++) {
-        const q = new T.Quaternion().setFromEuler(e.set((a * Math.PI) / 2, (b * Math.PI) / 2, (c * Math.PI) / 2));
-        const m = new T.Matrix4().makeRotationFromQuaternion(q).elements.map((v) => Math.round(v)).join(',');
-        if (!seen.has(m)) seen.add(m), out.push(q);
-      }
-  return out;
-})();
-function bestRotation(size: T.Vector3, want: T.Vector3) {
-  let best = ROTS[0],
-    score = Infinity;
-  const v = new T.Vector3();
-  for (const q of ROTS) {
-    v.copy(size).applyQuaternion(q);
-    let sc = 0;
-    for (const k of ['x', 'y', 'z'] as const) sc += Math.abs(Math.log(Math.max(0.02, Math.abs(v[k])) / Math.max(0.02, want[k])));
-    if (q === ROTS[0]) sc -= 0.3;
-    if (sc < score) (score = sc), (best = q);
-  }
-  return best;
-}
-
-function applySwap(p: Piece, model: T.Group, meta: ModelMeta) {
-  const o = p.object;
-  let rec = swapped.get(p);
-  const orig: Orig = rec?.orig ?? { children: [...o.children], extent: p.extent.clone(), center: p.center.clone(), size: p.size };
-  for (const c of [...o.children]) o.remove(c);
-  model.traverse((m) => {
-    const mesh = m as T.Mesh;
-    if (!mesh.isMesh) return;
-    mesh.castShadow = mesh.receiveShadow = true;
-    for (const mat of [mesh.material].flat()) (mat as T.MeshStandardMaterial).envMapIntensity = 0.8;
-  });
-  const scaled = new T.Group();
-  scaled.scale.setScalar(1 / UNIT);
-  scaled.add(model);
-  const turn = new T.Group();
-  turn.add(scaled);
-  scaled.updateMatrixWorld(true);
-  const size = new T.Box3().setFromObject(scaled).getSize(new T.Vector3());
-  turn.quaternion.copy(bestRotation(size, orig.extent));
-  turn.updateMatrixWorld(true);
-  const box = new T.Box3().setFromObject(turn);
-  const oMin = orig.center.clone().addScaledVector(orig.extent, -0.5),
-    oMax = orig.center.clone().addScaledVector(orig.extent, 0.5);
-  const a = ANCHOR[p.concept] ?? {};
-  for (const k of ['x', 'y', 'z'] as const) turn.position[k] = a[k] === -1 ? oMin[k] - box.min[k] : a[k] === 1 ? oMax[k] - box.max[k] : (oMin[k] + oMax[k]) / 2 - (box.min[k] + box.max[k]) / 2;
-  const holder = new T.Group();
-  holder.name = 'SKU_' + meta.sku;
-  holder.quaternion.copy(((o.userData.tdRest as T.Quaternion) ?? o.quaternion).clone().invert());
-  holder.add(turn);
-  o.add(holder);
-  box.translate(turn.position);
-  p.extent.copy(box.getSize(new T.Vector3()));
-  p.center.copy(box.getCenter(new T.Vector3()));
-  p.size = Math.max(p.extent.x, p.extent.y, p.extent.z, 0.1);
-  swapped.set(p, { sku: meta.sku, meta, orig });
-  rec = swapped.get(p);
-  void rec;
-}
-function unswap(p: Piece) {
-  const r = swapped.get(p);
-  if (!r) return;
-  const o = p.object;
-  for (const c of [...o.children]) o.remove(c);
-  for (const c of r.orig.children) o.add(c);
-  p.extent.copy(r.orig.extent);
-  p.center.copy(r.orig.center);
-  p.size = r.orig.size;
-  swapped.delete(p);
-}
-function relayout() {
-  computeParking();
-  if (td.explode > 0) computeExplode();
-  td.matDirty = true; // vật liệu của mô hình mới cũng phải theo X-quang, mặt cắt
-  emitState();
-  td.touch();
-}
-function skuReset() {
-  closePreview();
-  for (const p of [...swapped.keys()]) unswap(p);
-}
-
-// ------------------------------------------------------------------ xem riêng một mô hình (bung rời được)
-let preview: { holder: T.Group; parts: { o: T.Object3D; base: T.Vector3; e: T.Vector3 }[]; meta: ModelMeta } | null = null;
-function closePreview() {
-  if (!preview) return;
-  preview.holder.removeFromParent();
-  if (td.model) td.model.root.visible = true;
-  preview = null;
-  td.explode = td.exNow = 0;
-  emit('td:preview', null);
-  ctx?.refit();
-  td.touch();
-}
-function tickPreview() {
-  if (!preview) return false;
-  for (const { o, base, e } of preview.parts) o.position.copy(base).addScaledVector(e, td.exNow * 1.4);
-  return td.exNow !== td.explode;
-}
-function previewLabels() {
-  const r = ctx!.host.getBoundingClientRect();
-  const items: { concept: string; instance: number; x: number; y: number; status: Status; selected: boolean }[] = [];
-  const b = new T.Box3();
-  for (const { o } of preview!.parts) {
-    b.setFromObject(o).getCenter(proj).project(ctx!.camera);
-    if (proj.z > 1 || Math.abs(proj.x) > 1 || Math.abs(proj.y) > 1) continue;
-    items.push({ concept: 'part:' + o.name.replace(/_Assembly$/, ''), instance: 0, x: Math.round(r.left + ((proj.x + 1) / 2) * r.width), y: Math.round(r.top + ((1 - proj.y) / 2) * r.height), status: 'seated', selected: false });
-  }
-  const sig = JSON.stringify(items);
-  if (sig === lastFrame) return;
-  lastFrame = sig;
-  emit('td:frame', items);
-}
-function fitBox(box: T.Box3, dir: V3, pad: number, minDist: number, targetPosition: T.Vector3, targetLook: T.Vector3, camera: T.PerspectiveCamera) {
-  const aspect = camera.aspect,
-    fovY = camera.fov,
-    W = ctx!.host.clientWidth,
-    H = ctx!.host.clientHeight;
-  if (W > td.inset.right && H > td.inset.top) camera.aspect = (W - td.inset.right) / (H - td.inset.top);
-  if (H > td.inset.top) camera.fov = T.MathUtils.radToDeg(2 * Math.atan(Math.tan(T.MathUtils.degToRad(fovY) / 2) * (1 - td.inset.top / H)));
-  fitCameraToBounds(box, camera, targetPosition, targetLook, new T.Vector3(...dir), new T.Vector3(), pad, minDist);
-  camera.aspect = aspect;
-  camera.fov = fovY;
-  return true;
-}
-
-Object.assign(td, {
-  /** Thư viện mô hình linh kiện (procgen): danh mục SKU, nạp theo SKU. */
-  lib,
-  swapRules: SWAP,
-  /** SKU đang gắn ở một linh kiện trong máy (null: mô hình gốc của PC Anatomy). */
-  skuOf(p: Piece) {
-    const r = swapped.get(p);
-    return r ? { sku: r.sku, meta: r.meta } : null;
-  },
-  /** Thay linh kiện trong máy bằng mô hình của SKU (null: trả về mô hình gốc). RAM đổi cả bộ. */
-  async swapSku(p: Piece, sku: string | null) {
-    const rule = SWAP[p.concept];
-    if (!rule) throw new Error('Linh kiện này chưa đổi được theo SKU');
-    const targets = rule.kit ? td.pieces(p.concept) : [p];
-    if (!sku) {
-      for (const q of targets) unswap(q);
-      relayout();
-      return null;
-    }
-    let first: lib.Loaded | null = null;
-    for (const q of targets) {
-      const got = await lib.load(sku);
-      first ??= got;
-      applySwap(q, got.model, got.meta);
-    }
-    relayout();
-    emit('td:sku', { concept: p.concept, sku, meta: first!.meta, from: first!.from });
-    return first;
-  },
-  /** Xem riêng mô hình một SKU giữa sân khấu; thanh "Bung rời" tách các bộ phận theo hướng ghi trong GLB. */
-  async previewSku(sku: string | null) {
-    if (!sku) return closePreview();
-    if (!ctx || !td.model) return;
-    const got = await lib.load(sku);
-    closePreview();
-    const holder = new T.Group();
-    holder.name = 'THL_Preview';
-    holder.scale.setScalar(1 / UNIT);
-    const box = new T.Box3().setFromObject(got.model);
-    got.model.position.sub(box.getCenter(new T.Vector3()));
-    holder.add(got.model);
-    got.model.traverse((m) => {
-      if ((m as T.Mesh).isMesh) (m as T.Mesh).castShadow = (m as T.Mesh).receiveShadow = true;
-    });
-    td.model.root.updateMatrixWorld();
-    holder.position.copy(td.outer.getCenter(new T.Vector3())).applyMatrix4(td.model.root.matrixWorld);
-    const parts: { o: T.Object3D; base: T.Vector3; e: T.Vector3 }[] = [];
-    got.model.traverse((o) => {
-      const e = o.userData.explode as V3 | undefined;
-      if (e && (e[0] || e[1] || e[2])) parts.push({ o, base: o.position.clone(), e: new T.Vector3(...e) });
-    });
-    ctx.scene.add(holder);
-    td.model.root.visible = false;
-    preview = { holder, parts, meta: got.meta };
-    td.explode = td.exNow = 0;
-    emit('td:preview', { meta: got.meta, from: got.from });
-    ctx.refit();
-    td.touch();
-    return got;
-  },
-});
