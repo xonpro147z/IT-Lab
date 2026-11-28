@@ -85,6 +85,7 @@ app.whenReady().then(() => {
   createWindow();
   require('./updater').init();
   require('./ic3main').init();
+  // Thư viện linh kiện BuildCores OpenDB (dữ liệu xử lý ở đây, giao diện chỉ nhận từng trang kết quả)
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 

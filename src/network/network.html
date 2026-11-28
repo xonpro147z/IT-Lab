@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:">
+<title>Phòng Mạng – TinHocLab</title>
+<link rel="stylesheet" href="../ui/mono.css">
+<link rel="stylesheet" href="network.css">
+</head>
+<body>
+<header id="top">
+  <span class="logo" title="Phòng Mạng"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  <button class="pill" id="bMissions">◇ <span id="missionShort">Thử thách</span> <b>▾</b></button>
+  <div class="center"><span>Phòng Mạng</span> / <b id="title">Tự do</b></div>
+  <span class="grow"></span>
+  <button class="ib" id="bSave" title="Lưu sơ đồ ra tệp">⇩ Lưu</button>
+  <button class="ib" id="bOpen" title="Mở sơ đồ từ tệp">⇧ Mở</button>
+  <button class="ib" id="bClear" title="Xoá hết, làm sơ đồ mới">＋ Mới</button>
+  <button class="pill" data-nav="../index.html">‹ TinHocLab</button>
+  <input type="file" id="file" accept=".json,.thlnet" hidden>
+</header>
+
+<main id="stage">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="world"><g id="gLinks"></g><g id="gDevs"></g><g id="gPkts"></g><path id="rubber" /></g></svg>
+
+  <div class="card" id="modes">
+    <button data-mode="rt" class="on">◷ Thời gian thực</button>
+    <button data-mode="sim">⌛ Mô phỏng</button>
+  </div>
+
+  <div class="card rail" id="rail">
+    <button data-tool="select" class="on" title="Chọn / di chuyển (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 2-2 6z"/></svg></button>
+    <button data-tool="connect" title="Nối cáp (C)"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M7.7 16.3l8.6-8.6"/></svg></button>
+    <button data-tool="delete" title="Xoá (Del)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></button>
+    <button data-tool="pdu" title="Gửi gói tin (ping 1 lần): bấm máy gửi rồi máy nhận (P)"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/></svg></button>
+    <hr>
+    <button data-act="zin" title="Phóng to"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5M8 11h6M11 8v6"/></svg></button>
+    <button data-act="zout" title="Thu nhỏ"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5M8 11h6"/></svg></button>
+    <button data-act="fit" title="Vừa khung"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
+  </div>
+
+  <div class="card simpanel" id="sim" hidden>
+    <div class="sp-h"><b>Bảng mô phỏng</b><span class="mut">Điều khiển</span></div>
+    <div class="play">
+      <button id="bBack" title="Chạy lại từ đầu (xoá sự kiện)">⏮</button>
+      <button id="bPlay" class="big" title="Chạy / tạm dừng">▶</button>
+      <button id="bStep" title="Bước tiếp: tới khi một gói tin tới nơi">⏭</button>
+    </div>
+    <div class="sp-row"><span class="mut">Danh sách sự kiện</span><a id="bReset">Đặt lại mô phỏng</a></div>
+    <div class="evt"><table><thead><tr><th></th><th>Thời gian</th><th>Từ</th><th>Tới</th><th>Loại</th></tr></thead><tbody id="evBody"></tbody></table><p class="empty" id="evEmpty">Chưa có gói tin nào.<br>Dùng công cụ ✉ hoặc lệnh <code>ping</code> để gửi.</p></div>
+    <div class="sp-row"><span class="mut">Lọc theo giao thức</span><a id="bAll">Chọn hết</a></div>
+    <div class="flt" id="flt"></div>
+  </div>
+
+  <div class="card dock" id="dock"></div>
+  <div class="pop" id="pop" hidden></div>
+
+  <div class="card mission" id="mission" hidden>
+    <div class="mh"><span class="lv" id="mLv"></span><button class="x" id="mMin" title="Thu gọn">–</button></div>
+    <h3 id="mTitle"></h3>
+    <div id="mBody"></div>
+    <div id="mQuiz"></div>
+    <div class="mf"><button class="go" id="mCheck">▶ Kiểm tra</button><button class="ghost" id="mRestart" title="Dựng lại sơ đồ ban đầu">↺ Làm lại</button></div>
+    <div id="mRes"></div>
+  </div>
+
+  <div class="hint" id="hint"></div>
+  <div class="menu" id="menu" hidden></div>
+</main>
+
+<div id="win" class="win" hidden></div>
+<div id="pkt" class="win pkt" hidden></div>
+<div id="toast"></div>
+
+<script src="../ui/motion.js"></script>
+<script type="module" src="net-ui.js"></script>
+</body>
+</html>

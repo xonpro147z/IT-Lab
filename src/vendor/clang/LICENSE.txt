@@ -1,0 +1,2 @@
+YoWASP Clang/LLD 22.0.0-git20695-13 – https://github.com/YoWASP/clang
+Gói YoWASP: ISC. LLVM/Clang: Apache License 2.0 with LLVM Exceptions – https://llvm.org/LICENSE.txt

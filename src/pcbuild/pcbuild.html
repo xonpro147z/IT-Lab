@@ -9,10 +9,10 @@
 <body>
 <p>Đang mở phòng lắp ráp…</p>
 <script>
-// Phòng lắp ráp dùng mô hình 3D của PC Anatomy (src/anatomy) kèm chế độ lắp ráp, bài thi của TinHocLab.
-// #anatomy → mở thẳng chế độ khám phá giải phẫu; #exam → mở bài thi; #teardown → tháo lắp 3D.
+// Phòng lắp ráp dùng mô hình 3D của PC Anatomy (src/anatomy) kèm chế độ lắp ráp của TinHocLab.
+// Mặc định mở "Khám phá" trước; #practice → mở thẳng "Luyện lắp".
 var h = location.hash;
-var mode = /^#anatomy/.test(h) ? 'explore' : /^#exam/.test(h) ? 'exam' : /^#teardown/.test(h) ? 'teardown' : 'practice';
+var mode = /^#practice/.test(h) ? 'practice' : 'explore';
 location.replace('../anatomy/index.html?scale=pc&asm=' + mode);
 </script>
 </body>

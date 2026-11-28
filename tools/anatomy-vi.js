@@ -1,5 +1,5 @@
 // Việt hoá giao diện PC Anatomy (TinHocLab). Dịch các chuỗi hiển thị ngay trên trang, không sửa mã gốc.
-// Mô tả dài của từng linh kiện vẫn giữ tiếng Anh gốc.
+// Nội dung linh kiện (tên, mô tả, thông số) được dịch sẵn trong dữ liệu: tools/anatomy-vi-concepts.json.
 (function () {
   const D = {
     // ---- khung giao diện ----
