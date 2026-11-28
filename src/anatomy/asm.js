@@ -88,6 +88,7 @@
       A('Đặt kính vào ray và vặn vít giữ'),
     ], wrong: [A('Đóng kính rồi mới kiểm tra dây', 'Kiểm tra dây trước, nếu không sẽ phải tháo kính ra lại.')] },
   };
+  window.__thlSteps = STEPS; // dùng lại trong chế độ Tháo lắp 3D (teardown.js)
   const ORDER = ['ioshield', 'motherboard', 'processor', 'ram', 'nvme', 'cpucooler', 'psu', 'graphicscard', 'ssd', 'psucable', 'sidepanel'];
   let S = { mode: 'explore', steps: [], pre: [], done: new Set(), mistakes: [], exam: null, booted: false };
   const $ = (q) => document.querySelector(q);
@@ -189,6 +190,7 @@
   .asmInsp .cr{padding:0 18px 12px;font-size:12.5px;color:#9fb0b6}.asmInsp .cr a{color:#7cc4ff}.asmInsp .cr button{padding:4px 9px;font-size:12px;margin-left:6px}
   .asmModal .screen{background:linear-gradient(135deg,#1e6bff,#4fc3ff);color:#fff;border-radius:12px;padding:40px 20px;text-align:center;font-size:40px;font-weight:700}`;
   document.head.appendChild(css);
+  window.__thlToast = (t, k) => toast(t, k);
   function toast(t, k = '') {
     let el = $('#asmToast'); if (!el) { el = document.createElement('div'); el.id = 'asmToast'; document.body.appendChild(el); }
     el.className = k; el.textContent = t; el.style.opacity = 1; clearTimeout(toast.t); toast.t = setTimeout(() => (el.style.opacity = 0), 3800);
@@ -204,19 +206,19 @@
   function render() {
     const p = $('#asmPanel'); if (!p) return;
     const sug = S.mode === 'practice' ? nextSuggest() : null;
-    p.querySelector('.bd').innerHTML = ((S.mode === 'explore' ? `<p class="note">Đang ở chế độ khám phá: bấm vào linh kiện để đi sâu vào bên trong, kéo thanh "Tháo rời" để xem máy tách ra. Bấm "Luyện lắp" để bắt đầu lắp ráp.</p>` :
+    p.querySelector('.bd').innerHTML = S.mode === 'teardown' ? `<p class="note">Đang ở chế độ Tháo lắp 3D: kéo linh kiện để tháo ra, thả đúng chỗ và đúng hướng để lắp lại. Bảng bên phải có góc nhìn, X-quang, mặt cắt, bung rời và trình diễn tự chạy.</p>` : ((S.mode === 'explore' ? `<p class="note">Đang ở chế độ khám phá: bấm vào linh kiện để đi sâu vào bên trong, kéo thanh "Tháo rời" để xem máy tách ra. Bấm "Luyện lắp" để bắt đầu lắp ráp.</p>` :
         `<p class="note">Chọn linh kiện cho máy rồi bấm vào từng linh kiện trên khay (bên phải thùng máy) để lắp. Lắp đúng trình tự; dấu ➜ là gợi ý bước tiếp theo.</p>`) +
       (S.mode === 'practice' ? cfgBlock() : '') +
       `<ol>${S.steps.map((c) => { const sub = partOf(c); return `<li class="${S.done.has(c) ? 'done' : c === sug ? 'next' : ''}"><span class="i">${S.done.has(c) ? '✓' : c === sug ? '➜' : '•'}</span><span class="t">${esc(name(c))}${sub ? `<small>${esc(sub)}</small>` : ''}</span></li>`; }).join('')}</ol>
       ${S.done.size === S.steps.length ? `<button class="btn go" data-a="boot">⚡ Bật nguồn</button>` : ''}
       <button class="btn" data-a="reset">↺ Làm lại từ đầu</button>`);
-    p.classList.toggle('mini', S.mode === 'explore');
+    p.classList.toggle('mini', S.mode === 'explore' || S.mode === 'teardown');
     p.querySelectorAll('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.m === S.mode));
     p.querySelectorAll('.bd [data-a]').forEach((b) => (b.onclick = () => ({ boot, reset: () => restart(), cfg: () => openCfg('practice'), def: () => useDefault() })[b.dataset.a]()));
   }
   function buildPanel() {
     const p = document.createElement('div'); p.id = 'asmPanel';
-    p.innerHTML = `<div class="hd"><h2>🔧 Phòng lắp ráp</h2><div class="tabs"><button data-m="explore">🔬 Khám phá</button><button data-m="practice">🔧 Luyện lắp</button></div></div><div class="bd"></div>`;
+    p.innerHTML = `<div class="hd"><h2>🔧 Phòng lắp ráp</h2><div class="tabs"><button data-m="explore">🔬 Khám phá</button><button data-m="practice">🔧 Luyện lắp</button><button data-m="teardown">🛠 Tháo lắp 3D</button></div></div><div class="bd"></div>`;
     document.body.appendChild(p);
     p.querySelectorAll('.tabs button').forEach((b) => (b.onclick = () => setMode(b.dataset.m)));
   }
@@ -233,8 +235,10 @@
   }
   function setMode(m) {
     const asm = window.__asm;
+    if (m !== 'teardown' && document.body.classList.contains('td')) window.__tdUI?.close();
     if (m === 'explore') { S.mode = m; asm.setActive(false); document.body.classList.remove('asm'); render(); return; }
     if (new URLSearchParams(location.search).get('scale') !== 'pc' && !asm.pieces.some((p) => p.concept === 'motherboard')) { location.search = '?scale=pc&asm=' + m; return; }
+    if (m === 'teardown') { S.mode = m; asm.setActive(false); document.body.classList.remove('asm'); window.__tdUI?.open(); render(); return; }
     document.body.classList.add('asm');
     S.mode = m; restart(); asm.setActive(true);
   }
@@ -242,7 +246,7 @@
 
   // ---------- lắp một linh kiện ----------
   window.addEventListener('asm:pick', (e) => {
-    if (S.mode === 'explore' || !e.detail) return;
+    if (S.mode === 'explore' || S.mode === 'teardown' || !e.detail) return;
     const c = e.detail.concept;
     if (!STEPS[c] || !S.steps.includes(c)) { toast('Phần này đã có sẵn trong máy.'); return; }
     if (S.done.has(c)) { toast(`${name(c)} đã được lắp.`); return; }
@@ -547,11 +551,11 @@
         relabel();
         const tryCase = (n) => { if (globalThis.__THREE && window.__asm.pieces.length) applyCase(); else if (n > 0) setTimeout(() => tryCase(n - 1), 400); };
         tryCase(20);
-        setMode(want === 'practice' ? 'practice' : 'explore');
+        setMode(want === 'practice' ? 'practice' : want === 'teardown' ? 'teardown' : 'explore');
       });
       return;
     }
-    setMode(want === 'practice' ? 'practice' : 'explore'); // mặc định mở Khám phá trước
+    setMode(want === 'practice' ? 'practice' : want === 'teardown' ? 'teardown' : 'explore'); // mặc định mở Khám phá trước
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot0, 500)); else setTimeout(boot0, 500);
 })();

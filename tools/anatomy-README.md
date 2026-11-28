@@ -3,12 +3,13 @@
 Dựng từ **PC Anatomy** – https://github.com/Yoosseph/pc-anatomy (tác giả Yoseph, giấy phép MIT, xem LICENSE-pc-anatomy.txt).
 
 TinHocLab đã thêm/thay đổi:
+- `teardown.js` + `lib/thl/teardown.ts` (mã nguồn ở `tools/anatomy-thl/`): **chế độ Tháo lắp 3D** – kéo từng linh kiện ra theo đúng hướng rút khỏi khe, kéo tự do không xuyên vỏ/linh kiện khác, xoay, thả đúng chỗ và đúng hướng để lắp lại; có ràng buộc thứ tự (phải mở kính, tháo tản nhiệt trước CPU…), X-quang, mặt cắt, bung rời theo lớp, góc camera đặt sẵn, nhãn chú thích và trình diễn tự chạy. Ý tưởng từ Teardown (MIT, xem NOTICE-teardown.txt).
 - `asm.js` + `lib/assembly-mode.ts`: **chế độ lắp ráp** – linh kiện thật của PC Anatomy bày trên khay cạnh thùng máy, học sinh lắp từng phần theo đúng trình tự (I/O shield → mainboard → CPU → RAM → SSD M.2 → tản nhiệt → nguồn → card đồ hoạ → SSD SATA → dây nguồn → kính hông), bấm vào linh kiện để lắp.
 - RAM và SSD M.2 được tách khỏi mainboard thành linh kiện riêng trong thùng máy (`lib/machine.ts`, `lib/mainboard.ts`).
 - `vi.js`: Việt hoá giao diện. Tên, mô tả, chức năng và thông số của từng linh kiện được dịch trong `lib/vi-concepts.json`; tên và mô tả các cấp độ trong `lib/vi-levels.json` (bản gốc: `tools/anatomy-vi-concepts.json`, `tools/anatomy-vi-levels.json`).
 - Bỏ thống kê truy cập và nút gửi góp ý để chạy ngoại tuyến; máy không có card đồ hoạ thì tắt bóng đổ.
 
-Mở: `index.html?scale=pc&asm=explore` (khám phá – mặc định), `asm=practice` (luyện lắp).
+Mở: `index.html?scale=pc&asm=explore` (khám phá – mặc định), `asm=practice` (luyện lắp), `asm=teardown` (tháo lắp 3D).
 Dựng lại từ mã nguồn: `bash tools/build-anatomy.sh`
 
 ## Danh mục linh kiện để chọn cấu hình

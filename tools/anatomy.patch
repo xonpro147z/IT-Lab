@@ -421,19 +421,20 @@ index cc964b9..78fcdeb 100644
          </button>
          <a
 diff --git a/index.html b/index.html
-index 7821b60..0dee192 100644
+index 7821b60..c3243c3 100644
 --- a/index.html
 +++ b/index.html
-@@ -4,6 +4,8 @@
+@@ -4,6 +4,9 @@
      <meta charset="UTF-8" />
      <link rel="stylesheet" href="/theme.css" />
      <script src="/theme.js"></script>
 +    <script src="/vi.js" defer></script>
 +    <script src="/asm.js" defer></script>
++    <script src="/teardown.js" defer></script>
      <meta
        name="viewport"
        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-@@ -154,7 +156,7 @@
+@@ -154,7 +157,7 @@
            references.
          </p>
          <p>
@@ -1131,15 +1132,16 @@ index 02e1848..f56c6d2 100644
      const cover = new T.Group();
      // Underside 7.2 mm including bevel; flash tops 6.4 mm.
 diff --git a/lib/model-stage.ts b/lib/model-stage.ts
-index 5d9ca43..79dd946 100644
+index 5d9ca43..aa699b0 100644
 --- a/lib/model-stage.ts
 +++ b/lib/model-stage.ts
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,5 @@
 +import { asmShift, asmValue } from './assembly-mode.ts';
++import { tdApply } from './thl/teardown.ts';
  import * as T from 'three';
  import { byId } from './manifest.ts';
  import { isPhysical, levels, type LevelId } from './levels.ts';
-@@ -93,6 +94,7 @@ export function pieceDestination(
+@@ -93,6 +95,7 @@ export function pieceDestination(
    position: T.Vector3,
    inventoryTarget: T.Vector3,
  ) {
@@ -1147,7 +1149,7 @@ index 5d9ca43..79dd946 100644
    const entry = byId[piece.concept];
    const stage = entry.opensFirst
      ? smoothstep(0, 0.2, value)
-@@ -113,6 +115,8 @@ export function pieceDestination(
+@@ -113,6 +116,8 @@ export function pieceDestination(
        piece.lieCenter ?? piece.center,
        -(piece.inventoryScale ?? 1),
      );
@@ -1156,7 +1158,7 @@ index 5d9ca43..79dd946 100644
    position.lerp(inventoryTarget, grid);
    return {
      position,
-@@ -128,6 +132,7 @@ export function applyPiecePose(
+@@ -128,6 +133,7 @@ export function applyPiecePose(
    scratch: ModelStageScratch,
    scaleMultiplier = 1,
  ) {
@@ -1164,7 +1166,16 @@ index 5d9ca43..79dd946 100644
    const destination = pieceDestination(
      piece,
      level,
-@@ -205,7 +210,12 @@ export function posedModelBounds(
+@@ -147,6 +153,8 @@ export function applyPiecePose(
+     piece.object.quaternion
+       .copy(piece.restQuat)
+       .slerp(piece.lie, laidOutAmount(value));
++  // TinHocLab – tháo lắp 3D: cộng phần rút/kéo/xoay của linh kiện
++  tdApply(piece, level);
+   if (piece.batch) {
+     scratch.matrix.compose(
+       piece.object.position,
+@@ -205,7 +213,12 @@ export function posedModelBounds(
        scratch.position,
        scratch.inventoryTarget,
      );
@@ -1179,18 +1190,19 @@ index 5d9ca43..79dd946 100644
      target.expandByPoint(
        scratch.point
 diff --git a/lib/scene.ts b/lib/scene.ts
-index 2d2d3c1..4f52e47 100644
+index 2d2d3c1..ac90c35 100644
 --- a/lib/scene.ts
 +++ b/lib/scene.ts
-@@ -17,6 +17,7 @@ import { towerKey } from './desktop-build.ts';
+@@ -17,6 +17,8 @@ import { towerKey } from './desktop-build.ts';
  import type { ExplorerState, Selection } from './explorer-state.ts';
  import { isPhysical, levels } from './levels.ts';
  import { smoothstep } from './layout';
 +import { asm, asmTick, asmValue } from './assembly-mode.ts';
++import { tdAfterRender, tdBind, tdFit, tdOwnsClicks, tdTick } from './thl/teardown.ts';
  import {
    ModelPoseCache,
    createModelShelf,
-@@ -130,6 +131,23 @@ export function createViewer(
+@@ -130,6 +132,23 @@ export function createViewer(
    const stageScratch = new ModelStageScratch();
    let poses = new ModelPoseCache(model, state.level),
      cancelAcceleration = scheduleRaycastAcceleration(model.root);
@@ -1214,7 +1226,7 @@ index 2d2d3c1..4f52e47 100644
    /** The view the pointer was last resolved against. */
    const hoverView = new T.Matrix4();
    const shelf = createModelShelf(shelfLimit());
-@@ -174,16 +192,20 @@ export function createViewer(
+@@ -174,16 +193,20 @@ export function createViewer(
      // slider. The packing only depends on which pieces are on stage and on the
      // shape of the viewport, so it is redone when one of those changes and not
      // sixty times a second while the parts are in flight.
@@ -1238,7 +1250,7 @@ index 2d2d3c1..4f52e47 100644
      }
      for (const p of model.pieces) p.visible = shown(p);
      for (const child of model.root.children)
-@@ -205,6 +227,7 @@ export function createViewer(
+@@ -205,6 +228,7 @@ export function createViewer(
      );
      loop.wake();
      autoCamera = true;
@@ -1246,7 +1258,7 @@ index 2d2d3c1..4f52e47 100644
    }
    /**
     * How far the parts have settled onto the shelves, 0 to 1.
-@@ -259,8 +282,9 @@ export function createViewer(
+@@ -259,8 +283,9 @@ export function createViewer(
      // A selected part needs breathing room inside the smaller stage left by
      // the detail panel. The old 0.8 multiplier cropped focused parts at every
      // edge, even though the ordinary whole-model fit looked intentional.
@@ -1258,7 +1270,16 @@ index 2d2d3c1..4f52e47 100644
          ? cameraProfile.padding
          : focus
            ? 1.16
-@@ -299,7 +323,7 @@ export function createViewer(
+@@ -292,6 +317,8 @@ export function createViewer(
+       padding,
+       cameraProfile?.minimumDistance ?? (focus ? 3.2 : 6),
+     );
++    // TinHocLab – tháo lắp 3D: góc camera đặt tên sẵn
++    tdFit(targetPosition, targetLook, camera);
+   }
+   function boxFor(p: Piece, target: T.Box3) {
+     // Use the part's authored bounds instead of measuring its descendants on
+@@ -299,7 +326,7 @@ export function createViewer(
      // each blade turns, which made the hover outline breathe in and out even
      // though the fan itself never changed size.
      const s = p.object.scale.x;
@@ -1267,7 +1288,7 @@ index 2d2d3c1..4f52e47 100644
      target.setFromCenterAndSize(
        boxCenter.copy(p.object.position).addScaledVector(centre, s),
        boxSize.copy(extent).multiplyScalar(s).addScalar(0.018),
-@@ -405,6 +429,10 @@ export function createViewer(
+@@ -405,6 +432,14 @@ export function createViewer(
      key.shadow.intensity = shadowFade;
      renderer.shadowMap.autoUpdate = shadowFade > 0.002;
  
@@ -1275,10 +1296,22 @@ index 2d2d3c1..4f52e47 100644
 +      poses.invalidate();
 +      changed = true;
 +    }
++    if (tdTick(dt)) {
++      poses.invalidate();
++      changed = true;
++    }
      const poseChanged = poses.update(
        amount,
        dive
-@@ -528,14 +556,14 @@ export function createViewer(
+@@ -500,6 +535,7 @@ export function createViewer(
+       hoverPending = false;
+     }
+     renderer.render(scene, camera);
++    tdAfterRender();
+     reportLabels();
+     host.dataset.cameraSettled = String(
+       !autoCamera || camera.position.distanceToSquared(targetPosition) < 0.0001,
+@@ -528,14 +564,14 @@ export function createViewer(
        isPhysical(state.level) &&
        !dive &&
        !state.isolated &&
@@ -1295,7 +1328,7 @@ index 2d2d3c1..4f52e47 100644
          boxFor(p, labelBox);
          labelBox.getCenter(projected).project(camera);
          if (projected.z > 1) continue;
-@@ -567,6 +595,16 @@ export function createViewer(
+@@ -567,6 +603,32 @@ export function createViewer(
      render,
    );
    const wake = loop.wake;
@@ -1309,12 +1342,31 @@ index 2d2d3c1..4f52e47 100644
 +    autoCamera = true;
 +    wake();
 +  };
++  tdBind({
++    host,
++    canvas: renderer.domElement,
++    camera,
++    controls,
++    scene,
++    renderer,
++    model: () => model,
++    level: () => state.level,
++    wake,
++    refit: () => {
++      fitDirty = true;
++      autoCamera = true;
++      wake();
++    },
++  });
    const resize = () => {
      const w = host.clientWidth,
        h = host.clientHeight;
-@@ -623,6 +661,16 @@ export function createViewer(
+@@ -622,7 +684,19 @@ export function createViewer(
+       pointerMoved(e, dragStart)
      )
        return;
++    // TinHocLab – tháo lắp 3D tự xử lý cú bấm (thl/teardown.ts)
++    if (tdOwnsClicks(state.level)) return;
      const p = hit(e, e.pointerType === 'touch' ? TOUCH_AIM : MOUSE_AIM);
 +    if (asm.active && state.level === 'pc') {
 +      // Chế độ lắp ráp: bấm vào linh kiện là chọn để lắp, không mở vào bên trong.
@@ -1329,7 +1381,15 @@ index 2d2d3c1..4f52e47 100644
      callbacks.select(
        p ? { concept: p.concept, instance: p.instance } : null,
        tapIntent(e.pointerType, p, state.selection),
-@@ -733,6 +781,7 @@ export function createViewer(
+@@ -645,6 +719,7 @@ export function createViewer(
+   }
+   function inspect(e: MouseEvent) {
+     e.preventDefault();
++    if (tdOwnsClicks(state.level)) return;
+     if (rightGestureMoved) {
+       rightGestureMoved = false;
+       return;
+@@ -733,6 +808,7 @@ export function createViewer(
        powerRoutes = visiblePowerRoutes(state);
        const priorAuto = autoCamera;
        refresh();
